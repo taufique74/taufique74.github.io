@@ -2,7 +2,7 @@ export const SITE = {
   website: "https://tpeyash.com/",
   author: "Taufique Peyash",
   profile: "https://github.com/taufique74",
-  desc: "Thoughts on machine learning, speech AI, and software engineering.",
+  desc: "Notes from the bench — on speech AI, machine learning, and the craft of building systems that learn.",
   title: "Peyash's Logs",
   ogImage: "astropaper-og.jpg",
   lightAndDarkMode: true,
