@@ -25,9 +25,15 @@ export const SOCIALS: Social[] = [
   },
   {
     name: "LinkedIn",
-    href: "https://www.linkedin.com/in/taufique74/",
+    href: "https://www.linkedin.com/in/taufiquzzaman-peyash",
     linkTitle: `${SITE.title} on LinkedIn`,
     icon: IconLinkedin,
+  },
+  {
+    name: "X",
+    href: "https://x.com/TaufiquePeyash",
+    linkTitle: `${SITE.title} on X`,
+    icon: IconBrandX,
   },
 ] as const;
 
