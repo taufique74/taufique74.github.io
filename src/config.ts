@@ -3,7 +3,7 @@ export const SITE = {
   author: "Taufique Peyash",
   profile: "https://github.com/taufique74",
   desc: "Notes from the bench — on speech AI, machine learning, and the craft of building systems that learn.",
-  title: "Peyash's Logs",
+  title: "Peyash's Log",
   ogImage: "astropaper-og.jpg",
   lightAndDarkMode: true,
   postPerIndex: 4,
