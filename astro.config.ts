@@ -69,7 +69,17 @@ export default defineConfig({
         cssVariable: "--font-google-sans-code",
         provider: fontProviders.google(),
         fallbacks: ["monospace"],
-        weights: [300, 400, 500, 600, 700],
+        weights: [400, 500, 600, 700],
+        styles: ["normal", "italic"],
+      },
+      {
+        // Long-form reading face for post bodies (.app-prose); headings, nav,
+        // code and labels stay on Google Sans Code.
+        name: "Literata",
+        cssVariable: "--font-literata",
+        provider: fontProviders.google(),
+        fallbacks: ["Georgia", "serif"],
+        weights: [400, 600],
         styles: ["normal", "italic"],
       },
     ],

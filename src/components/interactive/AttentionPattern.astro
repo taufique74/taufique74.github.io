@@ -145,11 +145,13 @@ const uid = `attn-${Math.random().toString(36).slice(2, 9)}`;
     gap: 0.5rem;
   }
   .attn__model {
+    font-family: var(--font-google-sans-code, ui-monospace, monospace);
     font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 0.02em;
   }
   .attn__sub {
+    font-family: var(--font-google-sans-code, ui-monospace, monospace);
     font-size: 0.68rem;
     text-transform: uppercase;
     letter-spacing: 0.09em;
@@ -161,7 +163,7 @@ const uid = `attn-${Math.random().toString(36).slice(2, 9)}`;
     gap: 0.25rem;
   }
   .attn__head {
-    font-family: var(--font-mono, ui-monospace, monospace);
+    font-family: var(--font-google-sans-code, ui-monospace, monospace);
     font-size: 0.7rem;
     padding: 0.2rem 0.55rem;
     /* Not var(--border): in the dark theme that is a saturated orange, which
@@ -210,7 +212,7 @@ const uid = `attn-${Math.random().toString(36).slice(2, 9)}`;
     border: 1px solid var(--accent);
     border-radius: 6px;
     padding: 0.3rem 0.45rem;
-    font-family: var(--font-mono, ui-monospace, monospace);
+    font-family: var(--font-google-sans-code, ui-monospace, monospace);
     font-size: 0.7rem;
     line-height: 1.35;
     white-space: nowrap;
@@ -232,12 +234,12 @@ const uid = `attn-${Math.random().toString(36).slice(2, 9)}`;
     border-radius: 2px;
   }
   .attn__nums {
-    font-family: var(--font-mono, ui-monospace, monospace);
+    font-family: var(--font-google-sans-code, ui-monospace, monospace);
     letter-spacing: 0.04em;
   }
   .attn__score {
     margin-inline-start: auto;
-    font-family: var(--font-mono, ui-monospace, monospace);
+    font-family: var(--font-google-sans-code, ui-monospace, monospace);
     font-size: 0.7rem;
     opacity: var(--cap-alpha);
   }
@@ -394,7 +396,12 @@ const uid = `attn-${Math.random().toString(36).slice(2, 9)}`;
       ctx!.globalAlpha =
         parseFloat(rootStyle.getPropertyValue("--label-alpha")) || 0.7;
       const fs = Math.max(7, Math.min(10, cell - 1));
-      ctx!.font = `${fs}px ui-monospace, SFMono-Regular, monospace`;
+      // Match the pills' mono face (the loaded font-family name is hashed, so
+      // read it from a live element rather than hardcoding).
+      const monoFam = buttons[0]
+        ? getComputedStyle(buttons[0]).fontFamily
+        : "ui-monospace, monospace";
+      ctx!.font = `${fs}px ${monoFam}`;
 
       // Query labels down the left.
       ctx!.textAlign = "right";

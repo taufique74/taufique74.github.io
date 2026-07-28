@@ -3,18 +3,45 @@
 @layer base {
   /* ===== Override default Tailwind Typography styles ===== */
   .app-prose {
-    @apply prose;
+    /* The reading surface: long-form body copy is set in Literata; headings,
+       code, tables and captions revert to the mono identity face below.
+       1.2rem = 18px at the 15px root; Tailwind-prose child sizes are em-based,
+       so everything inside scales with this one value. */
+    @apply prose font-body;
+    font-size: 1.2rem;
 
     h1,
     h2,
     h3,
     h4,
+    h5,
+    h6,
     th {
-      @apply mb-3 text-foreground;
+      @apply mb-3 font-app text-foreground;
     }
 
     h3 {
       @apply italic;
+    }
+
+    :is(code, kbd, samp, pre) {
+      @apply font-app;
+    }
+
+    table,
+    figcaption {
+      @apply font-app;
+    }
+
+    p,
+    li {
+      text-wrap: pretty;
+    }
+
+    @media (max-width: 640px) {
+      p {
+        hyphens: auto;
+      }
     }
 
     p,
