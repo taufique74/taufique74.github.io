@@ -1,0 +1,87 @@
+---
+title: "Finding induction heads in GPT-2 small"
+author: Taufique Peyash
+pubDatetime: 2026-07-28T00:00:00Z
+description: Ranking all 144 attention heads by induction score on a repeated-token sequence, and checking whether the usual suspects fall out of the data.
+draft: true
+tags:
+  - mech-interp
+  - transformers
+  - interpretability
+---
+
+import AttentionPattern from "@/components/interactive/AttentionPattern.astro";
+import inductionData from "@/data/figures/gpt2-induction-attention.json";
+
+An **induction head** implements a very small algorithm: given a sequence that has
+partially repeated itself, look back to the previous occurrence of the current
+token and attend to whatever came _after_ it. It is the mechanism behind a large
+chunk of in-context learning, and it is the first non-trivial circuit most people
+find when they start poking at a transformer.
+
+The claim I want to check is narrow and falsifiable:
+
+> In GPT-2 small, the heads with the highest induction score are L5H5, L5H1, and
+> L6H9 — and they score far above the average head.
+
+## The probe
+
+Feed the model `[BOS] r₁ r₂ … r₁₅ r₁ r₂ … r₁₅`, where `r` is a random token
+sequence. Nothing in this input is predictable from English statistics; the only
+usable signal is the repetition itself. A head that has learned induction should
+light up along a single off-diagonal at offset `seqLen - 1 = 14`, because from
+position `i` in the second copy, the token that followed the match sits exactly
+14 places back.
+
+Scoring is then just: average that diagonal.
+
+```python
+diag = pattern[head].diagonal(offset=-(SEQ - 1))
+score = diag.mean().item()
+```
+
+Run it over all 12 layers × 12 heads and sort.
+
+## What came out
+
+<AttentionPattern
+  data={inductionData}
+  caption="GPT-2 small, 15 random tokens repeated twice. Rows are queries, columns are keys; brighter means more attention. Switch heads with the pills above — the induction stripe is the bright off-diagonal running parallel to the main diagonal."
+/>
+
+The top six heads by induction score:
+
+| head  | induction score |
+| ----- | --------------- |
+| L5H5  | 0.828           |
+| L6H9  | 0.793           |
+| L5H1  | 0.785           |
+| L7H10 | 0.772           |
+| L7H2  | 0.611           |
+| L10H7 | 0.576           |
+
+Mean across all 144 heads: **0.117**.
+
+So the claim holds, with one wrinkle. L5H5, L5H1 and L6H9 are all in the top
+three by _set_, but the ordering isn't what the folklore suggests — L6H9 edges out
+L5H1 here. That ordering is not stable anyway: it shifts with the random seed and
+the sequence length, because the score is an average over a short diagonal. The
+robust finding is the **gap**, not the ranking. The top heads sit around 7× the
+mean head, and there is a visible cliff after the first four.
+
+Worth naming what this probe does _not_ show. A high score on a repeated-random
+sequence means a head attends in the induction pattern — not that it is used for
+induction on natural text, and not that ablating it would hurt in-context
+learning. Those are separate experiments with separate claims.
+
+## Why the heatmap is precomputed
+
+Every number above was generated once by
+[`scripts/figures/gpt2_induction_attention.py`](https://github.com/taufique74/taufique74.github.io/blob/main/scripts/figures/gpt2_induction_attention.py)
+and committed as a 32 KB JSON file. The page ships a canvas renderer and that
+file — no model runs in your browser, and nothing runs on a server.
+
+That is a deliberate constraint rather than a limitation I ran into. Keeping the
+data layer static means the interactive parts cost a few kilobytes instead of a
+few hundred megabytes, the figures stay reproducible from a script in the repo,
+and the whole site remains hostable anywhere that can serve files.

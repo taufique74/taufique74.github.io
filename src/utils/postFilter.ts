@@ -5,7 +5,9 @@ const postFilter = ({ data }: CollectionEntry<"blog">) => {
   const isPublishTimePassed =
     Date.now() >
     new Date(data.pubDatetime).getTime() - SITE.scheduledPostMargin;
-  return !data.draft && (import.meta.env.DEV || isPublishTimePassed);
+  // Locally, show everything so drafts and scheduled posts can be previewed.
+  // A production build still excludes both.
+  return import.meta.env.DEV || (!data.draft && isPublishTimePassed);
 };
 
 export default postFilter;

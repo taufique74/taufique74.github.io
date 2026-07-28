@@ -2,10 +2,10 @@
 
 ## Setup
 
-All work happens in `~/blog/`. All changes deploy automatically when pushed to `main`.
+All work happens in `~/projects/blog/`. All changes deploy automatically when pushed to `main`.
 
 ```bash
-cd ~/blog
+cd ~/projects/blog
 ```
 
 ---

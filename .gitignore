@@ -26,3 +26,5 @@ pnpm-debug.log*
 # pagefind
 
 public/pagefind
+# Claude Code worktrees and local state
+.claude/

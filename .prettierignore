@@ -12,3 +12,6 @@
 !.prettierrc
 !eslint.config.js
 !README.md
+
+# Generated figure data — machine-written, kept minified on purpose
+/src/data/figures/*.json

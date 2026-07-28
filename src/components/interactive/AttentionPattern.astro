@@ -1,0 +1,511 @@
+---
+/**
+ * Interactive attention-pattern heatmap.
+ *
+ * Renders one head at a time from a precomputed pattern dump. Drawing happens on
+ * a canvas rather than in the DOM so that real sequence lengths (100+ tokens,
+ * i.e. 10k+ cells) stay smooth — hover is resolved by hit-testing instead of by
+ * one listener per cell.
+ *
+ * The data contract is produced by scripts/figures/*.py; see
+ * src/data/figures/README.md.
+ */
+interface Head {
+  layer: number;
+  head: number;
+  label: string;
+  inductionScore?: number;
+  values: number[][];
+}
+
+interface Props {
+  data: {
+    model: string;
+    tokens: string[];
+    nTokens: number;
+    heads: Head[];
+    inductionOffset?: number;
+    prompt?: { description?: string };
+    baseline?: { meanInductionScore?: number; nHeadsTotal?: number };
+  };
+  caption?: string;
+  /** Index into data.heads to show first. */
+  initialHead?: number;
+}
+
+const { data, caption, initialHead = 0 } = Astro.props;
+
+// Unique per instance so several heatmaps can coexist on one page.
+const uid = `attn-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<figure class="attn not-prose my-8" data-attn={uid}>
+  <script
+    is:inline
+    type="application/json"
+    data-attn-payload={uid}
+    set:html={JSON.stringify(data)}
+  />
+
+  <div class="attn__bar">
+    <div class="attn__meta">
+      <span class="attn__model">{data.model}</span>
+      {
+        data.baseline?.nHeadsTotal && (
+          <span class="attn__sub">
+            top {data.heads.length} of {data.baseline.nHeadsTotal} heads
+          </span>
+        )
+      }
+    </div>
+    <div class="attn__heads" role="tablist" aria-label="Attention head">
+      {
+        data.heads.map((h, i) => (
+          <button
+            type="button"
+            role="tab"
+            class="attn__head"
+            data-attn-head={i}
+            aria-selected={i === initialHead ? "true" : "false"}
+          >
+            {h.label}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="attn__stage">
+    <canvas data-attn-canvas={uid} role="img"></canvas>
+    <div class="attn__tip" data-attn-tip={uid} hidden></div>
+  </div>
+
+  <div class="attn__legend">
+    <span class="attn__sub">attention weight</span>
+    <canvas data-attn-ramp={uid} width="120" height="8" aria-hidden="true"
+    ></canvas>
+    <span class="attn__sub attn__nums">0 → 1</span>
+    <span class="attn__score" data-attn-score={uid}></span>
+  </div>
+
+  {
+    (caption || data.prompt?.description) && (
+      <figcaption class="attn__cap">
+        {caption ?? data.prompt?.description}
+      </figcaption>
+    )
+  }
+</figure>
+
+<style>
+  .attn {
+    /* The zero end of the ramp must stay clearly distinct from the panel
+       background, otherwise the plot dissolves into the card and the grid
+       loses its edges. Direction is "more attention = more ink" in light,
+       "= more light" in dark, so the ramp inverts rather than just re-tinting. */
+    --ramp-0: #eeeae1;
+    --ramp-1: #4a9d8f;
+    --ramp-2: #0c3a34;
+    --label-alpha: 0.72;
+    --chrome-alpha: 0.62;
+    --cap-alpha: 0.72;
+    --grid-line: rgb(0 0 0 / 0.06);
+    /* Must be explicit. `not-prose` opts this figure out of the prose dark-mode
+       colour overrides but it still inherits the light body colour, which lands
+       as dark-on-dark. Everything here — canvas labels included — reads from it. */
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--background);
+    padding: 0.85rem 0.9rem 0.7rem;
+  }
+  :global(html[data-theme="dark"]) .attn {
+    --ramp-0: #11151d;
+    --ramp-1: #35a086;
+    --ramp-2: #a8f5d3;
+    /* Small light text on a dark field renders visually thinner, so the dark
+       theme needs higher alphas than light to read as equally present. */
+    --label-alpha: 0.95;
+    --chrome-alpha: 0.82;
+    --cap-alpha: 0.86;
+    --grid-line: rgb(255 255 255 / 0.07);
+  }
+
+  .attn__bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.7rem;
+  }
+  .attn__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .attn__model {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .attn__sub {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    opacity: var(--chrome-alpha);
+  }
+  .attn__heads {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .attn__head {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.55rem;
+    /* Not var(--border): in the dark theme that is a saturated orange, which
+       makes every pill read as selected. Derive from text instead. */
+    border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    opacity: 0.72;
+    transition:
+      opacity 0.15s,
+      background-color 0.15s;
+  }
+  .attn__head:hover {
+    opacity: 1;
+    border-color: color-mix(in srgb, currentColor 55%, transparent);
+  }
+  /* Selected state is a fill, not a tint — it survives both themes and
+     does not depend on the accent being legible as text. */
+  .attn__head[aria-selected="true"] {
+    opacity: 1;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--background);
+    font-weight: 700;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .attn__head {
+      transition: none;
+    }
+  }
+
+  .attn__stage {
+    position: relative;
+    overflow-x: auto;
+  }
+  .attn__stage canvas {
+    display: block;
+  }
+
+  .attn__tip {
+    position: absolute;
+    pointer-events: none;
+    z-index: 5;
+    background: var(--background);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 0.3rem 0.45rem;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.7rem;
+    line-height: 1.35;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.14);
+  }
+  .attn__tip b {
+    color: var(--accent);
+  }
+
+  .attn__legend {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .attn__legend canvas {
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+  .attn__nums {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    letter-spacing: 0.04em;
+  }
+  .attn__score {
+    margin-inline-start: auto;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.7rem;
+    opacity: var(--cap-alpha);
+  }
+
+  .attn__cap {
+    margin-top: 0.6rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    opacity: var(--cap-alpha);
+  }
+</style>
+
+<script>
+  type Head = {
+    layer: number;
+    head: number;
+    label: string;
+    inductionScore?: number;
+    values: number[][];
+  };
+  type Payload = {
+    model: string;
+    tokens: string[];
+    nTokens: number;
+    heads: Head[];
+    inductionOffset?: number;
+    baseline?: { meanInductionScore?: number };
+  };
+
+  const LABEL_PAD = 58; // gutter reserved for token labels
+  const MAX_CELL = 26;
+  const MIN_CELL = 7;
+
+  function readRamp(el: HTMLElement) {
+    const cs = getComputedStyle(el);
+    return [0, 1, 2].map(i =>
+      parseColor(cs.getPropertyValue(`--ramp-${i}`).trim())
+    );
+  }
+
+  function parseColor(hex: string): [number, number, number] {
+    const h = hex.replace("#", "").trim();
+    const full =
+      h.length === 3
+        ? h
+            .split("")
+            .map(c => c + c)
+            .join("")
+        : h;
+    const n = parseInt(full || "000000", 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  function sample(ramp: [number, number, number][], t: number) {
+    const x = Math.max(0, Math.min(1, t));
+    // Perceptual-ish easing so low weights stay legible instead of washing out.
+    const e = Math.pow(x, 0.72);
+    const [a, b] = e < 0.5 ? [ramp[0], ramp[1]] : [ramp[1], ramp[2]];
+    const local = e < 0.5 ? e / 0.5 : (e - 0.5) / 0.5;
+    const c = a.map((v, i) => Math.round(v + (b[i] - v) * local));
+    return `rgb(${c[0]},${c[1]},${c[2]})`;
+  }
+
+  /** Trim GPT-style token strings down to something that fits a label gutter. */
+  function pretty(tok: string) {
+    const t = tok.replace(/^[ĠĠ ]/, "·").replace(/\n/g, "⏎");
+    return t.length > 7 ? t.slice(0, 6) + "…" : t;
+  }
+
+  function mount(root: HTMLElement) {
+    if (root.dataset.attnReady === "1") return;
+    const uid = root.dataset.attn!;
+    const payloadEl = root.querySelector<HTMLScriptElement>(
+      `[data-attn-payload="${uid}"]`
+    );
+    const canvas = root.querySelector<HTMLCanvasElement>(
+      `[data-attn-canvas="${uid}"]`
+    );
+    const rampCanvas = root.querySelector<HTMLCanvasElement>(
+      `[data-attn-ramp="${uid}"]`
+    );
+    const tip = root.querySelector<HTMLElement>(`[data-attn-tip="${uid}"]`);
+    const score = root.querySelector<HTMLElement>(`[data-attn-score="${uid}"]`);
+    if (!payloadEl || !canvas || !tip) return;
+
+    // Rebind after the guard: TS drops the narrowing inside the hoisted closures below.
+    const cv = canvas;
+    const tipEl = tip;
+    const data: Payload = JSON.parse(payloadEl.textContent || "{}");
+    const ctx = cv.getContext("2d");
+    if (!ctx) return;
+
+    const n = data.nTokens;
+    const buttons = Array.from(
+      root.querySelectorAll<HTMLButtonElement>("[data-attn-head]")
+    );
+    let active = Math.max(
+      0,
+      buttons.findIndex(b => b.getAttribute("aria-selected") === "true")
+    );
+    let cell = MAX_CELL;
+
+    function draw() {
+      const ramp = readRamp(root) as [number, number, number][];
+      const head = data.heads[active];
+      const dpr = window.devicePixelRatio || 1;
+
+      // Fit to available width, but never below MIN_CELL — below that we let the
+      // stage scroll horizontally instead of rendering an unreadable grid.
+      const avail = (root.querySelector(".attn__stage") as HTMLElement)
+        .clientWidth;
+      cell = Math.max(
+        MIN_CELL,
+        Math.min(MAX_CELL, Math.floor((avail - LABEL_PAD) / n))
+      );
+
+      const w = LABEL_PAD + cell * n;
+      const h = LABEL_PAD + cell * n;
+      cv.width = w * dpr;
+      cv.height = h * dpr;
+      cv.style.width = `${w}px`;
+      cv.style.height = `${h}px`;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx!.clearRect(0, 0, w, h);
+
+      for (let q = 0; q < n; q++) {
+        const row = head.values[q];
+        for (let k = 0; k < n; k++) {
+          ctx!.fillStyle = sample(ramp, row[k] ?? 0);
+          ctx!.fillRect(
+            LABEL_PAD + k * cell,
+            LABEL_PAD + q * cell,
+            cell - 0.5,
+            cell - 0.5
+          );
+        }
+      }
+
+      const rootStyle = getComputedStyle(root);
+
+      // Outline the plot so it reads as a surface rather than bleeding into the card.
+      ctx!.strokeStyle =
+        rootStyle.getPropertyValue("--grid-line").trim() || "transparent";
+      ctx!.lineWidth = 1;
+      ctx!.strokeRect(
+        LABEL_PAD - 0.5,
+        LABEL_PAD - 0.5,
+        cell * n + 1,
+        cell * n + 1
+      );
+
+      const labelColor = rootStyle.color;
+      ctx!.fillStyle = labelColor;
+      ctx!.globalAlpha =
+        parseFloat(rootStyle.getPropertyValue("--label-alpha")) || 0.7;
+      const fs = Math.max(7, Math.min(10, cell - 1));
+      ctx!.font = `${fs}px ui-monospace, SFMono-Regular, monospace`;
+
+      // Query labels down the left.
+      ctx!.textAlign = "right";
+      ctx!.textBaseline = "middle";
+      for (let q = 0; q < n; q++) {
+        ctx!.fillText(
+          pretty(data.tokens[q]),
+          LABEL_PAD - 6,
+          LABEL_PAD + q * cell + cell / 2
+        );
+      }
+      // Key labels across the top, rotated.
+      ctx!.textAlign = "left";
+      for (let k = 0; k < n; k++) {
+        ctx!.save();
+        ctx!.translate(LABEL_PAD + k * cell + cell / 2, LABEL_PAD - 6);
+        ctx!.rotate(-Math.PI / 2);
+        ctx!.fillText(pretty(data.tokens[k]), 0, 0);
+        ctx!.restore();
+      }
+      ctx!.globalAlpha = 1;
+
+      cv.setAttribute(
+        "aria-label",
+        `Attention pattern for head ${head.label} of ${data.model}, ${n} by ${n} tokens.`
+      );
+
+      if (score) {
+        score.textContent =
+          head.inductionScore !== undefined
+            ? `induction ${head.inductionScore.toFixed(3)}` +
+              (data.baseline?.meanInductionScore !== undefined
+                ? ` · mean ${data.baseline.meanInductionScore.toFixed(3)}`
+                : "")
+            : "";
+      }
+
+      if (rampCanvas) {
+        const rc = rampCanvas.getContext("2d");
+        if (rc) {
+          rc.clearRect(0, 0, rampCanvas.width, rampCanvas.height);
+          for (let x = 0; x < rampCanvas.width; x++) {
+            rc.fillStyle = sample(ramp, x / (rampCanvas.width - 1));
+            rc.fillRect(x, 0, 1, rampCanvas.height);
+          }
+        }
+      }
+    }
+
+    function onMove(ev: MouseEvent) {
+      const r = cv.getBoundingClientRect();
+      const x = ev.clientX - r.left - LABEL_PAD;
+      const y = ev.clientY - r.top - LABEL_PAD;
+      const k = Math.floor(x / cell);
+      const q = Math.floor(y / cell);
+      if (x < 0 || y < 0 || k < 0 || q < 0 || k >= n || q >= n) {
+        tipEl.hidden = true;
+        return;
+      }
+      const v = data.heads[active].values[q][k] ?? 0;
+      tipEl.innerHTML =
+        `<b>${v.toFixed(3)}</b><br>q ${q}: ${escapeHtml(data.tokens[q])}` +
+        `<br>k ${k}: ${escapeHtml(data.tokens[k])}`;
+      tipEl.hidden = false;
+      const stage = cv.parentElement as HTMLElement;
+      tipEl.style.left = `${Math.min(ev.clientX - r.left + 12, stage.clientWidth - 130)}px`;
+      tipEl.style.top = `${ev.clientY - r.top + 12}px`;
+    }
+
+    function escapeHtml(s: string) {
+      return s.replace(
+        /[&<>"]/g,
+        c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!
+      );
+    }
+
+    buttons.forEach((b, i) =>
+      b.addEventListener("click", () => {
+        active = i;
+        buttons.forEach((o, j) =>
+          o.setAttribute("aria-selected", j === i ? "true" : "false")
+        );
+        draw();
+      })
+    );
+
+    cv.addEventListener("mousemove", onMove);
+    cv.addEventListener("mouseleave", () => (tipEl.hidden = true));
+
+    // Redraw when the theme flips — the ramp is theme-dependent.
+    new MutationObserver(draw).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    let raf = 0;
+    window.addEventListener("resize", () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(draw);
+    });
+
+    root.dataset.attnReady = "1";
+    draw();
+  }
+
+  function mountAll() {
+    document.querySelectorAll<HTMLElement>("[data-attn]").forEach(mount);
+  }
+
+  // ClientRouter is enabled site-wide, so DOMContentLoaded fires only once.
+  document.addEventListener("astro:page-load", mountAll);
+  if (document.readyState !== "loading") mountAll();
+  else document.addEventListener("DOMContentLoaded", mountAll);
+</script>
