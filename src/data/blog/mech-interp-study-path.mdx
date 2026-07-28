@@ -1,0 +1,676 @@
+---
+title: "Mechanistic Interpretability: A Guided Study Path"
+author: Taufiquzzaman Peyash
+pubDatetime: 2026-07-28T12:00:00Z
+description: The hub for a library of visual explainers built from Neel Nanda's guide — the learning path, the core papers, the techniques, and the practical stack.
+draft: true
+tags:
+  - mech-interp
+  - interpretability
+  - study-guide
+---
+
+import PostToc from "@/components/interactive/PostToc.astro";
+import ResidualStream from "@/assets/diagrams/residual-stream.svg";
+import InductionMechanism from "@/assets/diagrams/induction-mechanism.svg";
+
+<PostToc
+  title="Mech Interp Guide"
+  items={[
+    { id: "start-here", label: "00 · Start Here" },
+    { id: "diagrams", label: "0b · Diagrams" },
+    { id: "core-papers", label: "01 · Core Papers" },
+    { id: "methods", label: "02 · Methods & Tools" },
+    {
+      id: "safety",
+      label: "03 · Safety Applications",
+      group: "The Rest of the Library",
+    },
+    { id: "research-craft", label: "04 · Research Craft" },
+    { id: "stack", label: "05 · Practical Stack" },
+  ]}
+/>
+
+The hub for a library of visual explainers built from Neel Nanda's
+[_How to Become a Mechanistic Interpretability Researcher_](https://www.alignmentforum.org/posts/jP9KDyMkchuv6tHwm/how-to-become-a-mechanistic-interpretability-researcher).
+Start with the learning path, read the core papers, learn the techniques —
+every linked page is a full field-notes explainer that links back here.
+
+<p class="kicker">00 · Start Here</p>
+
+<h2 id="start-here">Neel's 3-Stage Learning Path</h2>
+
+Mechanistic interpretability is learnable on your own with short feedback loops
+and modest compute. Don't over-prepare — get your hands dirty early.
+
+<div class="trio not-prose">
+  <div class="mini">
+    <div class="num">Stage 1</div>
+    <div class="lbl">≤ 1 month · basics</div>
+    <p>
+      Implement a transformer from scratch (ARENA), learn the core MI
+      techniques, use TransformerLens, read one paper deeply.
+    </p>
+  </div>
+  <div class="mini">
+    <div class="num">Stage 2</div>
+    <div class="lbl">1–5 day mini-projects</div>
+    <p>
+      Practice exploration and understanding with fast feedback loops. Quantity
+      over polish.
+    </p>
+  </div>
+  <div class="mini">
+    <div class="num">Stage 3</div>
+    <div class="lbl">1–2 week sprints</div>
+    <p>
+      Full research projects — continue your best mini-projects into
+      publishable outputs.
+    </p>
+  </div>
+</div>
+
+### Recommended reading order — first two weeks
+
+<ol class="steps not-prose">
+  <li>
+    <div>
+      <div class="stitle">
+        <a href="https://claude.ai/code/artifact/c5bd2298-641f-4ad9-b780-1c8f3cf3327f">
+          A Mathematical Framework for Transformer Circuits (2021)
+        </a>
+      </div>
+      <div class="swhy">
+        Establishes the core vocabulary: residual stream, QK/OV circuits,
+        induction heads. Everything builds on this.
+      </div>
+    </div>
+  </li>
+  <li>
+    <div>
+      <div class="stitle">
+        <a href="https://claude.ai/code/artifact/cbc09dee-f984-4b45-8227-79f136fdf16a">
+          Toy Models of Superposition (2022)
+        </a>
+      </div>
+      <div class="swhy">
+        The theoretical foundation for why neurons aren't the right unit. Phase
+        diagrams, polytope geometry, and the strategic case for dictionary
+        learning.
+      </div>
+    </div>
+  </li>
+  <li>
+    <div>
+      <div class="stitle">
+        <a href="https://claude.ai/code/artifact/c8e411f6-82ff-47dd-8ba4-b654d800d36b">
+          Towards Monosemanticity — SAEs (2023)
+        </a>
+      </div>
+      <div class="swhy">
+        Introduces sparse autoencoders, the field's dominant decomposition
+        tool. The practical answer to superposition.
+      </div>
+    </div>
+  </li>
+  <li>
+    <div>
+      <div class="stitle">
+        <a href="https://claude.ai/code/artifact/67e4f5fe-71d8-4ebc-a96c-771bfbba9d32">
+          ARENA Chapter 1 · Building a Transformer from Scratch
+        </a>
+      </div>
+      <div class="swhy">
+        Hands-on: implement the transformer yourself and run your first
+        activation-patching experiment.
+      </div>
+    </div>
+  </li>
+  <li>
+    <div>
+      <div class="stitle">
+        <a href="https://claude.ai/code/artifact/a548aa0d-8677-4fd0-bd04-564be0f347c5">
+          IOI Circuit — Interpretability in the Wild (2022)
+        </a>
+      </div>
+      <div class="swhy">
+        A concrete, complete circuit analysis: 26 heads, 7 functional classes,
+        causal interventions.
+      </div>
+    </div>
+  </li>
+  <li>
+    <div>
+      <div class="stitle">
+        <a href="https://claude.ai/code/artifact/317012f4-3608-4764-b821-8c5b1ff13329">
+          Ferrando et al. Primer (2024)
+        </a>
+      </div>
+      <div class="swhy">
+        Survey of all major techniques. Read after 1–2 papers to map the
+        terrain.
+      </div>
+    </div>
+  </li>
+  <li>
+    <div>
+      <div class="stitle">
+        <a href="https://claude.ai/code/artifact/1ce892d8-ad3c-43a7-a3e1-b979cf174912">
+          Scaling Monosemanticity (2024)
+        </a>
+      </div>
+      <div class="swhy">
+        SAEs at frontier scale: Golden Gate Claude, safety-relevant features,
+        and proof the recipe generalizes to production models.
+      </div>
+    </div>
+  </li>
+  <li>
+    <div>
+      <div class="stitle">Neel's research-process posts (3 parts)</div>
+      <div class="swhy">
+        The meta-skills: how to explore, develop taste, and prioritize. Read
+        before starting mini-projects — see Research Craft below.
+      </div>
+    </div>
+  </li>
+  <li>
+    <div>
+      <div class="stitle">
+        <a href="https://claude.ai/code/artifact/24b1ea83-921a-496f-a970-03a1afdf1945">
+          Open Problems in Mech Interp (2025)
+        </a>
+      </div>
+      <div class="swhy">
+        Once you have the basics: where the field is going and what is
+        unsolved.
+      </div>
+    </div>
+  </li>
+</ol>
+
+<div class="callout blue not-prose">
+  <span class="clabel">New: Breadth-First Toolkit Guide</span>
+  <p>
+    Want every MI technique on one page with plain-English explanations and
+    diagrams? The{" "}
+    <strong>
+      <a href="https://claude.ai/code/artifact/d8657cd0-c01f-4391-a211-6dd53e35b1f0">
+        Mechanistic Interpretability Toolkit — A Breadth-First Guide
+      </a>
+    </strong>{" "}
+    covers all 7 technique families (~25 methods) in a single scrollable page —
+    following Neel's advice to go wide before deep.
+  </p>
+</div>
+
+<div class="callout green not-prose">
+  <span class="clabel">Neel's Key Advice</span>
+  <p>
+    "Mech interp is learnable on your own with short feedback loops and modest
+    compute." Don't wait until you feel ready — start mini-projects after 2–4
+    weeks of basics. Your best credential is a <strong>public output</strong>{" "}
+    (a blog post, a Colab notebook, a forum post), not a completed reading
+    list.
+  </p>
+</div>
+
+<p class="kicker">0b · Rendering Test</p>
+
+<h2 id="diagrams">SVG Diagrams from the Explainers</h2>
+
+The hub artifact itself has no figures, so two diagrams from the
+_Mathematical Framework_ child explainer are included here to test how the
+artifact SVGs render inside a post — they reference the same Atlas color
+variables, now themed by the blog's light and dark palettes.
+
+<figure class="fig not-prose">
+  <ResidualStream />
+  <figcaption class="figcap">
+    The residual stream as a communication channel: every component reads from
+    it and writes back into it.
+  </figcaption>
+</figure>
+
+<figure class="fig not-prose">
+  <InductionMechanism />
+  <figcaption class="figcap">
+    The two-head induction mechanism: a layer-1 previous-token head composes
+    with a layer-2 induction head to copy repeated sequences.
+  </figcaption>
+</figure>
+
+<p class="kicker">01 · Foundational</p>
+
+<h2 id="core-papers">Core Papers Everyone Must Know</h2>
+
+These establish the vocabulary, mathematical framework, and primary tools that
+all mech interp research builds on. Each card opens a full visual explainer.
+
+<div class="duo not-prose">
+  <div class="paper">
+    <div class="pmeta">
+      <span class="ptag">Framework</span>
+      <span>2021</span>
+    </div>
+    <h3>
+      <a href="https://claude.ai/code/artifact/c5bd2298-641f-4ad9-b780-1c8f3cf3327f">
+        A Mathematical Framework for Transformer Circuits
+      </a>
+    </h3>
+    <div class="pauth">Elhage, Nanda, Olsson et al. · Anthropic</div>
+    <p>
+      Residual stream + QK/OV circuit decomposition; discovers induction heads,
+      the mechanism behind in-context learning. THE foundational vocabulary
+      paper.
+    </p>
+    <div class="plink">
+      <a href="https://claude.ai/code/artifact/c5bd2298-641f-4ad9-b780-1c8f3cf3327f">
+        Open explainer →
+      </a>
+    </div>
+  </div>
+  <div class="paper">
+    <div class="pmeta">
+      <span class="ptag">Theory</span>
+      <span>2022</span>
+    </div>
+    <h3>
+      <a href="https://claude.ai/code/artifact/cbc09dee-f984-4b45-8227-79f136fdf16a">
+        Toy Models of Superposition
+      </a>
+    </h3>
+    <div class="pauth">Elhage, Hume, Olsson et al. · Anthropic</div>
+    <p>
+      Superposition in toy ReLU networks, phase diagrams, polytope geometry,
+      computation in superposition, and the strategic case for dictionary
+      learning.
+    </p>
+    <div class="plink">
+      <a href="https://claude.ai/code/artifact/cbc09dee-f984-4b45-8227-79f136fdf16a">
+        Open explainer →
+      </a>
+    </div>
+  </div>
+  <div class="paper">
+    <div class="pmeta">
+      <span class="ptag">SAEs</span>
+      <span>2023</span>
+    </div>
+    <h3>
+      <a href="https://claude.ai/code/artifact/c8e411f6-82ff-47dd-8ba4-b654d800d36b">
+        Towards Monosemanticity: Dictionary Learning
+      </a>
+    </h3>
+    <div class="pauth">Bricken, Templeton, Batson et al. · Anthropic</div>
+    <p>
+      Sparse autoencoders unmix polysemantic neurons into thousands of
+      monosemantic features — the result that made SAEs the field's workhorse.
+    </p>
+    <div class="plink">
+      <a href="https://claude.ai/code/artifact/c8e411f6-82ff-47dd-8ba4-b654d800d36b">
+        Open explainer →
+      </a>
+    </div>
+  </div>
+  <div class="paper">
+    <div class="pmeta">
+      <span class="ptag">SAEs at Scale</span>
+      <span>2024</span>
+    </div>
+    <h3>
+      <a href="https://claude.ai/code/artifact/1ce892d8-ad3c-43a7-a3e1-b979cf174912">
+        Scaling Monosemanticity: Features from Claude 3 Sonnet
+      </a>
+    </h3>
+    <div class="pauth">Templeton, Conerly et al. · Anthropic</div>
+    <p>
+      34M-feature SAEs on a frontier model. Golden Gate Claude, code-error
+      features, safety-relevant features. Proves SAEs work at production scale.
+    </p>
+    <div class="plink">
+      <a href="https://claude.ai/code/artifact/1ce892d8-ad3c-43a7-a3e1-b979cf174912">
+        Open explainer →
+      </a>
+    </div>
+  </div>
+  <div class="paper">
+    <div class="pmeta">
+      <span class="ptag">Circuit Analysis</span>
+      <span>2022</span>
+    </div>
+    <h3>
+      <a href="https://claude.ai/code/artifact/a548aa0d-8677-4fd0-bd04-564be0f347c5">
+        Interpretability in the Wild: the IOI Circuit
+      </a>
+    </h3>
+    <div class="pauth">Wang, Variengien, Conmy, Shlegeris, Steinhardt</div>
+    <p>
+      Full reverse-engineering of GPT-2 small's indirect-object
+      identification: 26 heads in 7 classes, and the faithfulness /
+      completeness / minimality criteria.
+    </p>
+    <div class="plink">
+      <a href="https://claude.ai/code/artifact/a548aa0d-8677-4fd0-bd04-564be0f347c5">
+        Open explainer →
+      </a>
+    </div>
+  </div>
+  <div class="paper">
+    <div class="pmeta">
+      <span class="ptag">Survey</span>
+      <span>2024</span>
+    </div>
+    <h3>
+      <a href="https://claude.ai/code/artifact/317012f4-3608-4764-b821-8c5b1ff13329">
+        A Primer on the Inner Workings of Transformer LMs
+      </a>
+    </h3>
+    <div class="pauth">Ferrando, Sarti, Bisazza, Costa-jussà</div>
+    <p>
+      The best survey of MI techniques — probing, causal tracing, logit lens,
+      circuit discovery, feature attribution — and the phenomena they revealed.
+    </p>
+    <div class="plink">
+      <a href="https://claude.ai/code/artifact/317012f4-3608-4764-b821-8c5b1ff13329">
+        Open explainer →
+      </a>
+    </div>
+  </div>
+  <div class="paper">
+    <div class="pmeta">
+      <span class="ptag">Roadmap</span>
+      <span>2025</span>
+    </div>
+    <h3>
+      <a href="https://claude.ai/code/artifact/24b1ea83-921a-496f-a970-03a1afdf1945">
+        Open Problems in Mechanistic Interpretability
+      </a>
+    </h3>
+    <div class="pauth">Sharkey, Chughtai, Batson, Nanda + 25 others</div>
+    <p>
+      Field roadmap by 29 researchers: open problems in methods, applications,
+      and socio-technical practice — honest about unmet promises.
+    </p>
+    <div class="plink">
+      <a href="https://claude.ai/code/artifact/24b1ea83-921a-496f-a970-03a1afdf1945">
+        Open explainer →
+      </a>
+    </div>
+  </div>
+  <div class="paper">
+    <div class="pmeta">
+      <span class="ptag">Tutorial</span>
+      <span>2026</span>
+    </div>
+    <h3>
+      <a href="https://claude.ai/code/artifact/67e4f5fe-71d8-4ebc-a96c-771bfbba9d32">
+        Building a Transformer from Scratch
+      </a>
+    </h3>
+    <div class="pauth">Based on ARENA, nanoGPT, TransformerLens</div>
+    <p>
+      A visual, MI-first implementation guide: diagrams before code, residual
+      stream to full model assembly, plus statistics and linear-algebra
+      refreshers.
+    </p>
+    <div class="plink">
+      <a href="https://claude.ai/code/artifact/67e4f5fe-71d8-4ebc-a96c-771bfbba9d32">
+        Open tutorial →
+      </a>
+    </div>
+  </div>
+</div>
+
+<p class="kicker">02 · Techniques</p>
+
+<h2 id="methods">Methods & Tools of the Trade</h2>
+
+The practical toolkit, organized into thematic explainers. Learn these after
+the foundational papers — each page covers its techniques with diagrams,
+worked examples, and pitfalls.
+
+<div class="gcard not-prose">
+  <div class="gnum">Group 1 · Causal Analysis</div>
+  <h3>
+    <a href="https://claude.ai/code/artifact/a83c5574-0115-4034-b9bd-6f9903e8f892">
+      Patching, Attribution & Circuit Discovery
+    </a>
+  </h3>
+  <p>
+    The causal core of MI: patch clean activations into corrupted runs,
+    decompose logits into per-component contributions, and automate the search
+    for minimal faithful circuits.
+  </p>
+  <div class="pillrow">
+    <span class="pill">Activation Patching & Causal Tracing</span>
+    <span class="pill">Direct Logit Attribution</span>
+    <span class="pill">ACDC & EAP</span>
+  </div>
+  <div class="glink">
+    <a href="https://claude.ai/code/artifact/a83c5574-0115-4034-b9bd-6f9903e8f892">
+      Open explainer →
+    </a>
+  </div>
+</div>
+
+<div class="gcard not-prose">
+  <div class="gnum">Group 2 · Lenses & Probes</div>
+  <h3>
+    <a href="https://claude.ai/code/artifact/13be40c4-62da-4d87-877b-ba16fa05a789">
+      Reading Representations Without Surgery
+    </a>
+  </h3>
+  <p>
+    Non-invasive first tools: watch predictions form layer by layer, test what
+    each layer knows with linear classifiers, and synthesize the inputs that
+    excite a unit.
+  </p>
+  <div class="pillrow">
+    <span class="pill">Logit Lens & Tuned Lens</span>
+    <span class="pill">Linear Classifier Probes</span>
+    <span class="pill">Activation Maximization</span>
+  </div>
+  <div class="glink">
+    <a href="https://claude.ai/code/artifact/13be40c4-62da-4d87-877b-ba16fa05a789">
+      Open explainer →
+    </a>
+  </div>
+</div>
+
+<div class="gcard not-prose">
+  <div class="gnum">Group 3 · Superposition & the SAE Family</div>
+  <h3>
+    <a href="https://claude.ai/code/artifact/32868934-9eb7-4608-90e6-6bad6c690188">
+      Why Neurons Lie, and the Dictionaries That Fix It
+    </a>
+  </h3>
+  <p>
+    The phenomenon that motivates feature-level analysis, and the evolving
+    toolbox for it — from the toy-model geometry of superposition to nested
+    and inference-time dictionaries.
+  </p>
+  <div class="pillrow">
+    <span class="pill">Superposition & Polysemanticity</span>
+    <span class="pill">Matryoshka SAEs</span>
+    <span class="pill">ITDA</span>
+  </div>
+  <div class="glink">
+    <a href="https://claude.ai/code/artifact/32868934-9eb7-4608-90e6-6bad6c690188">
+      Open explainer →
+    </a>
+  </div>
+</div>
+
+<div class="gcard not-prose">
+  <div class="gnum">Group 4 · Circuit Tracing</div>
+  <h3>
+    <a href="https://claude.ai/code/artifact/37c35336-d037-4628-beb3-b4fee5fed828">
+      From Attention Heads to Attribution Graphs
+    </a>
+  </h3>
+  <p>
+    Tracing computation end to end: QK/OV head analysis, transcoders that make
+    MLPs weights-analyzable, attribution graphs, and Anthropic's "model
+    biology" applied to Claude 3.5 Haiku.
+  </p>
+  <div class="pillrow">
+    <span class="pill">QK & OV Circuits</span>
+    <span class="pill">Transcoders</span>
+    <span class="pill">Attribution Graphs</span>
+    <span class="pill">Model Biology</span>
+  </div>
+  <div class="glink">
+    <a href="https://claude.ai/code/artifact/37c35336-d037-4628-beb3-b4fee5fed828">
+      Open explainer →
+    </a>
+  </div>
+</div>
+
+<div class="gcard not-prose">
+  <div class="gnum">Group 5 · Applied Probes & Parameter Decomposition</div>
+  <h3>
+    <a href="https://claude.ai/code/artifact/f5b720ba-aed6-466b-9d88-c2a62072c1b3">
+      Interpretability Toward Production
+    </a>
+  </h3>
+  <p>
+    Making the tools pay their way: near-zero-overhead safety monitors that
+    reuse the model's own representations, and decomposing the weights
+    themselves into sparse components.
+  </p>
+  <div class="pillrow">
+    <span class="pill">Cheap Monitors</span>
+    <span class="pill">Stochastic Parameter Decomposition</span>
+  </div>
+  <div class="glink">
+    <a href="https://claude.ai/code/artifact/f5b720ba-aed6-466b-9d88-c2a62072c1b3">
+      Open explainer →
+    </a>
+  </div>
+</div>
+
+<div class="gcard not-prose">
+  <div class="gnum">Group 6 · Multimodal Interpretability</div>
+  <h3>
+    <a href="https://claude.ai/code/artifact/0fad066d-8813-4d57-b8a8-6bb6a3832bf5">
+      Beyond Text: Vision & Speech
+    </a>
+  </h3>
+  <p>
+    What interpretability finds inside multimodal models: CLIP's multimodal
+    neurons and Rosetta features, and the acoustic→phonetic→semantic
+    hierarchies of speech models.
+  </p>
+  <div class="pillrow">
+    <span class="pill">CLIP</span>
+    <span class="pill">SpeechLLM Interpretability</span>
+  </div>
+  <div class="glink">
+    <a href="https://claude.ai/code/artifact/0fad066d-8813-4d57-b8a8-6bb6a3832bf5">
+      Open explainer →
+    </a>
+  </div>
+</div>
+
+<div class="gcard not-prose">
+  <div class="gnum">Group 7 · Speech & Audio SAE Papers</div>
+  <h3>SAEs Applied to Speech Recognition</h3>
+  <p>
+    The SAE toolkit crosses modalities: foundational AudioSAE work on
+    Whisper/HuBERT (all layers, EEG correlation), Whisper's linguistic
+    hierarchy, hallucination steering (72.6%→14.1%), and Logit Lens for
+    audio-language models.
+  </p>
+  <div class="pillrow">
+    <span class="pill">AudioSAE</span>
+    <span class="pill">Whisper SAE</span>
+    <span class="pill">Hallucination Steering</span>
+    <span class="pill">AudioLens</span>
+    <span class="pill">Phonological Vectors</span>
+  </div>
+  <div class="glink" style="display:flex;flex-wrap:wrap;gap:0.7rem;margin-top:0.5rem;">
+    <a href="https://claude.ai/code/artifact/9dc88b00-3c6f-4237-b179-5cbb92cc752a">
+      AudioSAE →
+    </a>
+    <a href="https://claude.ai/code/artifact/f3c2483f-65f6-4bea-b4da-ef6f8d1fce79">
+      Whisper SAE →
+    </a>
+    <a href="https://claude.ai/code/artifact/0537e291-8298-41cc-9004-b2e3b7e1a057">
+      Hallucination Steering →
+    </a>
+    <a href="https://claude.ai/code/artifact/eade19a5-15c9-4f80-b83e-4dda3559a12a">
+      AudioLens →
+    </a>
+  </div>
+</div>
+
+<p class="kicker">03 · Applications & Safety</p>
+
+<h2 id="safety">What Mech Interp Reveals About AI Safety</h2>
+
+The applications wing of the library — ten explainers on what happens when the
+tools above meet safety-relevant behavior. These live in the local reference
+library (`explainers/applications_safety/`) and aren't published as artifacts
+yet:
+
+| Topic               | Explainer                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| Algorithmic MI      | Progress Measures for Grokking — reverse-engineering modular addition into Fourier circuits |
+| Representation      | The Geometry of Truth — a linear truth direction with causal force                     |
+| Safety Mechanism    | Refusal Is Mediated by a Single Direction — one direction, white-box jailbreak across 13 models |
+| Knowledge Transfer  | Concept Discovery in AlphaZero — grandmasters learn from extracted concepts            |
+| CoT Safety          | Chain-of-Thought Is Not Always Faithful — post-hoc rationalization in frontier models  |
+| Misalignment        | Emergent Misalignment — narrow finetuning generalizes to broad harm                    |
+| Deceptive Alignment | Alignment Faking — models comply during training to preserve their values              |
+| Deception Detection | Deception Probes — linear probes for strategic deception, promising but not ready      |
+| Automated MI        | MAIA — an LLM agent that runs interpretability experiments autonomously                |
+| Reward Hacking      | Recent Frontier Models Are Reward Hacking — METR's evidence across RE-Bench            |
+
+<p class="kicker">04 · Research Process</p>
+
+<h2 id="research-craft">How to Do Good Research</h2>
+
+Neel Nanda's blog posts on the craft itself — the meta-skills that separate
+productive researchers from busy ones. Eight explainers in the local library
+(`explainers/research_process/`):
+
+- **Research Stages: Explore, Understand, Distill** — being in the wrong mode
+  is the most common failure. _Must read._
+- **Understanding and Cultivating Research Taste** — intuition + frameworks +
+  strategy, built by prediction and post-mortems. _Must read._
+- **Key Research Mindsets** — truth-seeking, prioritisation, moving fast.
+  _Must read._
+- **A Pragmatic Vision for Interpretability** — the field's pivot from
+  ambitious reverse-engineering to proxy-task-validated pragmatism.
+- **SAE Progress Update 2** — the honest negative results: dense probes beat
+  SAE probes on downstream tasks.
+- **Interpretability Dreams** — Olah's long-term vision: feature families,
+  universality, micro→macro.
+- **How to Write ML Papers** — 1–3 specific novel claims; inform, don't
+  persuade.
+- **Statistical Suggestions for Mech Interp** — independence violations
+  inflate results; pursue p < .001, use permutation tests.
+
+<p class="kicker">05 · Tools</p>
+
+<h2 id="stack">The Practical Stack</h2>
+
+| Tool                                                                                                    | What it's for                                                                              |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| [ARENA · Ch. 1](https://arena-chapter1-transformer-interp.streamlit.app)                                 | Primary hands-on tutorial: implement transformers from scratch, run activation patching.   |
+| [TransformerLens](https://github.com/TransformerLensOrg/TransformerLens)                                 | Main MI library for small models — hook any activation; logit lens, patching, attention.   |
+| [nnsight](https://nnsight.net)                                                                           | For large models and remote access; more performant when the model doesn't fit locally.    |
+| [Neuronpedia](https://neuronpedia.org)                                                                   | Interactive SAE feature explorer and attribution-graphs UI.                                |
+| [3Blue1Brown · Linear Algebra](https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab) | Essential prerequisite — geometric intuition for vectors, matrices, change of basis.       |
+| [Neel Nanda · YouTube](https://www.youtube.com/@neelnanda2469)                                           | Paper walkthroughs and live research demos, alongside the reading list.                    |
+
+<div class="callout violet not-prose">
+  <span class="clabel">How This Library Fits Together</span>
+  <p>
+    This page is the parent guideline. Every linked explainer carries a{" "}
+    <code>← Parent Guide</code> link back to the hub. The safety,
+    research-process, and tooling material above lives in the local reference
+    library and can be promoted to artifacts the same way as it's needed.
+  </p>
+</div>

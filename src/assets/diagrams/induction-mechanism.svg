@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 432" width="100%" role="img" aria-label="Two-step induction head mechanism using the Dursley example">
+  <defs>
+    <marker id="im-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="var(--ink2)"/>
+    </marker>
+    <marker id="im-arr-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="var(--accent)"/>
+    </marker>
+  </defs>
+  <g style="font-family: var(--font-google-sans-code), ui-monospace, monospace">
+    <!-- ===== STEP 1 ===== -->
+    <text x="32" y="24" fill="var(--ink2)" font-size="10" font-weight="600" letter-spacing="0.14em">STEP 1 &middot; LAYER-1 PREVIOUS-TOKEN HEAD</text>
+
+    <!-- arrows before boxes -->
+    <path d="M 232 44 Q 194 20 156 44" fill="none" stroke="var(--ink2)" stroke-width="1.4" marker-end="url(#im-arr)"/>
+    <path d="M 232 80 V 108" stroke="var(--ink2)" stroke-width="1.2" marker-end="url(#im-arr)"/>
+
+    <!-- token row -->
+    <g font-size="11">
+      <rect x="48" y="48" width="64" height="32" rx="6" fill="var(--paper)" stroke="var(--line)" stroke-width="1"/>
+      <text x="80" y="68" text-anchor="middle" fill="var(--ink)">Mr</text>
+      <rect x="124" y="48" width="64" height="32" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.2"/>
+      <text x="156" y="68" text-anchor="middle" fill="var(--ink)">D</text>
+      <rect x="200" y="48" width="64" height="32" rx="6" fill="var(--paper)" stroke="var(--line)" stroke-width="1"/>
+      <text x="232" y="68" text-anchor="middle" fill="var(--ink)">urs</text>
+      <rect x="276" y="48" width="64" height="32" rx="6" fill="var(--paper)" stroke="var(--line)" stroke-width="1"/>
+      <text x="308" y="68" text-anchor="middle" fill="var(--ink)">ley</text>
+      <text x="372" y="68" text-anchor="middle" fill="var(--muted)">&hellip;</text>
+    </g>
+
+    <!-- note written at "urs" -->
+    <rect x="144" y="112" width="176" height="28" rx="4" fill="var(--card)" stroke="var(--line)" stroke-width="1"/>
+    <text x="232" y="130" text-anchor="middle" fill="var(--ink2)" font-size="9">writes &#8220;my prev = D&#8221; at &#8220;urs&#8221;</text>
+    <text x="464" y="120" fill="var(--ink2)" font-size="13" font-style="italic" style="font-family: var(--font-literata), serif">each position gets a note saying</text>
+    <text x="464" y="138" fill="var(--ink2)" font-size="13" font-style="italic" style="font-family: var(--font-literata), serif">which token came just before it</text>
+
+    <!-- divider -->
+    <path d="M 32 168 H 788" stroke="var(--hair)" stroke-width="1"/>
+
+    <!-- ===== STEP 2 ===== -->
+    <text x="32" y="192" fill="var(--ink2)" font-size="10" font-weight="600" letter-spacing="0.14em">STEP 2 &middot; INDUCTION HEAD</text>
+
+    <!-- attention arc: the focal move -->
+    <path d="M 500 236 Q 366 172 248 236" fill="none" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#im-arr-accent)"/>
+    <rect x="336" y="184" width="64" height="12" rx="2" fill="var(--card)"/>
+    <text x="368" y="193" text-anchor="middle" fill="var(--accent)" font-size="8" letter-spacing="0.08em">ATTENDS</text>
+
+    <!-- token row -->
+    <g font-size="11">
+      <rect x="48" y="240" width="64" height="32" rx="6" fill="var(--paper)" stroke="var(--line)" stroke-width="1"/>
+      <text x="80" y="260" text-anchor="middle" fill="var(--ink)">Mr</text>
+      <rect x="124" y="240" width="64" height="32" rx="6" fill="var(--paper)" stroke="var(--line)" stroke-width="1"/>
+      <text x="156" y="260" text-anchor="middle" fill="var(--ink)">D</text>
+      <rect x="200" y="240" width="64" height="32" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.2"/>
+      <text x="232" y="260" text-anchor="middle" fill="var(--ink)">urs</text>
+      <rect x="276" y="240" width="64" height="32" rx="6" fill="var(--paper)" stroke="var(--line)" stroke-width="1"/>
+      <text x="308" y="260" text-anchor="middle" fill="var(--ink)">ley</text>
+      <text x="372" y="260" text-anchor="middle" fill="var(--muted)">&hellip;</text>
+      <rect x="408" y="240" width="64" height="32" rx="6" fill="var(--paper)" stroke="var(--line)" stroke-width="1"/>
+      <text x="440" y="260" text-anchor="middle" fill="var(--ink)">Mr</text>
+      <rect x="484" y="240" width="64" height="32" rx="6" fill="var(--paper)" stroke="var(--accent)" stroke-width="1.4"/>
+      <text x="516" y="260" text-anchor="middle" fill="var(--ink)">D</text>
+    </g>
+    <text x="516" y="288" text-anchor="middle" fill="var(--ink2)" font-size="8" letter-spacing="0.08em">QUERY</text>
+
+    <!-- key carried by "urs", written in step 1 -->
+    <rect x="160" y="288" width="144" height="24" rx="4" fill="var(--card)" stroke="var(--line)" stroke-width="1"/>
+    <text x="232" y="304" text-anchor="middle" fill="var(--ink2)" font-size="9">key: &#8220;my prev = D&#8221;</text>
+
+    <!-- copy & predict -->
+    <path d="M 232 316 V 332" stroke="var(--ink2)" stroke-width="1.2" marker-end="url(#im-arr)"/>
+    <rect x="136" y="336" width="192" height="36" rx="6" fill="var(--accent)" opacity="0.08"/>
+    <rect x="136" y="336" width="192" height="36" rx="6" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+    <text x="232" y="358" text-anchor="middle" fill="var(--ink)" font-size="10">OV copies &#8220;urs&#8221; &rarr; prediction</text>
+    <text x="352" y="360" fill="var(--ink2)" font-size="13" font-style="italic" style="font-family: var(--font-literata), serif">last time, &#8220;urs&#8221; followed &#8220;D&#8221; &mdash; so say &#8220;urs&#8221; again</text>
+  </g>
+  <text x="410" y="412" text-anchor="middle" fill="var(--ink2)" font-size="13" font-style="italic" style="font-family: var(--font-literata), serif">K-composition: layer 1&#8217;s note &#8220;my prev = D&#8221; becomes part of the key that layer 2 searches</text>
+</svg>

@@ -1,0 +1,340 @@
+/* ===== Atlas vocabulary =====
+   The component language used by the Alignment Atlas HTML artifacts
+   (mech-interp explainers), adapted to the blog's palette so artifact
+   content — including inline SVG diagrams that reference these custom
+   properties — can be pasted into posts and render in both themes. */
+
+/* Variables are sandboxed onto the Atlas container classes rather than :root:
+   `--muted` (and friends) would otherwise collide with the blog's own theme
+   tokens. Inheritance carries them into any SVG/markup nested inside. */
+.fig,
+.figcap,
+.callout,
+.mini,
+.paper,
+.gcard,
+.steps,
+.pillrow,
+.pill {
+  --paper: var(--background);
+  --card: #f2f0e9;
+  --ink: var(--foreground);
+  --ink2: #6b6a62;
+  --muted: #8f8b80;
+  --hair: #e2ded4;
+  --line: #c9c4b8;
+  --speech: #4a90d9;
+  --keep: #2fad7a;
+  --keepdk: #27a06e;
+  --cut: #d95050;
+  --warn: #cf9630;
+  --violet: #9376e0;
+  --speech-bg: #e8f0fa;
+  --keep-bg: #e4f5ec;
+  --cut-bg: #fae8e8;
+  --warn-bg: #faf2e4;
+  --violet-bg: #eeebfa;
+}
+
+html[data-theme="dark"] :is(.fig, .figcap, .callout, .mini, .paper, .gcard, .steps, .pillrow, .pill) {
+  --card: #221d18;
+  --ink2: #c3bcae;
+  --muted: #8f887c;
+  --hair: #362f27;
+  --line: #4a4137;
+  --speech: #6da7ec;
+  --keep: #34c48f;
+  --keepdk: #4ad39c;
+  --cut: #e66767;
+  --warn: #e0a33b;
+  --violet: #a78bfa;
+  --speech-bg: #1d2733;
+  --keep-bg: #172c22;
+  --cut-bg: #33201c;
+  --warn-bg: #2e2414;
+  --violet-bg: #221d2e;
+}
+
+/* --- shared bits --- */
+.kicker {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 0.73rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  font-weight: 600;
+  margin: 0 0 0.3rem;
+}
+
+/* --- figures (inline SVG diagrams) --- */
+.fig {
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 1.2rem 1.2rem 0.4rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+.fig svg {
+  display: block;
+  min-width: 560px;
+  width: 100%;
+  height: auto;
+}
+.fig svg text {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+}
+.figcap {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.4rem 0.1rem 0.9rem;
+  line-height: 1.5;
+}
+
+/* --- callouts --- */
+.callout {
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  margin: 1.4rem 0;
+  box-shadow: 4px 4px 0 var(--hair);
+  font-size: 0.95em;
+}
+.callout p:first-child {
+  margin-top: 0;
+}
+.callout p:last-child {
+  margin-bottom: 0;
+}
+.callout .clabel {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+  display: block;
+  color: var(--accent);
+}
+.callout.green {
+  border-color: var(--keep);
+  background: var(--keep-bg);
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--keep) 22%, transparent);
+}
+.callout.green .clabel {
+  color: var(--keepdk);
+}
+.callout.amber {
+  border-color: var(--warn);
+  background: var(--warn-bg);
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--warn) 22%, transparent);
+}
+.callout.amber .clabel {
+  color: var(--warn);
+}
+.callout.violet {
+  border-color: var(--violet);
+  background: var(--violet-bg);
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--violet) 22%, transparent);
+}
+.callout.violet .clabel {
+  color: var(--violet);
+}
+.callout.blue {
+  border-color: var(--speech);
+  background: var(--speech-bg);
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--speech) 22%, transparent);
+}
+.callout.blue .clabel {
+  color: var(--speech);
+}
+
+/* --- stat/mini card grids --- */
+.trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+  margin: 1.4rem 0;
+}
+.duo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1rem;
+  margin: 1.4rem 0;
+}
+@media (max-width: 700px) {
+  .trio {
+    grid-template-columns: 1fr;
+  }
+}
+.mini {
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 9px;
+  padding: 0.9rem 1rem;
+  box-shadow: 3px 3px 0 var(--hair);
+}
+.mini .num {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.mini .lbl {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-top: 0.35rem;
+}
+.mini p {
+  font-size: 0.9rem;
+  color: var(--ink2);
+  margin: 0.5rem 0 0;
+  line-height: 1.5;
+}
+
+/* --- numbered step list --- */
+.steps {
+  counter-reset: step;
+  margin: 1.4rem 0;
+  padding: 0;
+  list-style: none;
+}
+.steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 2.8rem 1fr;
+  gap: 0.9rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--hair);
+  margin: 0;
+}
+.steps li:last-child {
+  border-bottom: none;
+}
+.steps li::before {
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.3;
+}
+.steps .stitle {
+  font-weight: 700;
+  font-size: 1rem;
+}
+.steps .swhy {
+  font-size: 0.9rem;
+  color: var(--ink2);
+  line-height: 1.55;
+  margin-top: 0.2rem;
+}
+
+/* --- paper reference cards --- */
+.paper {
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 1.1rem 1.2rem;
+  margin: 0;
+  box-shadow: 4px 4px 0 var(--hair);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.paper .pmeta {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.paper .ptag {
+  color: var(--accent);
+  font-weight: 600;
+}
+.paper h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1.3;
+  font-style: normal;
+}
+.paper .pauth {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.paper p {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ink2);
+  margin: 0.25rem 0 0.4rem;
+}
+.paper .plink {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 0.78rem;
+  margin-top: auto;
+}
+
+/* --- technique group cards --- */
+.gcard {
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 1.3rem 1.4rem 1.1rem;
+  margin: 1.4rem 0;
+  box-shadow: 5px 5px 0 var(--hair);
+}
+.gcard .gnum {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  font-weight: 600;
+}
+.gcard h3 {
+  margin: 0.4rem 0 0.5rem;
+  font-size: 1.25rem;
+  font-style: normal;
+}
+.gcard p {
+  font-size: 0.92rem;
+  color: var(--ink2);
+  margin: 0.4rem 0 0.75rem;
+}
+.gcard .glink {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 0.78rem;
+}
+
+/* --- pills --- */
+.pillrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 0.4rem;
+  padding: 0;
+}
+.pill {
+  font-family: var(--font-google-sans-code, ui-monospace, monospace);
+  font-size: 0.66rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  display: inline-block;
+  font-weight: 600;
+  background: var(--speech-bg);
+  color: var(--speech);
+  border: 1px solid color-mix(in srgb, var(--speech) 40%, transparent);
+}

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 208" width="100%" role="img" aria-label="Virtual weights connecting two layers through the residual stream">
+  <defs>
+    <marker id="rs-arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="var(--ink2)"/>
+    </marker>
+    <marker id="rs-arr-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="var(--accent)"/>
+    </marker>
+    <pattern id="rs-stripes" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="8" height="16" fill="var(--hair)" opacity="0.9"/>
+      <rect x="8" width="8" height="16" fill="var(--line)" opacity="0.55"/>
+    </pattern>
+  </defs>
+  <g style="font-family: var(--font-google-sans-code), ui-monospace, monospace">
+    <!-- arrows before boxes -->
+    <path d="M 204 72 V 90" stroke="var(--ink2)" stroke-width="1.2" marker-end="url(#rs-arr)"/>
+    <path d="M 616 90 V 74" stroke="var(--ink2)" stroke-width="1.2" marker-end="url(#rs-arr)"/>
+    <path d="M 268 48 Q 410 0 552 48" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#rs-arr-accent)"/>
+
+    <!-- virtual-weight label, masked, 7px+ clear of the arc -->
+    <rect x="322" y="40" width="176" height="12" rx="2" fill="var(--card)"/>
+    <text x="410" y="49" text-anchor="middle" fill="var(--accent)" font-size="9" letter-spacing="0.06em">virtual weight W_in&sup2;&middot;W_out&sup1;</text>
+
+    <!-- arrow sublabels, beside the strokes -->
+    <text x="212" y="84" fill="var(--ink2)" font-size="9">W_out&sup1;</text>
+    <text x="624" y="84" fill="var(--ink2)" font-size="9">W_in&sup2;</text>
+
+    <!-- layer nodes -->
+    <rect x="140" y="32" width="128" height="40" rx="6" fill="var(--paper)" stroke="var(--ink)" stroke-width="1"/>
+    <text x="204" y="56" text-anchor="middle" fill="var(--ink)" font-size="12" font-weight="600">layer 1</text>
+    <rect x="552" y="32" width="128" height="40" rx="6" fill="var(--paper)" stroke="var(--ink)" stroke-width="1"/>
+    <text x="616" y="56" text-anchor="middle" fill="var(--ink)" font-size="12" font-weight="600">layer 2</text>
+
+    <!-- the stream: quiet store, not a colored actor -->
+    <rect x="32" y="96" width="756" height="40" rx="8" fill="var(--card)"/>
+    <rect x="32" y="96" width="756" height="40" rx="8" fill="url(#rs-stripes)" stroke="var(--line)" stroke-width="1"/>
+    <rect x="342" y="104" width="136" height="24" rx="4" fill="var(--card)" stroke="var(--line)" stroke-width="1"/>
+    <text x="410" y="120" text-anchor="middle" fill="var(--ink2)" font-size="9" letter-spacing="0.18em">RESIDUAL STREAM</text>
+  </g>
+  <text x="410" y="180" text-anchor="middle" fill="var(--ink2)" font-size="13" font-style="italic" style="font-family: var(--font-literata), serif">no physical wire exists &mdash; but the math behaves exactly as if one did</text>
+</svg>
