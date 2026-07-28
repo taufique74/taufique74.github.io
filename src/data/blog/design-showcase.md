@@ -1,6 +1,6 @@
 ---
 title: "Design Showcase: Typography, Colors & Components"
-author: Taufique Peyash
+author: Taufiquzzaman Peyash
 pubDatetime: 2026-02-27T12:00:00Z
 modDatetime: 2026-02-28T10:00:00Z
 description: A comprehensive showcase of every visual element — headings, code blocks, blockquotes, tables, lists, and more. Built to stress-test the Warm Study redesign.

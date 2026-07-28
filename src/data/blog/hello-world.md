@@ -1,6 +1,6 @@
 ---
 title: Hello World
-author: Taufique Peyash
+author: Taufiquzzaman Peyash
 pubDatetime: 2026-02-28T00:00:00Z
 description: Welcome to my blog.
 tags:

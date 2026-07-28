@@ -1,6 +1,6 @@
 export const SITE = {
   website: "https://tpeyash.com/",
-  author: "Taufique Peyash",
+  author: "Taufiquzzaman Peyash",
   profile: "https://github.com/taufique74",
   desc: "Notes from the bench — on speech AI, machine learning, and the craft of building systems that learn.",
   title: "Peyash's Log",
