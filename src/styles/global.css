@@ -37,6 +37,11 @@ html[data-theme="dark"] {
   }
   html {
     @apply overflow-y-scroll scroll-smooth;
+    /* Base for every rem in the site. Scaling here shrinks type, spacing and
+       the content column together, so the measure (characters per line) holds
+       steady instead of the lines getting longer as the text gets smaller.
+       Browser default is 16px; tune this single value to resize the site. */
+    font-size: 15px;
   }
   body {
     @apply flex min-h-svh flex-col bg-background font-app text-foreground selection:bg-accent/75 selection:text-background;
