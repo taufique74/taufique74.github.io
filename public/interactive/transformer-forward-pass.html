@@ -130,7 +130,10 @@ svg text{font-family:var(--mono)}
   font-family:var(--mono);font-size:12px;font-weight:600;min-width:46px;height:34px;
   display:flex;align-items:center;justify-content:center;border-radius:5px;
   border:1px solid var(--hair);color:var(--ink);background:var(--paper);
-  transition:background .3s,opacity .3s;position:relative;
+  /* NO opacity transition here: it intercepts GSAP's opacity writes (entrance
+     from()-states) and eases them over 300ms — matrices paint fully populated,
+     then visibly fade out before the staggered entrance. That was THE flash. */
+  transition:background .3s;position:relative;
 }
 .cell.hl-row{outline:2px solid var(--speech);outline-offset:-1px}
 .cell.hl-col{outline:2px solid var(--keep);outline-offset:-1px}
@@ -138,6 +141,7 @@ svg text{font-family:var(--mono)}
 .cell.masked{color:var(--cut);background:var(--cut-bg)!important;font-size:11px}
 .cell.killed{opacity:.38}
 .cell.killed::after{content:'';position:absolute;left:15%;right:15%;top:50%;border-top:1.5px solid var(--cut);opacity:.6}
+.cell.ellip{border:none;background:none!important;color:var(--muted);font-weight:400;font-size:15px;min-width:30px}
 .op{font-family:var(--mono);font-size:26px;color:var(--muted);font-weight:300;align-self:center}
 .arrow{font-family:var(--mono);font-size:22px;color:var(--speech);align-self:center}
 
@@ -239,7 +243,12 @@ svg text{font-family:var(--mono)}
 const HAS_GSAP = typeof window.gsap !== 'undefined';
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function makeTL(){
-  if (HAS_GSAP && !REDUCED){ return gsap.timeline(); }
+  // lazy:false + immediateRender:true — from() start-states (opacity:0) must
+  // apply synchronously at creation, BEFORE the next paint. GSAP's default
+  // lazy rendering defers them one tick, which flashes fully-populated
+  // matrices for a frame (or several, when the zoom transition hogs frames)
+  // before hiding them for the entrance animation.
+  if (HAS_GSAP && !REDUCED){ return gsap.timeline({defaults:{lazy:false, immediateRender:true}}); }
   // Minimal chainable stub: entrances (.from) need no work, .call runs immediately.
   const tl = {
     from(){return tl}, to(t,v){ try{
@@ -362,22 +371,28 @@ function cellColor(v, maxAbs){
 }
 function maxAbsOf(Mx){ let m=0; Mx.forEach(r=>r.forEach(v=>{ if(isFinite(v)) m=Math.max(m,Math.abs(v)); })); return m||1; }
 
-// tensorGrid: matrix card with row/col labels, heat-tinted cells
+// tensorGrid: matrix card with row/col labels, heat-tinted cells.
+// Shapes shown are the REAL GPT-2 dimensions; the displayed values are a
+// corner of the tensor, with ⋯ / ⋮ cells marking the omitted dimensions.
 function tensorGrid(mat, opts){
   opts = opts||{};
   const card = el('div','tcard');
   if (opts.label) card.appendChild(el('div','tlabel',opts.label)).style.color = opts.color||'var(--ink)';
-  const pills = el('div','tpills');
-  if (opts.toy) pills.appendChild(el('span','pill','toy: '+opts.toy));
-  if (opts.gpt) pills.appendChild(el('span','pill gpt','GPT-2: '+opts.gpt));
-  if (opts.toy||opts.gpt) card.appendChild(pills);
+  if (opts.shape){
+    const pills = el('div','tpills');
+    pills.appendChild(el('span','pill gpt',opts.shape));
+    if (opts.pillNote) pills.appendChild(el('span','pill',opts.pillNote));
+    card.appendChild(pills);
+  }
   const cols = mat[0].length;
   const grid = el('div','tgrid');
   const hasRL = !!opts.rowLabels, hasCL = !!opts.colLabels;
-  grid.style.gridTemplateColumns = (hasRL?'auto ':'')+`repeat(${cols},1fr)`;
+  const extra = opts.ellip ? ' auto' : '';
+  grid.style.gridTemplateColumns = (hasRL?'auto ':'')+`repeat(${cols},1fr)`+extra;
   if (hasCL){
     if (hasRL) grid.appendChild(el('div','collab',''));
     for(let j=0;j<cols;j++) grid.appendChild(el('div','collab',opts.colLabels[j]||''));
+    if (opts.ellip) grid.appendChild(el('div','collab',opts.ellipLabel||'⋯'));
   }
   const mx = opts.maxAbs || maxAbsOf(mat);
   mat.forEach((row,i)=>{
@@ -389,7 +404,13 @@ function tensorGrid(mat, opts){
       if (opts.killIf && opts.killIf(i,j,v)) c.classList.add('killed');
       grid.appendChild(c);
     });
+    if (opts.ellip) grid.appendChild(el('div','cell ellip','⋯'));
   });
+  if (opts.ellipRows){
+    if (hasRL) grid.appendChild(el('div','rowlab','⋮'));
+    for(let j=0;j<cols;j++) grid.appendChild(el('div','cell ellip','⋮'));
+    if (opts.ellip) grid.appendChild(el('div','cell ellip','⋱'));
+  }
   card.appendChild(grid);
   if (opts.foot) card.appendChild(el('div','note',opts.foot));
   stage.appendChild(card);
@@ -408,108 +429,155 @@ function entrance(tl, card, delay){
 /* ═══════════════════════ 4 · Master diagram ═══════════════════════ */
 const PHASE_COLOR = {embed:'var(--keep)', norm:'var(--muted)', attn:'var(--speech)', mlp:'var(--violet)', repeat:'var(--cut)', out:'var(--warn)'};
 const PHASE_NAME  = {embed:'Embedding', norm:'Normalize', attn:'Attention', mlp:'MLP', repeat:'Repeat ×12', out:'Output'};
+// Layout philosophy: the residual stream is a literal vertical spine (band at
+// x=SX). Attention and MLP are DETOURS that branch off the stream, compute on
+// the right, and merge back in at "+" nodes sitting on the stream — the
+// mech-interp mental model, not a linear pipeline.
+const SX = 120;                      // residual-stream spine center x
 const DNODES = [
-  {id:'tokens', label:'tokens',   sub:'[3]',      phase:'embed', steps:[1]},
-  {id:'embed',  label:'W_E',      sub:'lookup',   phase:'embed', steps:[2]},
-  {id:'pos',    label:'+W_pos',   sub:'[3,4]',    phase:'embed', steps:[3]},
-  {id:'x0',     label:'x₀',  sub:'[3,4]',    phase:'embed', steps:[4]},
-  {id:'ln1',    label:'LN₁', sub:'',         phase:'norm',  steps:[5],  inBlock:true},
-  {id:'qkv',    label:'Q K V',    sub:'4→2', phase:'attn',  steps:[6,7,8], inBlock:true},
-  {id:'scores', label:'Q·Kᵀ', sub:'/√d', phase:'attn', steps:[9], inBlock:true},
-  {id:'mask',   label:'mask',     sub:'−∞', phase:'attn', steps:[10], inBlock:true},
-  {id:'smax',   label:'softmax',  sub:'[3,3]',    phase:'attn',  steps:[11], inBlock:true},
-  {id:'z',      label:'@V',       sub:'mix',      phase:'attn',  steps:[12], inBlock:true},
-  {id:'concat', label:'concat',   sub:'2+2',      phase:'attn',  steps:[13], inBlock:true},
-  {id:'wo',     label:'W_O',      sub:'4→4', phase:'attn',  steps:[14], inBlock:true},
-  {id:'res1',   label:'+',        sub:'resid',    phase:'attn',  steps:[15], inBlock:true, small:true},
-  {id:'ln2',    label:'LN₂', sub:'',         phase:'norm',  steps:[16], inBlock:true},
-  {id:'mlpin',  label:'MLP↑',sub:'GELU',     phase:'mlp',   steps:[17], inBlock:true},
-  {id:'mlpout', label:'MLP↓',sub:'8→4', phase:'mlp',   steps:[18], inBlock:true},
-  {id:'res2',   label:'+',        sub:'resid',    phase:'mlp',   steps:[19], inBlock:true, small:true},
-  {id:'x12',    label:'×12', sub:'layers',   phase:'repeat',steps:[20]},
-  {id:'outp',   label:'LN→W_Eᵀ', sub:'→probs', phase:'out', steps:[21]},
+  {id:'tokens', label:'tokens',  sub:'[T]',        phase:'embed', steps:[1],  x:65,  y:16,   w:110, h:44},
+  {id:'embed',  label:'W_E',     sub:'lookup',     phase:'embed', steps:[2],  x:65,  y:92,   w:110, h:44},
+  {id:'pos',    label:'+W_pos',  sub:'[T,768]',      phase:'embed', steps:[3],  x:65,  y:168,  w:110, h:44},
+  {id:'x0',     label:'x₀', sub:'stream begins', phase:'embed', steps:[4], x:55, y:244, w:130, h:46},
+  {id:'ln1',    label:'LN₁',sub:'',           phase:'norm',  steps:[5],  x:252, y:308,  w:96,  h:40},
+  {id:'q',      label:'Q',       sub:'768→64',   phase:'attn',  steps:[6],  x:210, y:386,  w:58,  h:40},
+  {id:'k',      label:'K',       sub:'768→64',   phase:'attn',  steps:[7],  x:282, y:386,  w:58,  h:40},
+  {id:'v',      label:'V',       sub:'768→64',   phase:'attn',  steps:[8],  x:354, y:386,  w:58,  h:40},
+  {id:'scores', label:'Q·Kᵀ', sub:'/√d', phase:'attn', steps:[9], x:216, y:458, w:104, h:44, glyph:'grid'},
+  {id:'mask',   label:'mask',    sub:'−∞',    phase:'attn',  steps:[10], x:216, y:530,  w:104, h:44, glyph:'mask'},
+  {id:'smax',   label:'softmax', sub:'[T,T]',      phase:'attn',  steps:[11], x:216, y:602,  w:104, h:44, glyph:'smax'},
+  {id:'z',      label:'@V',      sub:'mix',        phase:'attn',  steps:[12], x:216, y:674,  w:104, h:44},
+  {id:'concat', label:'concat',  sub:'12×64',        phase:'attn',  steps:[13], x:216, y:746,  w:104, h:40},
+  {id:'wo',     label:'W_O',     sub:'768→768',   phase:'attn',  steps:[14], x:216, y:814,  w:104, h:40},
+  {id:'res1',   label:'+',       sub:'',           phase:'attn',  steps:[15], x:104, y:818,  w:32,  h:32, round:true},
+  {id:'ln2',    label:'LN₂',sub:'',           phase:'norm',  steps:[16], x:252, y:884,  w:96,  h:40},
+  {id:'mlpin',  label:'MLP↑ GELU', sub:'→3072', phase:'mlp', steps:[17], x:246, y:952, w:112, h:44},
+  {id:'mlpout', label:'MLP↓',sub:'→768',  phase:'mlp',   steps:[18], x:246, y:1022, w:112, h:40},
+  {id:'res2',   label:'+',       sub:'',           phase:'mlp',   steps:[19], x:104, y:1026, w:32,  h:32, round:true},
+  {id:'x12',    label:'×12',sub:'layers',     phase:'repeat',steps:[20], x:10,  y:640,  w:66,  h:40},
+  {id:'lnF',    label:'LN_f',    sub:'',           phase:'out',   steps:[21], x:72,  y:1092, w:96,  h:38},
+  {id:'outp',   label:'W_Eᵀ',sub:'unembed',  phase:'out',   steps:[21], x:65,  y:1158, w:110, h:44},
+  {id:'probs',  label:'softmax', sub:'→ P(next)', phase:'out', steps:[21], x:65, y:1230, w:110, h:44, glyph:'bars'},
 ];
 let NODE_POS = {};
-const CX = 170;                      // center x of the vertical column
-(function layout(){
-  let y = 26; const gap = 24;
-  DNODES.forEach(n=>{
-    if (n.id==='ln1') y += 30;       // breathing room for the block-container label
-    if (n.id==='x12') y += 18;       // gap after the block container closes
-    const w = n.small ? 60 : 150;
-    const h = n.small ? 36 : 50;
-    NODE_POS[n.id] = {x: CX - w/2, y, w, h};
-    y += h + gap;
-  });
-  NODE_POS._totalH = y + 10;
-  NODE_POS._totalW = 360;            // column + residual-arc margin
-})();
+DNODES.forEach(n=>{ NODE_POS[n.id]={x:n.x,y:n.y,w:n.w,h:n.h}; });
+NODE_POS._totalW = 440;
+NODE_POS._totalH = 1296;
 
 const svg = d3.select('#diagram');
 const gRoot = svg.append('g');
 function buildDiagram(){
   // No viewBox: the SVG stays in CSS-pixel coordinates so d3-zoom transforms
   // (computed from getBoundingClientRect) map 1:1 without double scaling.
-  // Layout is a vertical column: data flows top → bottom.
 
-  // Block container behind ln1..res2
-  const first=NODE_POS['ln1'], last=NODE_POS['res2'];
-  gRoot.append('rect')
-    .attr('x',CX-102).attr('y',first.y-30)
-    .attr('width',204).attr('height',last.y+last.h-first.y+44)
-    .attr('rx',14).attr('fill','none')
-    .attr('stroke','var(--line)').attr('stroke-width',1.5).attr('stroke-dasharray','7,4');
-  gRoot.append('text')
-    .attr('x',CX).attr('y',first.y-38).attr('text-anchor','middle')
-    .attr('font-size',10).attr('fill','var(--muted)').attr('letter-spacing','.1em')
-    .text('TRANSFORMER BLOCK ×12');
-
-  // Edges (vertical)
   svg.append('defs').append('marker').attr('id','marr').attr('markerWidth',7).attr('markerHeight',5)
     .attr('refX',6.5).attr('refY',2.5).attr('orient','auto')
     .append('polygon').attr('points','0,0 7,2.5 0,5').attr('fill','var(--muted)');
-  for(let i=0;i<DNODES.length-1;i++){
-    const a=NODE_POS[DNODES[i].id], b=NODE_POS[DNODES[i+1].id];
-    gRoot.append('line')
-      .attr('x1',CX).attr('y1',a.y+a.h).attr('x2',CX).attr('y2',b.y-3)
-      .attr('stroke','var(--muted)').attr('stroke-width',1.4).attr('marker-end','url(#marr)');
-  }
-  // Residual arcs — bulge out to the right of the column
-  function resArc(fromId,toId,label){
-    const a=NODE_POS[fromId], b=NODE_POS[toId];
-    const x0=a.x+a.w, y0=a.y+a.h/2;
-    const x1=b.x+b.w, y1=b.y+b.h/2;
-    const bulge = CX + 148;
-    gRoot.append('path')
-      .attr('d',`M ${x0},${y0} C ${bulge},${y0} ${bulge},${y1} ${x1+3},${y1}`)
-      .attr('fill','none').attr('stroke','var(--keep)').attr('stroke-width',1.4)
-      .attr('stroke-dasharray','5,4').attr('marker-end','url(#marr)').attr('opacity',.75);
-    const my=(y0+y1)/2;
-    gRoot.append('text')
-      .attr('x',bulge-8).attr('y',my)
-      .attr('text-anchor','middle').attr('font-size',9.5).attr('fill','var(--keep)')
-      .attr('transform',`rotate(90,${bulge-8},${my})`)
-      .text(label);
-  }
-  resArc('x0','res1','residual +');
-  resArc('res1','res2','residual +');
 
-  // Nodes
+  function edge(pts, o={}){
+    gRoot.append('path')
+      .attr('d','M '+pts.map(p=>p.join(',')).join(' L '))
+      .attr('fill','none')
+      .attr('stroke',o.color||'var(--muted)').attr('stroke-width',o.w||1.4)
+      .attr('stroke-dasharray',o.dash||null)
+      .attr('marker-end',o.noArrow?null:'url(#marr)')
+      .attr('opacity',o.op??1);
+  }
+
+  // ── The residual stream: a literal spine, not an arrow chain ──
+  gRoot.append('rect')
+    .attr('x',SX-18).attr('y',290).attr('width',36).attr('height',802).attr('rx',12)
+    .attr('fill','color-mix(in srgb, var(--speech) 12%, transparent)')
+    .attr('stroke','color-mix(in srgb, var(--speech) 35%, transparent)').attr('stroke-width',1.2);
+  gRoot.append('text')
+    .attr('x',SX).attr('y',580).attr('text-anchor','middle')
+    .attr('font-size',9.5).attr('fill','var(--speech)').attr('letter-spacing','.14em').attr('opacity',.85)
+    .attr('transform',`rotate(-90,${SX},580)`)
+    .text('RESIDUAL STREAM · [T, 768]');
+
+  // ── Block container around the two detours ──
+  gRoot.append('rect')
+    .attr('x',196).attr('y',294).attr('width',236).attr('height',782)
+    .attr('rx',14).attr('fill','none')
+    .attr('stroke','var(--line)').attr('stroke-width',1.5).attr('stroke-dasharray','7,4');
+  gRoot.append('text')
+    .attr('x',428).attr('y',288).attr('text-anchor','end')
+    .attr('font-size',9.5).attr('fill','var(--muted)').attr('letter-spacing','.1em')
+    .text('TRANSFORMER BLOCK');
+
+  // ── Embedding chain (before the stream is born) ──
+  edge([[SX,60],[SX,89]]); edge([[SX,136],[SX,165]]); edge([[SX,212],[SX,241]]);
+
+  // ── Attention detour: branch off the stream, fan into Q/K/V, merge back ──
+  edge([[SX+18,328],[249,328]], {color:'var(--speech)'});               // stream → LN₁
+  edge([[283,348],[283,367],[239,367],[239,383]], {color:'var(--speech)'});  // LN₁ → Q
+  edge([[300,348],[300,367],[311,367],[311,383]], {color:'var(--speech)'});  // LN₁ → K
+  edge([[317,348],[317,360],[383,360],[383,383]], {color:'var(--speech)'});  // LN₁ → V
+  edge([[239,426],[239,455]], {color:'var(--speech)'});                 // Q → scores
+  edge([[311,426],[311,455]], {color:'var(--speech)'});                 // K → scores
+  edge([[383,426],[383,696],[323,696]], {color:'var(--keep)'});         // V → @V (skips the pattern math)
+  edge([[268,502],[268,527]]); edge([[268,574],[268,599]]);             // scores → mask → softmax
+  edge([[268,646],[268,671]]); edge([[268,718],[268,743]]);             // softmax → @V → concat
+  edge([[268,786],[268,811]]);                                          // concat → W_O
+  edge([[216,834],[139,834]], {color:'var(--keep)'});                   // W_O → merge +
+  gRoot.append('text').attr('x',SX).attr('y',866).attr('text-anchor','middle')
+    .attr('font-size',8.5).attr('fill','var(--keepdk)').text('+ attn_out');
+
+  // ── MLP detour ──
+  edge([[SX+18,904],[249,904]], {color:'var(--violet)'});               // stream → LN₂
+  edge([[300,924],[300,949]], {color:'var(--violet)'});                 // LN₂ → MLP↑
+  edge([[302,996],[302,1019]], {color:'var(--violet)'});                // MLP↑ → MLP↓
+  edge([[246,1042],[139,1042]], {color:'var(--keep)'});                 // MLP↓ → merge +
+  gRoot.append('text').attr('x',SX).attr('y',1074).attr('text-anchor','middle')
+    .attr('font-size',8.5).attr('fill','var(--keepdk)').text('+ mlp_out');
+
+  // ── ×12 loop: the block repeats, the stream flows through it again ──
+  edge([[SX-18,1060],[43,1060],[43,328],[99,328]],
+       {color:'var(--cut)', dash:'6,5', op:.6});
+
+  // ── Output chain ──
+  edge([[SX,1058],[SX,1089]]); edge([[SX,1130],[SX,1155]]); edge([[SX,1202],[SX,1227]]);
+
+  // ── Nodes ──
   const sel = gRoot.selectAll('g.dnode').data(DNODES).join('g')
     .attr('class','dnode').attr('id',d=>'dn-'+d.id)
-    .attr('transform',d=>{const p=NODE_POS[d.id];return `translate(${p.x},${p.y})`})
+    .attr('transform',d=>`translate(${d.x},${d.y})`)
     .on('click',(ev,d)=>gotoStep(d.steps[0]));
   sel.append('rect')
-    .attr('width',d=>NODE_POS[d.id].w).attr('height',d=>NODE_POS[d.id].h).attr('rx',10)
-    .attr('fill','var(--card)').attr('stroke',d=>PHASE_COLOR[d.phase]).attr('stroke-width',1.6);
+    .attr('width',d=>d.w).attr('height',d=>d.h)
+    .attr('rx',d=>d.round?d.w/2:10)
+    .attr('fill',d=>`color-mix(in srgb, ${PHASE_COLOR[d.phase]} 13%, var(--card))`)
+    .attr('stroke',d=>PHASE_COLOR[d.phase]).attr('stroke-width',1.6);
   sel.append('text')
-    .attr('x',d=>NODE_POS[d.id].w/2).attr('y',d=>NODE_POS[d.id].h/2-2)
-    .attr('text-anchor','middle').attr('font-size',13).attr('font-weight',600)
+    .attr('x',d=>d.glyph&&!d.round ? (d.w-30)/2+4 : d.w/2)
+    .attr('y',d=>d.round ? d.h/2+5 : (d.sub ? d.h/2-2 : d.h/2+4))
+    .attr('text-anchor','middle').attr('font-size',d=>d.round?16:12.5).attr('font-weight',600)
     .attr('fill','var(--ink)').text(d=>d.label);
-  sel.append('text')
-    .attr('x',d=>NODE_POS[d.id].w/2).attr('y',d=>NODE_POS[d.id].h/2+14)
+  sel.filter(d=>d.sub).append('text')
+    .attr('x',d=>d.glyph&&!d.round ? (d.w-30)/2+4 : d.w/2)
+    .attr('y',d=>d.h/2+14)
     .attr('text-anchor','middle').attr('font-size',9.5)
     .attr('fill',d=>PHASE_COLOR[d.phase]).text(d=>d.sub);
+
+  // ── Mini-glyphs: a hint of the data inside select nodes ──
+  sel.each(function(d){
+    if(!d.glyph) return;
+    const g=d3.select(this), s=6, gap=2;
+    if(d.glyph==='bars'){
+      [8,18,12].forEach((bh,i)=>g.append('rect')
+        .attr('x',d.w-32+i*8).attr('y',d.h/2+9-bh).attr('width',6).attr('height',bh)
+        .attr('rx',1).attr('fill','var(--warn)').attr('opacity',i===1?1:.55));
+      return;
+    }
+    const x0=d.w-30, y0=(d.h-3*s-2*gap)/2;
+    for(let r=0;r<3;r++)for(let c=0;c<3;c++){
+      let fill='var(--speech)', op=.4;
+      if(d.glyph==='mask' && c>r){ fill='var(--cut)'; op=.75; }
+      if(d.glyph==='smax'){ if(c>r){op=.08} else {fill='var(--warn)'; op=.75} }
+      g.append('rect').attr('x',x0+c*(s+gap)).attr('y',y0+r*(s+gap))
+        .attr('width',s).attr('height',s).attr('rx',1.5).attr('fill',fill).attr('opacity',op);
+    }
+  });
 }
 buildDiagram();
 
@@ -530,7 +598,7 @@ function zoomToNode(id, instant){
   // Scale is width-bound (column + residual margin must fit) and capped for legibility.
   const k=Math.max(0.7, Math.min(1.3, W/NODE_POS._totalW));
   const cy=p.y+p.h/2;
-  const t=d3.zoomIdentity.translate(W/2-CX*k, H/2-cy*k).scale(k);
+  const t=d3.zoomIdentity.translate(W/2-(NODE_POS._totalW/2)*k, H/2-cy*k).scale(k);
   if (instant) svg.call(zoom.transform,t);
   else svg.transition().duration(750).ease(d3.easeCubicInOut).call(zoom.transform,t);
 }
@@ -578,10 +646,13 @@ const CL4 = ['d0','d1','d2','d3'];
 const CL2 = ['d0','d1'];
 const CL8 = ['d0','d1','d2','d3','d4','d5','d6','d7'];
 
+// Shapes are the REAL GPT-2 small dimensions. We display a corner of each
+// tensor — the values are illustrative — and ⋯ marks the omitted dims.
+// The sequence itself (T=3 tokens) is real, so [T,T] grids are shown in full.
 const STEPS = [
 { n:1, node:'tokens', phase:'embed', title:'Tokens → IDs',
-  eq:'tokens = ["The", "cat", "sat"]  →  ids = [0, 1, 2]',
-  cap:`Three words walk into a transformer. First, each becomes a number — its index in the vocabulary. Nothing clever yet: it's a phone book lookup. GPT-2's book has <strong>50,257 entries</strong>; ours has 8.`,
+  eq:'tokens = ["The", "cat", "sat"]  →  ids        [T] = [3]',
+  cap:`Three words walk into a transformer. First, each becomes a number — its index in the vocabulary. Nothing clever yet: it's a phone book lookup. GPT-2's book has <strong>50,257 entries</strong>; the strip below shows the 8 we illustrate with.`,
   render(tl){
     TOKENS.forEach((t,i)=>{
       stage.appendChild(el('div','chip tok','"'+t+'"'));
@@ -589,100 +660,99 @@ const STEPS = [
       stage.appendChild(el('div','chip idc','id '+IDS[i]));
       if(i<2) stage.appendChild(el('div','op','·'));
     });
-    fullWidth('vocabulary: '+VOCAB.map((w,i)=>i+':"'+w+'"').join(' · '),'note');
+    fullWidth('vocabulary (8 of 50,257 shown): '+VOCAB.map((w,i)=>i+':"'+w+'"').join(' · ')+' · ⋯','note');
     if(HAS_GSAP&&!REDUCED) tl.from('#stage .chip',{opacity:0,scale:.7,duration:.35,stagger:.12,ease:'back.out(2)'});
   }},
 { n:2, node:'embed', phase:'embed', title:'Token Embedding — a lookup, not a matmul',
-  eq:'tok_embed = W_E[ids]        toy [3,4] · GPT-2 [T,768]',
-  cap:`Each ID picks out one <strong>row</strong> of the embedding matrix W<sub>E</sub>. No multiplication — a table lookup. "cat" becomes 4 numbers (GPT-2: 768). These numbers are <em>learned</em>: during training the model itself decided what "cat" should mean.`,
+  eq:'tok_embed = W_E[ids]        [3, 768]',
+  cap:`Each ID picks out one <strong>row</strong> of the embedding matrix W<sub>E</sub>. No multiplication — a table lookup. "cat" becomes 768 numbers (4 of them shown; ⋯ is the other 764). These numbers are <em>learned</em>: during training the model itself decided what "cat" should mean.`,
   render(tl){
-    const c1=tensorGrid(W_E,{label:'W_E — embedding table',color:'var(--keepdk)',toy:'[8, 4]',gpt:'[50257, 768]',rowLabels:VOCAB,colLabels:CL4});
+    const c1=tensorGrid(W_E,{label:'W_E — embedding table',color:'var(--keepdk)',shape:'[50257, 768]',rowLabels:VOCAB,colLabels:CL4,ellip:true,ellipRows:true});
     operator('→','arrow');
-    const c2=tensorGrid(tr.tokE,{label:'tok_embed (rows 0,1,2 copied)',color:'var(--speech)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    const c2=tensorGrid(tr.tokE,{label:'tok_embed (rows 0,1,2 copied)',color:'var(--speech)',shape:'[3, 768]',rowLabels:RL,colLabels:CL4,ellip:true});
     tl.call(()=>{ c1.querySelectorAll('.cell').forEach(c=>{ if(+c.dataset.r<3) c.classList.add('hl-row'); }); });
     entrance(tl,c1); entrance(tl,c2,'+=0.15');
   }},
 { n:3, node:'pos', phase:'embed', title:'Positional Embedding',
-  eq:'pos_embed = W_pos[:3]        toy [3,4] · GPT-2 [T,768] (table: [1024,768])',
-  cap:`Attention by itself has no idea about order — "cat sat" and "sat cat" would look identical. So each <strong>position</strong> gets its own learned vector: row 0 for the first slot, row 1 for the second, row 2 for the third. GPT-2's table has 1024 rows — that's the max context length; we slice off the first T.`,
+  eq:'pos_embed = W_pos[:3]        [3, 768]        (full table: [1024, 768])',
+  cap:`Attention by itself has no idea about order — "cat sat" and "sat cat" would look identical. So each <strong>position</strong> gets its own learned 768-dim vector: row 0 for the first slot, row 1 for the second, row 2 for the third. The full table has 1024 rows — the max context length; we slice off the first T = 3.`,
   render(tl){
-    const c=tensorGrid(tr.posE,{label:'W_pos[:3]',color:'var(--keepdk)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:['pos 0','pos 1','pos 2'],colLabels:CL4});
+    const c=tensorGrid(tr.posE,{label:'W_pos[:3]',color:'var(--keepdk)',shape:'[3, 768]',rowLabels:['pos 0','pos 1','pos 2'],colLabels:CL4,ellip:true});
     entrance(tl,c);
   }},
 { n:4, node:'x0', phase:'embed', title:'Add → the residual stream is born',
-  eq:'x₀ = tok_embed + pos_embed        [3,4] + [3,4] → [3,4]',
-  cap:`Add them, element by element. Word-meaning plus position, sharing the same 4 dimensions. This sum is the <strong>residual stream</strong> — the model's running state. Watch its shape: <strong>[3, 4]</strong> now, and still [3, 4] at the very end. Everything that follows only reads from it and adds to it.`,
+  eq:'x₀ = tok_embed + pos_embed        [3,768] + [3,768] → [3,768]',
+  cap:`Add them, element by element. Word-meaning plus position, sharing the same 768 dimensions. This sum is the <strong>residual stream</strong> — the model's running state. Watch its shape: <strong>[3, 768]</strong> now, and still [3, 768] at the very end. Everything that follows only reads from it and adds to it.`,
   render(tl){
-    const a=tensorGrid(tr.tokE,{label:'tok_embed',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    const a=tensorGrid(tr.tokE,{label:'tok_embed',color:'var(--speech)',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('+');
-    const b=tensorGrid(tr.posE,{label:'pos_embed',color:'var(--keepdk)',rowLabels:['p0','p1','p2'],colLabels:CL4});
+    const b=tensorGrid(tr.posE,{label:'pos_embed',color:'var(--keepdk)',rowLabels:['p0','p1','p2'],colLabels:CL4,ellip:true});
     operator('=');
-    const c=tensorGrid(tr.x0,{label:'x₀ — residual stream',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    const c=tensorGrid(tr.x0,{label:'x₀ — residual stream',color:'var(--warn)',shape:'[3, 768]',rowLabels:RL,colLabels:CL4,ellip:true});
     entrance(tl,a); entrance(tl,b,'+=0.1'); entrance(tl,c,'+=0.2');
-    tl.call(()=>c.querySelectorAll('.cell').forEach(x=>x.classList.add('hl-res')));
+    tl.call(()=>c.querySelectorAll('.cell:not(.ellip)').forEach(x=>x.classList.add('hl-res')));
   }},
 { n:5, node:'ln1', phase:'norm', title:'LayerNorm — put every token on the same scale',
-  eq:'x_ln = (x − μ) / σ   per row        [3,4] → [3,4]',
-  cap:(()=>{const s=M.lnStats(tr.x0[1]);return `Before attention reads the stream, standardize each token's vector: subtract its mean, divide by its spread. Take "cat": μ = ${fmt(s.mu)}, σ = ${fmt(s.sd)} — then each value becomes (x−μ)/σ. After this, every row has mean 0 and spread 1. Same information, tamed scale.`})(),
+  eq:'x_ln = (x − μ) / σ   per row        [3,768] → [3,768]',
+  cap:(()=>{const s=M.lnStats(tr.x0[1]);return `Before attention reads the stream, standardize each token's vector: subtract its mean, divide by its spread — computed over all 768 values of that row. For "cat" (over the values shown): μ ≈ ${fmt(s.mu)}, σ ≈ ${fmt(s.sd)}, then each value becomes (x−μ)/σ. After this, every row has mean 0 and spread 1. Same information, tamed scale.`})(),
   render(tl){
-    const a=tensorGrid(tr.x0,{label:'x₀',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    const a=tensorGrid(tr.x0,{label:'x₀',color:'var(--speech)',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('→','arrow');
-    const b=tensorGrid(tr.ln1,{label:'x_ln (each row: μ=0, σ=1)',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    const b=tensorGrid(tr.ln1,{label:'x_ln (each row: μ=0, σ=1)',color:'var(--warn)',shape:'[3, 768]',rowLabels:RL,colLabels:CL4,ellip:true});
     const s=M.lnStats(tr.x0[1]);
-    fullWidth(`"cat" row: [${tr.x0[1].map(fmt).join(', ')}] &nbsp;→&nbsp; μ=${fmt(s.mu)}, σ=${fmt(s.sd)} &nbsp;→&nbsp; [${tr.ln1[1].map(fmt).join(', ')}]`);
+    fullWidth(`"cat" row: [${tr.x0[1].map(fmt).join(', ')}, ⋯] &nbsp;→&nbsp; μ ≈ ${fmt(s.mu)}, σ ≈ ${fmt(s.sd)} &nbsp;→&nbsp; [${tr.ln1[1].map(fmt).join(', ')}, ⋯]`);
     tl.call(()=>{a.querySelectorAll('.cell[data-r="1"]').forEach(c=>c.classList.add('hl-row'));
                  b.querySelectorAll('.cell[data-r="1"]').forEach(c=>c.classList.add('hl-res'));});
     entrance(tl,a); entrance(tl,b,'+=0.15');
   }},
-{ n:6, node:'qkv', phase:'attn', title:'Queries — every token asks a question',
-  eq:'Q = x_ln @ W_Q        [3,4] @ [4,2] → [3,2]        (GPT-2: [T,768]@[768,64]→[T,64])',
-  cap:`Attention begins. Each token asks a question about the past — its <strong>query</strong>. Multiply the stream by W<sub>Q</sub>: 4 numbers in, 2 out. The head compresses everything into a tiny 2-dim question (GPT-2: 768→64). There are <strong>2 heads</strong>, each with its own W<sub>Q</sub> — we'll follow head 0.`,
+{ n:6, node:'q', phase:'attn', title:'Queries — every token asks a question',
+  eq:'Q = x_ln @ W_Q        [3,768] @ [768,64] → [3,64]',
+  cap:`Attention begins. Each token asks a question about the past — its <strong>query</strong>. Multiply the stream by W<sub>Q</sub>: 768 numbers in, 64 out. The head compresses everything it knows into a small question. GPT-2 small has <strong>12 heads</strong> per layer, each with its own W<sub>Q</sub> — we follow head 0.`,
   render(tl){
-    const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('@');
-    const w=tensorGrid(HEADS[0].W_Q,{label:'W_Q (head 0)',color:'var(--violet)',toy:'[4, 2]',gpt:'[768, 64]',colLabels:CL2});
+    const w=tensorGrid(HEADS[0].W_Q,{label:'W_Q (head 0)',color:'var(--violet)',shape:'[768, 64]',colLabels:CL2,ellip:true,ellipRows:true});
     operator('=');
-    const q=tensorGrid(tr.heads[0].Q,{label:'Q — queries',color:'var(--warn)',toy:'[3, 2]',gpt:'[T, 64]',rowLabels:RL,colLabels:CL2});
+    const q=tensorGrid(tr.heads[0].Q,{label:'Q — queries',color:'var(--warn)',shape:'[3, 64]',rowLabels:RL,colLabels:CL2,ellip:true});
     entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,q,'+=0.2');
   }},
-{ n:7, node:'qkv', phase:'attn', title:'Keys — every token advertises what it holds',
-  eq:'K = x_ln @ W_K        [3,4] @ [4,2] → [3,2]',
+{ n:7, node:'k', phase:'attn', title:'Keys — every token advertises what it holds',
+  eq:'K = x_ln @ W_K        [3,768] @ [768,64] → [3,64]',
   cap:`Each token also advertises what it contains — its <strong>key</strong>. Same input, different matrix: W<sub>K</sub>. Queries ask; keys answer. A head "attends" where question and advertisement line up.`,
   render(tl){
-    const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('@');
-    const w=tensorGrid(HEADS[0].W_K,{label:'W_K (head 0)',color:'var(--violet)',toy:'[4, 2]',gpt:'[768, 64]',colLabels:CL2});
+    const w=tensorGrid(HEADS[0].W_K,{label:'W_K (head 0)',color:'var(--violet)',shape:'[768, 64]',colLabels:CL2,ellip:true,ellipRows:true});
     operator('=');
-    const k=tensorGrid(tr.heads[0].K,{label:'K — keys',color:'var(--keepdk)',toy:'[3, 2]',gpt:'[T, 64]',rowLabels:RL,colLabels:CL2});
+    const k=tensorGrid(tr.heads[0].K,{label:'K — keys',color:'var(--keepdk)',shape:'[3, 64]',rowLabels:RL,colLabels:CL2,ellip:true});
     entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,k,'+=0.2');
   }},
-{ n:8, node:'qkv', phase:'attn', title:'Values — what each token will say if heard',
-  eq:'V = x_ln @ W_V        [3,4] @ [4,2] → [3,2]',
+{ n:8, node:'v', phase:'attn', title:'Values — what each token will say if heard',
+  eq:'V = x_ln @ W_V        [3,768] @ [768,64] → [3,64]',
   cap:`And each token prepares what it would pass along if anyone listens — its <strong>value</strong>. That's W<sub>V</sub>. Three roles, three projections, one shared input. Note what queries and keys <em>can't</em> do: move information. Only values move.`,
   render(tl){
-    const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('@');
-    const w=tensorGrid(HEADS[0].W_V,{label:'W_V (head 0)',color:'var(--violet)',toy:'[4, 2]',gpt:'[768, 64]',colLabels:CL2});
+    const w=tensorGrid(HEADS[0].W_V,{label:'W_V (head 0)',color:'var(--violet)',shape:'[768, 64]',colLabels:CL2,ellip:true,ellipRows:true});
     operator('=');
-    const v=tensorGrid(tr.heads[0].V,{label:'V — values',color:'var(--keepdk)',toy:'[3, 2]',gpt:'[T, 64]',rowLabels:RL,colLabels:CL2});
+    const v=tensorGrid(tr.heads[0].V,{label:'V — values',color:'var(--keepdk)',shape:'[3, 64]',rowLabels:RL,colLabels:CL2,ellip:true});
     entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,v,'+=0.2');
   }},
 { n:9, node:'scores', phase:'attn', title:'Scores — every query meets every key',
-  eq:'scores = Q @ Kᵀ / √d_head        [3,2] @ [2,3] → [3,3]',
-  cap:`Score every query against every key: one dot product per pair, divided by √d<sub>head</sub> to keep softmax well-behaved. 3 queries × 3 keys = 9 numbers. The 2 inner dims get <strong>consumed</strong> by the dot product — what survives is the T×T grid. Watch one cell computed the long way:`,
+  eq:'scores = Q @ Kᵀ / √d_head        [3,64] @ [64,3] → [3,3]',
+  cap:`Score every query against every key: one dot product per pair, divided by √d<sub>head</sub> = √64 = 8 to keep softmax well-behaved. 3 queries × 3 keys = 9 numbers. All 64 inner dims (2 shown) get <strong>consumed</strong> by the dot product — what survives is the T×T grid, and T = 3 is real, so this grid is complete. Watch one cell computed the long way:`,
   render(tl){
-    const q=tensorGrid(tr.heads[0].Q,{label:'Q',color:'var(--speech)',rowLabels:RL,colLabels:CL2});
+    const q=tensorGrid(tr.heads[0].Q,{label:'Q',color:'var(--speech)',rowLabels:RL,colLabels:CL2,ellip:true});
     operator('@');
-    const k=tensorGrid(M.T(tr.heads[0].K),{label:'Kᵀ',color:'var(--keepdk)',rowLabels:CL2,colLabels:RL});
+    const k=tensorGrid(M.T(tr.heads[0].K),{label:'Kᵀ',color:'var(--keepdk)',rowLabels:CL2,colLabels:RL,ellipRows:true});
     operator('=');
-    const s=tensorGrid(tr.heads[0].raw,{label:'scores (÷√2)',color:'var(--warn)',toy:'[3, 3]',gpt:'[T, T]',rowLabels:RL,colLabels:RL});
+    const s=tensorGrid(tr.heads[0].raw,{label:'scores (÷√d_head)',color:'var(--warn)',shape:'[3, 3]',rowLabels:RL,colLabels:RL});
     const Q1=tr.heads[0].Q[1], K0=tr.heads[0].K[0];
-    const dp=Q1[0]*K0[0]+Q1[1]*K0[1];
     fullWidth(
       `scores[<span class="eq-q">cat</span>, <span class="eq-k">The</span>] &nbsp;=&nbsp; `+
-      `<span class="eq-q">q_cat</span> · <span class="eq-k">k_The</span> / √2<br>`+
-      `= (<span class="eq-q">${fmt(Q1[0])}</span>×<span class="eq-k">${fmt(K0[0])}</span> + <span class="eq-q">${fmt(Q1[1])}</span>×<span class="eq-k">${fmt(K0[1])}</span>) / 1.41`+
-      ` &nbsp;=&nbsp; ${fmt(dp)} / 1.41 &nbsp;=&nbsp; <span class="eq-p eq-big">${fmt(tr.heads[0].raw[1][0])}</span>`);
+      `<span class="eq-q">q_cat</span> · <span class="eq-k">k_The</span> / √64<br>`+
+      `= (<span class="eq-q">${fmt(Q1[0])}</span>×<span class="eq-k">${fmt(K0[0])}</span> + <span class="eq-q">${fmt(Q1[1])}</span>×<span class="eq-k">${fmt(K0[1])}</span> + ⋯) / 8`+
+      ` &nbsp;≈&nbsp; <span class="eq-p eq-big">${fmt(tr.heads[0].raw[1][0])}</span>`);
     tl.call(()=>{
       q.querySelectorAll('.cell[data-r="1"]').forEach(c=>c.classList.add('hl-row'));
       k.querySelectorAll('.cell[data-c="0"]').forEach(c=>c.classList.add('hl-col'));
@@ -691,21 +761,21 @@ const STEPS = [
     entrance(tl,q); entrance(tl,k,'+=0.1'); entrance(tl,s,'+=0.25');
   }},
 { n:10, node:'mask', phase:'attn', title:'Causal mask — the future is walled off',
-  eq:'scores[i, j] = −∞   wherever j > i',
+  eq:'scores[i, j] = −∞   wherever j > i        [3,3] → [3,3]',
   cap:`One problem: "The" shouldn't peek at "cat" — it comes <em>later</em>, and this model predicts left to right. Slam every future cell to <strong>−∞</strong>. After softmax, e<sup>−∞</sup> = 0: exactly zero attention. The upper-right triangle goes dark, permanently.`,
   render(tl){
     const a=tensorGrid(tr.heads[0].raw,{label:'scores',color:'var(--speech)',rowLabels:RL,colLabels:RL});
     operator('→','arrow');
-    const b=tensorGrid(tr.heads[0].masked,{label:'masked scores',color:'var(--cut)',toy:'[3, 3]',gpt:'[T, T]',rowLabels:RL,colLabels:RL});
+    const b=tensorGrid(tr.heads[0].masked,{label:'masked scores',color:'var(--cut)',shape:'[3, 3]',rowLabels:RL,colLabels:RL});
     entrance(tl,a); entrance(tl,b,'+=0.2');
     if(HAS_GSAP&&!REDUCED) tl.from(b.querySelectorAll('.cell.masked'),{scale:.4,duration:.4,stagger:.12,ease:'back.out(2)'},'+=0.1');
   }},
 { n:11, node:'smax', phase:'attn', title:'Softmax → the attention pattern',
   eq:'pattern = softmax(masked, per row)        [3,3] → [3,3], each row sums to 1',
-  cap:`Exponentiate each row and divide by the row's sum. Every row becomes a <strong>probability distribution</strong> — it sums to exactly 1. This is the attention pattern: who looks at whom, and how much. "The" can only see itself, so its whole budget (1.00) lands there.`,
+  cap:`Exponentiate each row and divide by the row's sum. Every row becomes a <strong>probability distribution</strong> — it sums to exactly 1. This is the attention pattern: who looks at whom, and how much. "The" can only see itself, so its whole budget (1.00) lands there. This T×T grid is complete — no dims hidden.`,
   render(tl){
     const p=tr.heads[0].pat;
-    const b=tensorGrid(p,{label:'attention pattern (head 0)',color:'var(--warn)',toy:'[3, 3]',gpt:'[T, T]',rowLabels:RL,colLabels:RL});
+    const b=tensorGrid(p,{label:'attention pattern (head 0)',color:'var(--warn)',shape:'[3, 3]',rowLabels:RL,colLabels:RL});
     const sums=el('div','tcard');
     sums.appendChild(el('div','tlabel','row sums'));
     p.forEach((row,i)=>{
@@ -718,19 +788,19 @@ const STEPS = [
     if(HAS_GSAP&&!REDUCED) tl.from(sums.querySelectorAll('.sumbadge'),{opacity:0,x:-10,duration:.3,stagger:.12},'+=0.15');
   }},
 { n:12, node:'z', phase:'attn', title:'Spend the probabilities — mix the values',
-  eq:'z = pattern @ V        [3,3] @ [3,2] → [3,2]',
+  eq:'z = pattern @ V        [3,3] @ [3,64] → [3,64]',
   cap:(()=>{const p=tr.heads[0].pat[1];return `Now spend those probabilities: each token's output is a <strong>weighted average of values</strong>. "cat" takes ${fmt(p[0])}×V(The) + ${fmt(p[1])}×V(cat). This is the only place in the whole transformer where information moves <em>between positions</em> — everything else works on each token privately.`})(),
   render(tl){
     const a=tensorGrid(tr.heads[0].pat,{label:'pattern',color:'var(--speech)',rowLabels:RL,colLabels:RL});
     operator('@');
-    const v=tensorGrid(tr.heads[0].V,{label:'V',color:'var(--keepdk)',rowLabels:RL,colLabels:CL2});
+    const v=tensorGrid(tr.heads[0].V,{label:'V',color:'var(--keepdk)',rowLabels:RL,colLabels:CL2,ellip:true});
     operator('=');
-    const z=tensorGrid(tr.heads[0].z,{label:'z (head 0)',color:'var(--warn)',toy:'[3, 2]',gpt:'[T, 64]',rowLabels:RL,colLabels:CL2});
+    const z=tensorGrid(tr.heads[0].z,{label:'z (head 0)',color:'var(--warn)',shape:'[3, 64]',rowLabels:RL,colLabels:CL2,ellip:true});
     const p=tr.heads[0].pat[1], V=tr.heads[0].V;
     fullWidth(
-      `z[<span class="eq-q">cat</span>] = <span class="eq-p">${fmt(p[0])}</span>×<span class="eq-k">[${V[0].map(fmt).join(', ')}]</span> + `+
-      `<span class="eq-p">${fmt(p[1])}</span>×<span class="eq-k">[${V[1].map(fmt).join(', ')}]</span> `+
-      `= <span class="eq-big eq-p">[${tr.heads[0].z[1].map(fmt).join(', ')}]</span>`);
+      `z[<span class="eq-q">cat</span>] = <span class="eq-p">${fmt(p[0])}</span>×<span class="eq-k">[${V[0].map(fmt).join(', ')}, ⋯]</span> + `+
+      `<span class="eq-p">${fmt(p[1])}</span>×<span class="eq-k">[${V[1].map(fmt).join(', ')}, ⋯]</span> `+
+      `≈ <span class="eq-big eq-p">[${tr.heads[0].z[1].map(fmt).join(', ')}, ⋯]</span>`);
     tl.call(()=>{
       a.querySelectorAll('.cell[data-r="1"]').forEach(c=>c.classList.add('hl-row'));
       z.querySelectorAll('.cell[data-r="1"]').forEach(c=>c.classList.add('hl-res'));
@@ -738,81 +808,81 @@ const STEPS = [
     entrance(tl,a); entrance(tl,v,'+=0.1'); entrance(tl,z,'+=0.25');
   }},
 { n:13, node:'concat', phase:'attn', title:'Concatenate the heads',
-  eq:'z = concat(z₀, z₁)        [3,2] ‖ [3,2] → [3,4]',
-  cap:`Head 1 was running the whole time with its own W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub> — its own search strategy. Each head produced 2 numbers per token; glue them side by side: 2+2 = 4. In GPT-2: 12 heads × 64 = 768. That's all "multi-head" means.`,
+  eq:'z = concat(z₀ … z₁₁)        12 × [3,64] → [3,768]',
+  cap:`All <strong>12 heads</strong> were running the whole time in parallel, each with its own W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub> — its own search strategy. Each head contributes 64 numbers per token; glue them side by side: 12 × 64 = 768. That's all "multi-head" means. We show heads 0 and 1.`,
   render(tl){
-    const a=tensorGrid(tr.heads[0].z,{label:'z head 0',color:'var(--speech)',rowLabels:RL,colLabels:CL2});
+    const a=tensorGrid(tr.heads[0].z,{label:'z head 0',color:'var(--speech)',rowLabels:RL,colLabels:CL2,ellip:true});
     operator('‖');
-    const b=tensorGrid(tr.heads[1].z,{label:'z head 1',color:'var(--violet)',rowLabels:RL,colLabels:CL2});
+    const b=tensorGrid(tr.heads[1].z,{label:'z head 1',color:'var(--violet)',rowLabels:RL,colLabels:CL2,ellip:true});
     operator('=');
-    const c=tensorGrid(tr.zcat,{label:'z concat',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:['h0·d0','h0·d1','h1·d0','h1·d1']});
+    const c=tensorGrid(tr.zcat,{label:'z concat',color:'var(--warn)',shape:'[3, 768]',rowLabels:RL,colLabels:['h0·d0','h0·d1','h1·d0','h1·d1'],ellip:true,ellipLabel:'⋯ h11·d63'});
     entrance(tl,a); entrance(tl,b,'+=0.1'); entrance(tl,c,'+=0.2');
   }},
 { n:14, node:'wo', phase:'attn', title:'Output projection — blend the heads',
-  eq:'attn_out = z @ W_O        [3,4] @ [4,4] → [3,4]        (GPT-2: [T,768]@[768,768])',
-  cap:`One last mix: W<sub>O</sub> blends what the heads found and writes the answer back in <em>residual-stream coordinates</em>. The heads each worked in their private 2-dim (GPT-2: 64-dim) workspaces; W<sub>O</sub> is the translator back to the shared language.`,
+  eq:'attn_out = z @ W_O        [3,768] @ [768,768] → [3,768]',
+  cap:`One last mix: W<sub>O</sub> blends what the 12 heads found and writes the answer back in <em>residual-stream coordinates</em>. The heads each worked in their private 64-dim workspaces; W<sub>O</sub> is the translator back to the shared 768-dim language.`,
   render(tl){
-    const a=tensorGrid(tr.zcat,{label:'z concat',color:'var(--speech)',rowLabels:RL,colLabels:['h0·d0','h0·d1','h1·d0','h1·d1']});
+    const a=tensorGrid(tr.zcat,{label:'z concat',color:'var(--speech)',rowLabels:RL,colLabels:['h0·d0','h0·d1','h1·d0','h1·d1'],ellip:true});
     operator('@');
-    const w=tensorGrid(W_O,{label:'W_O',color:'var(--violet)',toy:'[4, 4]',gpt:'[768, 768]',colLabels:CL4});
+    const w=tensorGrid(W_O,{label:'W_O',color:'var(--violet)',shape:'[768, 768]',colLabels:CL4,ellip:true,ellipRows:true});
     operator('=');
-    const c=tensorGrid(tr.attnOut,{label:'attn_out',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    const c=tensorGrid(tr.attnOut,{label:'attn_out',color:'var(--warn)',shape:'[3, 768]',rowLabels:RL,colLabels:CL4,ellip:true});
     entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,c,'+=0.2');
   }},
 { n:15, node:'res1', phase:'attn', title:'Residual add #1 — deposit, don’t replace',
-  eq:'x₁ = x₀ + attn_out        [3,4] + [3,4] → [3,4]',
-  cap:`Add attention's contribution to what we already had. Attention doesn't <em>replace</em> the stream — it makes a <strong>deposit</strong>. The shape is still [3, 4]. This additive structure is why interpretability researchers can decompose a transformer: every component's contribution is just a term in a big sum.`,
+  eq:'x₁ = x₀ + attn_out        [3,768] + [3,768] → [3,768]',
+  cap:`Add attention's contribution to what we already had. Attention doesn't <em>replace</em> the stream — it makes a <strong>deposit</strong>. The shape is still [3, 768]. This additive structure is why interpretability researchers can decompose a transformer: every component's contribution is just a term in a big sum.`,
   render(tl){
-    const a=tensorGrid(tr.x0,{label:'x₀',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    const a=tensorGrid(tr.x0,{label:'x₀',color:'var(--speech)',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('+');
-    const b=tensorGrid(tr.attnOut,{label:'attn_out',color:'var(--keepdk)',rowLabels:RL,colLabels:CL4});
+    const b=tensorGrid(tr.attnOut,{label:'attn_out',color:'var(--keepdk)',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('=');
-    const c=tensorGrid(tr.x1,{label:'x₁ — updated stream',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    const c=tensorGrid(tr.x1,{label:'x₁ — updated stream',color:'var(--warn)',shape:'[3, 768]',rowLabels:RL,colLabels:CL4,ellip:true});
     entrance(tl,a); entrance(tl,b,'+=0.1'); entrance(tl,c,'+=0.2');
-    tl.call(()=>c.querySelectorAll('.cell').forEach(x=>x.classList.add('hl-res')));
+    tl.call(()=>c.querySelectorAll('.cell:not(.ellip)').forEach(x=>x.classList.add('hl-res')));
   }},
 { n:16, node:'ln2', phase:'norm', title:'LayerNorm #2',
-  eq:'x_ln2 = LayerNorm(x₁)        [3,4] → [3,4]',
+  eq:'x_ln2 = LayerNorm(x₁)        [3,768] → [3,768]',
   cap:`Standardize again before the next module reads the stream. Same recipe as before: per token, subtract the mean, divide by the spread. Two LayerNorms per block, every block.`,
   render(tl){
-    const a=tensorGrid(tr.x1,{label:'x₁',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    const a=tensorGrid(tr.x1,{label:'x₁',color:'var(--speech)',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('→','arrow');
-    const b=tensorGrid(tr.ln2,{label:'x_ln2',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    const b=tensorGrid(tr.ln2,{label:'x_ln2',color:'var(--warn)',shape:'[3, 768]',rowLabels:RL,colLabels:CL4,ellip:true});
     entrance(tl,a); entrance(tl,b,'+=0.15');
   }},
 { n:17, node:'mlpin', phase:'mlp', title:'MLP up-projection + GELU',
-  eq:'hidden = GELU(x_ln2 @ W_in + b_in)        [3,4] @ [4,8] → [3,8]        (GPT-2: 768→3072)',
-  cap:`Now the MLP — the transformer's private thinking space. Project each token up to 8 dimensions (GPT-2: 3072, always 4× wider), then apply GELU: <strong>negative numbers get crushed toward zero</strong> — the dimmed, struck cells below. Each of the 8 hidden units is a little detector that either fires or stays quiet. No cross-token traffic here: every token thinks alone.`,
+  eq:'hidden = GELU(x_ln2 @ W_in + b_in)        [3,768] @ [768,3072] → [3,3072]',
+  cap:`Now the MLP — the transformer's private thinking space. Project each token up to <strong>3072</strong> dimensions (always 4× wider than the stream), then apply GELU: <strong>negative numbers get crushed toward zero</strong> — the dimmed, struck cells below (8 of 3072 hidden units shown). Each hidden unit is a little detector that either fires or stays quiet. No cross-token traffic here: every token thinks alone.`,
   render(tl){
-    const a=tensorGrid(tr.pre,{label:'pre-activation (x@W_in + b)',color:'var(--speech)',toy:'[3, 8]',gpt:'[T, 3072]',rowLabels:RL,colLabels:CL8});
+    const a=tensorGrid(tr.pre,{label:'pre-activation (x@W_in + b)',color:'var(--speech)',shape:'[3, 3072]',rowLabels:RL,colLabels:CL8,ellip:true});
     operator('→','arrow');
-    const b=tensorGrid(tr.hidden,{label:'hidden = GELU(pre)',color:'var(--violet)',toy:'[3, 8]',gpt:'[T, 3072]',rowLabels:RL,colLabels:CL8,
+    const b=tensorGrid(tr.hidden,{label:'hidden = GELU(pre)',color:'var(--violet)',shape:'[3, 3072]',rowLabels:RL,colLabels:CL8,ellip:true,
       killIf:(i,j)=>tr.pre[i][j]<0});
     fullWidth('struck cells: pre-activation was negative → GELU squashed it toward 0 (the neuron stayed quiet)','note');
     entrance(tl,a); entrance(tl,b,'+=0.2');
   }},
 { n:18, node:'mlpout', phase:'mlp', title:'MLP down-projection',
-  eq:'mlp_out = hidden @ W_out + b_out        [3,8] @ [8,4] → [3,4]',
-  cap:`Project back down: 8 → 4 (GPT-2: 3072 → 768). Whatever the detectors concluded, written back in stream coordinates. Up, think, down — that's the whole MLP.`,
+  eq:'mlp_out = hidden @ W_out + b_out        [3,3072] @ [3072,768] → [3,768]',
+  cap:`Project back down: 3072 → 768. Whatever the detectors concluded, written back in stream coordinates. Up, think, down — that's the whole MLP.`,
   render(tl){
-    const a=tensorGrid(tr.hidden,{label:'hidden',color:'var(--violet)',rowLabels:RL,colLabels:CL8});
+    const a=tensorGrid(tr.hidden,{label:'hidden',color:'var(--violet)',rowLabels:RL,colLabels:CL8,ellip:true});
     operator('@');
-    const w=tensorGrid(W_out,{label:'W_out',color:'var(--violet)',toy:'[8, 4]',gpt:'[3072, 768]',colLabels:CL4});
+    const w=tensorGrid(W_out,{label:'W_out',color:'var(--violet)',shape:'[3072, 768]',colLabels:CL4,ellip:true,ellipRows:true});
     operator('=');
-    const c=tensorGrid(tr.mlpOut,{label:'mlp_out',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    const c=tensorGrid(tr.mlpOut,{label:'mlp_out',color:'var(--warn)',shape:'[3, 768]',rowLabels:RL,colLabels:CL4,ellip:true});
     entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,c,'+=0.2');
   }},
 { n:19, node:'res2', phase:'mlp', title:'Residual add #2 — one block done',
-  eq:'x₂ = x₁ + mlp_out        [3,4] + [3,4] → [3,4]',
-  cap:`Deposit into the stream again. One full transformer block is complete: LN → attention → add, LN → MLP → add. And the stream? <strong>Still [3, 4].</strong> It has never changed shape — only its contents got richer.`,
+  eq:'x₂ = x₁ + mlp_out        [3,768] + [3,768] → [3,768]',
+  cap:`Deposit into the stream again. One full transformer block is complete: LN → attention → add, LN → MLP → add. And the stream? <strong>Still [3, 768].</strong> It has never changed shape — only its contents got richer.`,
   render(tl){
-    const a=tensorGrid(tr.x1,{label:'x₁',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    const a=tensorGrid(tr.x1,{label:'x₁',color:'var(--speech)',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('+');
-    const b=tensorGrid(tr.mlpOut,{label:'mlp_out',color:'var(--keepdk)',rowLabels:RL,colLabels:CL4});
+    const b=tensorGrid(tr.mlpOut,{label:'mlp_out',color:'var(--keepdk)',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('=');
-    const c=tensorGrid(tr.x2,{label:'x₂',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    const c=tensorGrid(tr.x2,{label:'x₂',color:'var(--warn)',shape:'[3, 768]',rowLabels:RL,colLabels:CL4,ellip:true});
     entrance(tl,a); entrance(tl,b,'+=0.1'); entrance(tl,c,'+=0.2');
-    tl.call(()=>c.querySelectorAll('.cell').forEach(x=>x.classList.add('hl-res')));
+    tl.call(()=>c.querySelectorAll('.cell:not(.ellip)').forEach(x=>x.classList.add('hl-res')));
   }},
 { n:20, node:'x12', phase:'repeat', title:'×12 — the block repeats',
   eq:'for layer in range(12):  x = block(x)        shape stays [T, 768] the whole way',
@@ -825,10 +895,10 @@ const STEPS = [
     if(HAS_GSAP&&!REDUCED) tl.from(strip.querySelectorAll('.blk'),{opacity:0,y:12,duration:.25,stagger:.07,ease:'power2.out'});
   }},
 { n:21, node:'outp', phase:'out', title:'The finale — logits → next-word probabilities',
-  eq:'logits = LN(x₂) @ W_Eᵀ   →   probs = softmax(logits[last])        [3,4]@[4,8] → [3,8]',
-  cap:`Normalize one last time, then multiply by <strong>W<sub>E</sub> transposed</strong> — the same embedding table, reused backwards (weight tying). Each token gets a score per vocabulary word; softmax the <em>last</em> token's row and you have the model's bet on the next word. With our toy weights it says <strong>"${tr.pred}"</strong> — a trained model would have opinions worth listening to.`,
+  eq:'logits = LN(x₂) @ W_Eᵀ   →   probs = softmax(logits[last])        [3,768]@[768,50257] → [3,50257]',
+  cap:`Normalize one last time, then multiply by <strong>W<sub>E</sub> transposed</strong> — the same embedding table, reused backwards (weight tying). Each token gets a score for all <strong>50,257</strong> vocabulary words (8 shown); softmax the <em>last</em> token's row and you have the model's bet on the next word. With our illustrative weights it says <strong>"${tr.pred}"</strong> — a trained model would have opinions worth listening to.`,
   render(tl){
-    const lg=tensorGrid([tr.logits[2]],{label:'logits for "sat" (last token)',color:'var(--speech)',toy:'[1, 8]',gpt:'[1, 50257]',rowLabels:['sat'],colLabels:VOCAB});
+    const lg=tensorGrid([tr.logits[2]],{label:'logits for "sat" (last token)',color:'var(--speech)',shape:'[1, 50257]',rowLabels:['sat'],colLabels:VOCAB,ellip:true});
     operator('→','arrow');
     const card=el('div','tcard');
     card.appendChild(el('div','tlabel','softmax → P(next word)')).style.color='var(--warn)';
@@ -844,6 +914,11 @@ const STEPS = [
       wr.appendChild(el('div','bar-w'+(i===win?' winner':''),VOCAB[i]));
       bars.appendChild(wr);
     });
+    const more=el('div','bar-wrap');
+    more.appendChild(el('div','bar-p',''));
+    more.appendChild(el('div','','⋯')).style.cssText='font-family:var(--mono);font-size:20px;color:var(--muted);height:150px;display:flex;align-items:flex-end;padding-bottom:4px';
+    more.appendChild(el('div','bar-w','+50,249'));
+    bars.appendChild(more);
     card.appendChild(bars);
     stage.appendChild(card);
     entrance(tl,lg);
@@ -856,8 +931,30 @@ let cur = 0, playing=false, playTimer=null, activeTL=null;
 const $ = id=>document.getElementById(id);
 
 function renderStep(){
-  const s=STEPS[cur];
   if (activeTL && activeTL.kill) activeTL.kill();
+  const inner=document.getElementById('stageInner');
+  // Exit transition: fade the old step out before wiping it, so the previous
+  // step's populated matrices don't vanish in a hard cut (reads as a glitch,
+  // especially in Play mode where consecutive steps look alike).
+  if (HAS_GSAP && !REDUCED && stage.childElementCount){
+    gsap.killTweensOf(inner);
+    gsap.to(inner,{opacity:0,duration:0.18,ease:'power1.in',onComplete:()=>{
+      gsap.set(inner,{opacity:1});
+      buildStep();
+    }});
+  } else {
+    buildStep();
+  }
+}
+function buildStep(){
+  const s=STEPS[cur];
+  const inner=document.getElementById('stageInner');
+  // Veil: build the step invisible and reveal only after GSAP has ticked once,
+  // so from() start-states (opacity:0 on cells) are guaranteed committed before
+  // anything paints. This kills the populated-matrices-flash by construction —
+  // no reliance on lazy/immediateRender semantics, which proved unreliable.
+  const veil = HAS_GSAP && !REDUCED;
+  if (veil) inner.style.opacity='0';
   stage.innerHTML='';
   $('stepTitle').textContent = s.n+'. '+s.title;
   $('stepEq').textContent = s.eq;
@@ -872,7 +969,24 @@ function renderStep(){
   zoomToNode(s.node);
   const tl = makeTL();
   s.render(tl);
+  if (veil && tl.progress){
+    // Force-render every tween's start state SYNCHRONOUSLY. Empirically,
+    // from() start-states (opacity:0) otherwise apply several frames late —
+    // immediateRender does not reach stagger sub-tweens positioned later in
+    // the timeline — which painted fully-populated matrices before the
+    // entrance animation hid them (the "populated then vanishes" flash).
+    // progress(1)→progress(0) touches every sub-tween with events suppressed.
+    tl.progress(1, true).progress(0, true);
+  }
   activeTL = tl;
+  if (veil){
+    // GSAP's ticker rAF loop predates these callbacks, so by the second rAF it
+    // has ticked ≥1× and flushed all lazy start-states. setTimeout is a
+    // fallback for throttled/occluded windows where rAF never fires.
+    const reveal = ()=>{ inner.style.opacity='1'; };
+    requestAnimationFrame(()=>requestAnimationFrame(reveal));
+    setTimeout(reveal, 400);
+  }
   if (playing && HAS_GSAP && !REDUCED){
     tl.eventCallback('onComplete',()=>{ playTimer=setTimeout(()=>{ if(playing) next(); },1600); });
   } else if (playing){
