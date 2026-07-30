@@ -474,9 +474,25 @@ function buildDiagram(){
     .attr('refX',6.5).attr('refY',2.5).attr('orient','auto')
     .append('polygon').attr('points','0,0 7,2.5 0,5').attr('fill','var(--muted)');
 
+  // Orthogonal polyline → path with rounded elbows (quarter-arc r=8, clamped
+  // to half the shorter adjacent segment) — sharp corners read as wireframe.
+  function roundedPath(pts, r=8){
+    if (pts.length < 3) return 'M '+pts.map(p=>p.join(',')).join(' L ');
+    let d = 'M '+pts[0][0]+','+pts[0][1];
+    for (let i=1; i<pts.length-1; i++){
+      const [x0,y0]=pts[i-1], [x1,y1]=pts[i], [x2,y2]=pts[i+1];
+      const l1=Math.hypot(x1-x0,y1-y0), l2=Math.hypot(x2-x1,y2-y1);
+      const rr=Math.min(r, l1/2, l2/2);
+      const ax=x1-(x1-x0)/l1*rr, ay=y1-(y1-y0)/l1*rr;
+      const bx=x1+(x2-x1)/l2*rr, by=y1+(y2-y1)/l2*rr;
+      d += ' L '+ax+','+ay+' Q '+x1+','+y1+' '+bx+','+by;
+    }
+    d += ' L '+pts[pts.length-1][0]+','+pts[pts.length-1][1];
+    return d;
+  }
   function edge(pts, o={}){
     gRoot.append('path')
-      .attr('d','M '+pts.map(p=>p.join(',')).join(' L '))
+      .attr('d', roundedPath(pts))
       .attr('fill','none')
       .attr('stroke',o.color||'var(--muted)').attr('stroke-width',o.w||1.4)
       .attr('stroke-dasharray',o.dash||null)
@@ -494,6 +510,16 @@ function buildDiagram(){
     .attr('font-size',9.5).attr('fill','var(--speech)').attr('letter-spacing','.14em').attr('opacity',.85)
     .attr('transform',`rotate(-90,${SX},580)`)
     .text('RESIDUAL STREAM · [B, T, 768/d_model]');
+  // Stream-start affordances: the big rotated label above is only visible
+  // mid-diagram, so name the band right where x₀ flows into it and mark the
+  // direction of flow — otherwise the zoomed-in view is an anonymous pill.
+  gRoot.append('text').attr('x',SX).attr('y',316).attr('text-anchor','middle')
+    .attr('font-size',13).attr('fill','var(--speech)').attr('opacity',.8).text('↓');
+  const rsCap = gRoot.append('text')
+    .attr('x',SX+24).attr('y',306).attr('font-size',8)
+    .attr('fill','var(--speech)').attr('opacity',.9).attr('letter-spacing','.1em');
+  rsCap.append('tspan').attr('x',SX+24).text('RESIDUAL');
+  rsCap.append('tspan').attr('x',SX+24).attr('dy',10).text('STREAM');
 
   // ── Block container around the two detours ──
   gRoot.append('rect')
@@ -510,6 +536,9 @@ function buildDiagram(){
 
   // ── Attention detour: branch off the stream, fan into Q/K/V, merge back ──
   edge([[SX+18,328],[249,328]], {color:'var(--speech)'});               // stream → LN₁
+  gRoot.append('text').attr('x',222).attr('y',322).attr('text-anchor','middle')
+    .attr('font-size',7.5).attr('fill','var(--speech)').attr('opacity',.85)
+    .attr('letter-spacing','.08em').text('READ');
   edge([[283,348],[283,367],[239,367],[239,383]], {color:'var(--speech)'});  // LN₁ → Q
   edge([[300,348],[300,367],[311,367],[311,383]], {color:'var(--speech)'});  // LN₁ → K
   edge([[317,348],[317,360],[383,360],[383,383]], {color:'var(--speech)'});  // LN₁ → V
@@ -525,6 +554,9 @@ function buildDiagram(){
 
   // ── MLP detour ──
   edge([[SX+18,904],[249,904]], {color:'var(--violet)'});               // stream → LN₂
+  gRoot.append('text').attr('x',222).attr('y',898).attr('text-anchor','middle')
+    .attr('font-size',7.5).attr('fill','var(--violet)').attr('opacity',.85)
+    .attr('letter-spacing','.08em').text('READ');
   edge([[300,924],[300,949]], {color:'var(--violet)'});                 // LN₂ → MLP↑
   edge([[302,996],[302,1019]], {color:'var(--violet)'});                // MLP↑ → MLP↓
   edge([[246,1042],[139,1042]], {color:'var(--keep)'});                 // MLP↓ → merge +
@@ -534,6 +566,9 @@ function buildDiagram(){
   // ── ×12 loop: the block repeats, the stream flows through it again ──
   edge([[SX-18,1060],[43,1060],[43,328],[99,328]],
        {color:'var(--cut)', dash:'6,5', op:.6});
+  gRoot.append('text').attr('x',71).attr('y',322).attr('text-anchor','middle')
+    .attr('font-size',7.5).attr('fill','var(--cut)').attr('opacity',.8)
+    .attr('letter-spacing','.08em').text('NEXT LAYER');
 
   // ── Output chain ──
   edge([[SX,1058],[SX,1089]]); edge([[SX,1130],[SX,1155]]); edge([[SX,1202],[SX,1227]]);
