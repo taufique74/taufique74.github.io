@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Transformer Forward Pass — Interactive Walkthrough</title>
+<!-- Local explainer. Uses D3 v7 (diagram zoom, scales) and GSAP 3 (step choreography)
+     from jsDelivr CDNs — needs internet on first load. All math is computed live in
+     this file from hand-picked toy weights, so every number on screen is verifiable. -->
+<script>
+(function(){
+  try {
+    var t = localStorage.getItem('mi-theme');
+    if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.className = 'dark';
+    }
+  } catch(e){}
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"></script>
+<style>
+:root{
+  color-scheme:light;
+  --paper:#faf9f5; --card:#f0efe8; --ink:#141413; --ink2:#6b6a62; --muted:#9e9d95;
+  --hair:#dddcd4; --line:#c5c4bb;
+  --speech:#4a90d9; --speech-bg:rgba(74,144,217,0.10);
+  --keep:#2fad7a; --keepdk:#27a06e; --keep-bg:rgba(47,173,122,0.10);
+  --cut:#d95050; --cut-bg:rgba(217,80,80,0.10);
+  --warn:#cf9630; --warn-bg:rgba(207,150,48,0.12);
+  --violet:#9376e0; --violet-bg:rgba(147,118,224,0.12);
+  --mono:'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
+}
+html.dark{
+  color-scheme:dark;
+  --paper:#131312; --card:#1d1d1b; --ink:#f2f1ec; --ink2:#c3c2b7; --muted:#8f8d85;
+  --hair:#32312d; --line:#45443f;
+  --speech:#6da7ec; --speech-bg:rgba(109,167,236,0.14);
+  --keep:#34c48f; --keepdk:#4ad39c; --keep-bg:rgba(52,196,143,0.14);
+  --cut:#e66767; --cut-bg:rgba(230,103,103,0.14);
+  --warn:#e0a33b; --warn-bg:rgba(224,163,59,0.14);
+  --violet:#a78bfa; --violet-bg:rgba(167,139,250,0.16);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.55;
+  background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* ── Header ── */
+#topbar{
+  display:flex;align-items:center;gap:14px;padding:10px 18px;
+  border-bottom:1px solid var(--hair);flex:0 0 auto;background:var(--paper);
+}
+#topbar .backlink{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);text-decoration:none;white-space:nowrap}
+#topbar .backlink:hover{color:var(--speech)}
+#topbar h1{font-size:17px;font-weight:700;letter-spacing:-.01em;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#topbar .themebtn{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink2);background:var(--card);border:1.5px solid var(--line);border-radius:20px;
+  padding:5px 13px;cursor:pointer;box-shadow:2px 2px 0 var(--hair);
+}
+#topbar .themebtn:hover{color:var(--ink);border-color:var(--speech)}
+
+/* ── Main split: diagram rail (left) + stage column (right) ── */
+#main{display:flex;flex:1 1 auto;overflow:hidden;min-height:0}
+#rightCol{flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ── Diagram rail ── */
+#diagramPanel{flex:0 0 clamp(300px,30vw,520px);position:relative;background:color-mix(in srgb,var(--paper) 94%,var(--card))}
+
+/* ── Draggable splitter ── */
+#splitter{flex:0 0 7px;cursor:col-resize;background:var(--hair);position:relative;transition:background .15s}
+#splitter:hover,#splitter.dragging{background:var(--speech)}
+#splitter::after{content:'';position:absolute;left:-4px;right:-4px;top:0;bottom:0}  /* wider hit area */
+#diagramPanel svg{width:100%;height:100%;display:block;cursor:grab}
+#diagramPanel svg:active{cursor:grabbing}
+#diagramPanel .hint{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:9px;color:var(--muted);pointer-events:none}
+.dnode{cursor:pointer;transition:opacity .4s}
+.dnode.dim{opacity:.32}
+.dnode rect{transition:stroke-width .3s}
+.dnode.active rect{stroke-width:2.5}
+svg text{font-family:var(--mono)}
+
+/* ── Controls ── */
+#controls{
+  display:flex;align-items:center;gap:8px;padding:8px 18px;flex:0 0 auto;
+  border-bottom:1px solid var(--hair);background:var(--paper);flex-wrap:wrap;
+}
+#controls button{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;padding:7px 16px;
+  border-radius:20px;border:1.5px solid var(--line);background:var(--card);color:var(--ink2);
+  cursor:pointer;transition:all .15s;box-shadow:2px 2px 0 var(--hair);
+}
+#controls button:hover{border-color:var(--speech);color:var(--speech)}
+#controls button:active{transform:scale(.97)}
+#controls button.primary{background:var(--speech);color:#fff;border-color:var(--speech)}
+#controls button.primary:hover{color:#fff;filter:brightness(1.08)}
+#controls .progress{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:4px}
+#controls .phase-pill{
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;
+  padding:3px 11px;border-radius:20px;margin-left:auto;
+}
+
+/* ── Stage ── */
+#stagePanel{flex:1 1 auto;overflow-y:auto;padding:18px 26px 60px}
+#stageInner{max-width:1060px;margin:0 auto}
+#stepTitle{font-size:24px;font-weight:700;letter-spacing:-.01em;margin:2px 0 2px}
+#stepEq{font-family:var(--mono);font-size:13.5px;color:var(--speech);margin:2px 0 10px}
+#stepCaption{
+  font-size:15.5px;color:var(--ink2);line-height:1.6;max-width:62em;margin:0 0 18px;
+  border-left:3px solid var(--warn);padding:6px 0 6px 14px;background:var(--warn-bg);border-radius:0 8px 8px 0;
+}
+#stepCaption strong{color:var(--ink)}
+#stage{display:flex;flex-wrap:wrap;align-items:center;gap:18px;justify-content:flex-start}
+
+/* Tensor cards */
+.tcard{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:4px 4px 0 var(--hair)}
+.tcard .tlabel{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;margin-bottom:2px}
+.tcard .tpills{display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap}
+.pill{font-family:var(--mono);font-size:9.5px;padding:2px 8px;border-radius:12px;border:1px solid var(--line);color:var(--ink2);background:var(--paper);white-space:nowrap}
+.pill.gpt{border-color:color-mix(in srgb,var(--violet) 50%,transparent);color:var(--violet)}
+.tgrid{display:grid;gap:3px}
+.tgrid .rowlab,.tgrid .collab{font-family:var(--mono);font-size:9.5px;color:var(--muted);display:flex;align-items:center;justify-content:center;padding:0 6px}
+.tgrid .rowlab{justify-content:flex-end}
+.cell{
+  font-family:var(--mono);font-size:12px;font-weight:600;min-width:46px;height:34px;
+  display:flex;align-items:center;justify-content:center;border-radius:5px;
+  border:1px solid var(--hair);color:var(--ink);background:var(--paper);
+  transition:background .3s,opacity .3s;position:relative;
+}
+.cell.hl-row{outline:2px solid var(--speech);outline-offset:-1px}
+.cell.hl-col{outline:2px solid var(--keep);outline-offset:-1px}
+.cell.hl-res{outline:2.5px solid var(--warn);outline-offset:-1px;font-weight:700}
+.cell.masked{color:var(--cut);background:var(--cut-bg)!important;font-size:11px}
+.cell.killed{opacity:.38}
+.cell.killed::after{content:'';position:absolute;left:15%;right:15%;top:50%;border-top:1.5px solid var(--cut);opacity:.6}
+.op{font-family:var(--mono);font-size:26px;color:var(--muted);font-weight:300;align-self:center}
+.arrow{font-family:var(--mono);font-size:22px;color:var(--speech);align-self:center}
+
+/* Expansion strip (dot-product breakdown etc.) */
+.expand{
+  width:100%;font-family:var(--mono);font-size:13.5px;line-height:1.9;color:var(--ink2);
+  background:var(--card);border:1.5px dashed var(--line);border-radius:10px;padding:12px 18px;
+}
+.expand .eq-q{color:var(--speech);font-weight:600}
+.expand .eq-k{color:var(--keepdk);font-weight:600}
+.expand .eq-p{color:var(--warn);font-weight:700}
+.expand .eq-big{font-size:16px}
+
+/* Token / mix chips */
+.chip{
+  font-family:var(--mono);font-size:12.5px;font-weight:600;padding:6px 14px;border-radius:8px;
+  border:1.5px solid var(--line);background:var(--card);color:var(--ink);box-shadow:2px 2px 0 var(--hair);
+}
+.chip.tok{border-color:var(--speech);color:var(--speech);background:var(--speech-bg)}
+.chip.idc{border-color:var(--warn);color:var(--warn);background:var(--warn-bg)}
+
+/* Bar chart */
+.bars{display:flex;align-items:flex-end;gap:12px;height:190px;padding:6px 4px 0}
+.bar-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;width:58px}
+.bar-outer{width:34px;height:150px;display:flex;align-items:flex-end;border-radius:5px 5px 0 0}
+.bar{width:100%;border-radius:5px 5px 0 0;background:var(--speech);opacity:.55;min-height:2px}
+.bar.winner{background:var(--warn);opacity:1}
+.bar-p{font-family:var(--mono);font-size:10px;color:var(--ink2)}
+.bar-w{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink)}
+.bar-w.winner{color:var(--warn)}
+
+/* Sum badge */
+.sumbadge{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--keepdk);
+  background:var(--keep-bg);border:1px solid var(--keep);border-radius:12px;padding:2px 9px;
+}
+
+/* Repeat strip */
+.blockstrip{display:flex;gap:7px;flex-wrap:wrap}
+.blockstrip .blk{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;color:var(--speech);
+  border:1.5px solid var(--speech);background:var(--speech-bg);border-radius:8px;
+  width:64px;height:46px;display:flex;align-items:center;justify-content:center;
+}
+
+.note{font-family:var(--mono);font-size:11px;color:var(--muted);width:100%;margin-top:4px}
+
+@media (max-width:760px){
+  #main{flex-direction:column}
+  #diagramPanel{flex:0 0 200px !important;width:100%;border-bottom:1px solid var(--hair)}
+  #splitter{display:none}
+  #stepTitle{font-size:19px}
+  .cell{min-width:38px;height:30px;font-size:10.5px}
+  #stagePanel{padding:14px 12px 60px}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <a class="backlink" href="/posts/transformer-forward-pass-interactive">&larr; Post</a>
+  <h1>Transformer Forward Pass — Step by Step</h1>
+  <button class="themebtn" id="themebtn">Theme</button>
+</div>
+
+<div id="main">
+  <div id="diagramPanel">
+    <svg id="diagram"></svg>
+    <div class="hint">scroll / drag to explore · click to jump</div>
+  </div>
+
+  <div id="splitter" title="Drag to resize"></div>
+
+  <div id="rightCol">
+    <div id="controls">
+      <button id="btnPrev">&larr; Prev</button>
+      <button id="btnNext" class="primary">Next &rarr;</button>
+      <button id="btnPlay">&#9654; Play</button>
+      <button id="btnReplay">&#8635; Replay step</button>
+      <span class="progress" id="progress"></span>
+      <span class="phase-pill" id="phasePill"></span>
+    </div>
+
+    <div id="stagePanel">
+      <div id="stageInner">
+        <h2 id="stepTitle"></h2>
+        <div id="stepEq"></div>
+        <div id="stepCaption"></div>
+        <div id="stage"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ═══════════════════════ 0 · GSAP fallback stub ═══════════════════════ */
+const HAS_GSAP = typeof window.gsap !== 'undefined';
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function makeTL(){
+  if (HAS_GSAP && !REDUCED){ return gsap.timeline(); }
+  // Minimal chainable stub: entrances (.from) need no work, .call runs immediately.
+  const tl = {
+    from(){return tl}, to(t,v){ try{
+      const els = typeof t==='string'?document.querySelectorAll(t):(t.length!==undefined?t:[t]);
+      [].forEach.call(els,el=>{ for(const k in v){ if(k in el.style) el.style[k]=v[k]; } });
+    }catch(e){} return tl },
+    set(){return tl}, call(fn){ fn&&fn(); return tl }, add(){return tl},
+    eventCallback(ev,fn){ if(ev==='onComplete'&&fn) setTimeout(fn,0); return tl },
+    kill(){}, progress(){return tl}
+  };
+  return tl;
+}
+
+/* ═══════════════════════ 1 · Math lib ═══════════════════════ */
+const M = {
+  matmul(A,B){ const r=A.length,inner=B.length,c=B[0].length,out=[];
+    for(let i=0;i<r;i++){out[i]=[];for(let j=0;j<c;j++){let s=0;for(let k=0;k<inner;k++)s+=A[i][k]*B[k][j];out[i][j]=s}} return out },
+  add(A,B){ return A.map((row,i)=>row.map((v,j)=>v+B[i][j])) },
+  addBias(A,b){ return A.map(row=>row.map((v,j)=>v+b[j])) },
+  T(A){ return A[0].map((_,j)=>A.map(row=>row[j])) },
+  scale(A,s){ return A.map(row=>row.map(v=>v*s)) },
+  layernorm(A){ // per row, γ=1 β=0, eps for safety
+    return A.map(row=>{
+      const mu=row.reduce((a,b)=>a+b,0)/row.length;
+      const va=row.reduce((a,b)=>a+(b-mu)*(b-mu),0)/row.length;
+      const sd=Math.sqrt(va+1e-5);
+      return row.map(v=>(v-mu)/sd);
+    })},
+  lnStats(row){ const mu=row.reduce((a,b)=>a+b,0)/row.length;
+    const sd=Math.sqrt(row.reduce((a,b)=>a+(b-mu)*(b-mu),0)/row.length+1e-5); return {mu,sd} },
+  softmaxRows(A){ return A.map(row=>{
+      const m=Math.max(...row.filter(v=>isFinite(v)));
+      const ex=row.map(v=>isFinite(v)?Math.exp(v-m):0);
+      const s=ex.reduce((a,b)=>a+b,0); return ex.map(v=>v/s) })},
+  gelu(A){ return A.map(row=>row.map(x=>0.5*x*(1+Math.tanh(Math.sqrt(2/Math.PI)*(x+0.044715*x*x*x))))) },
+  mask(A){ return A.map((row,i)=>row.map((v,j)=>j>i?-Infinity:v)) },
+};
+const fmt = v => {
+  if (v===-Infinity) return '−∞';
+  const r=(Math.round(v*100)/100).toFixed(2);
+  return r==='-0.00'?'0.00':r;
+};
+
+/* ═══════════════════════ 2 · Toy model + trace ═══════════════════════ */
+const VOCAB = ['The','cat','sat','on','mat','dog','ran','big'];
+const TOKENS = ['The','cat','sat'];
+const IDS = [0,1,2];
+const W_E = [
+  [ 0.5,-0.5, 0.2, 0.1],  // The
+  [ 1.0, 0.5,-0.3, 0.4],  // cat
+  [-0.2, 0.8, 0.6,-0.5],  // sat
+  [ 0.3,-0.1, 0.9, 0.2],  // on
+  [ 0.7, 0.2, 0.1, 0.8],  // mat
+  [ 0.9, 0.4,-0.4, 0.3],  // dog
+  [-0.3, 0.7, 0.5,-0.6],  // ran
+  [ 0.1,-0.8, 0.3, 0.6],  // big
+];
+const W_pos = [
+  [ 0.1, 0.0,-0.1, 0.2],
+  [ 0.0, 0.2, 0.1,-0.1],
+  [-0.1, 0.1, 0.2, 0.0],
+];
+const HEADS = [
+  { W_Q:[[0.5,0.2],[-0.3,0.4],[0.1,-0.5],[0.4,0.3]],
+    W_K:[[0.2,-0.4],[0.5,0.1],[-0.2,0.3],[0.3,0.5]],
+    W_V:[[0.4,0.1],[0.2,-0.3],[-0.1,0.5],[0.5,0.2]] },
+  { W_Q:[[-0.2,0.5],[0.4,-0.1],[0.3,0.2],[-0.5,0.4]],
+    W_K:[[0.3,0.2],[-0.4,0.5],[0.1,-0.3],[0.2,0.4]],
+    W_V:[[-0.3,0.4],[0.5,0.2],[0.2,-0.4],[0.1,0.3]] },
+];
+const W_O = [[0.3,-0.2,0.4,0.1],[0.1,0.5,-0.3,0.2],[-0.4,0.2,0.1,0.5],[0.2,0.3,0.5,-0.1]];
+const W_in = [
+  [ 0.3,-0.5, 0.2, 0.4,-0.2, 0.1, 0.5,-0.3],
+  [-0.1, 0.4, 0.5,-0.2, 0.3,-0.4, 0.2, 0.1],
+  [ 0.5, 0.1,-0.3, 0.2, 0.4, 0.3,-0.1, 0.5],
+  [ 0.2,-0.3, 0.1, 0.5,-0.5, 0.2, 0.3, 0.4],
+];
+const b_in = [0.1,-0.1,0,0.1,-0.2,0.1,0,-0.1];
+const W_out = [
+  [ 0.2,-0.1, 0.3, 0.1],[-0.3, 0.2, 0.1, 0.4],[ 0.1, 0.5,-0.2, 0.3],[ 0.4,-0.2, 0.2,-0.1],
+  [-0.2, 0.3, 0.4, 0.2],[ 0.3, 0.1,-0.1, 0.5],[ 0.1, 0.4, 0.2,-0.3],[ 0.5,-0.3, 0.1, 0.2],
+];
+const b_out = [0,0.1,-0.1,0];
+
+// ── Forward pass ──
+const tr = {};
+tr.tokE = IDS.map(i=>W_E[i].slice());
+tr.posE = W_pos.map(r=>r.slice());
+tr.x0   = M.add(tr.tokE, tr.posE);
+tr.ln1  = M.layernorm(tr.x0);
+tr.heads = HEADS.map(h=>{
+  const Q=M.matmul(tr.ln1,h.W_Q), K=M.matmul(tr.ln1,h.W_K), V=M.matmul(tr.ln1,h.W_V);
+  const raw=M.scale(M.matmul(Q,M.T(K)),1/Math.sqrt(2));
+  const masked=M.mask(raw);
+  const pat=M.softmaxRows(masked);
+  const z=M.matmul(pat,V);
+  return {Q,K,V,raw,masked,pat,z};
+});
+tr.zcat = tr.heads[0].z.map((row,i)=>row.concat(tr.heads[1].z[i]));
+tr.attnOut = M.matmul(tr.zcat, W_O);
+tr.x1  = M.add(tr.x0, tr.attnOut);
+tr.ln2 = M.layernorm(tr.x1);
+tr.pre = M.addBias(M.matmul(tr.ln2, W_in), b_in);
+tr.hidden = M.gelu(tr.pre);
+tr.mlpOut = M.addBias(M.matmul(tr.hidden, W_out), b_out);
+tr.x2  = M.add(tr.x1, tr.mlpOut);
+tr.lnF = M.layernorm(tr.x2);
+tr.logits = M.matmul(tr.lnF, M.T(W_E));
+tr.probsLast = M.softmaxRows([tr.logits[2]])[0];
+tr.pred = VOCAB[tr.probsLast.indexOf(Math.max(...tr.probsLast))];
+
+/* ═══════════════════════ 3 · Renderers ═══════════════════════ */
+const stage = document.getElementById('stage');
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!==undefined)e.innerHTML=html; return e; }
+
+function cellColor(v, maxAbs){
+  if (v===-Infinity) return '';
+  const a = Math.min(1, Math.abs(v)/(maxAbs||1)) * 0.55;
+  return v>=0 ? `rgba(207,150,48,${a})` : `rgba(74,144,217,${a})`;
+}
+function maxAbsOf(Mx){ let m=0; Mx.forEach(r=>r.forEach(v=>{ if(isFinite(v)) m=Math.max(m,Math.abs(v)); })); return m||1; }
+
+// tensorGrid: matrix card with row/col labels, heat-tinted cells
+function tensorGrid(mat, opts){
+  opts = opts||{};
+  const card = el('div','tcard');
+  if (opts.label) card.appendChild(el('div','tlabel',opts.label)).style.color = opts.color||'var(--ink)';
+  const pills = el('div','tpills');
+  if (opts.toy) pills.appendChild(el('span','pill','toy: '+opts.toy));
+  if (opts.gpt) pills.appendChild(el('span','pill gpt','GPT-2: '+opts.gpt));
+  if (opts.toy||opts.gpt) card.appendChild(pills);
+  const cols = mat[0].length;
+  const grid = el('div','tgrid');
+  const hasRL = !!opts.rowLabels, hasCL = !!opts.colLabels;
+  grid.style.gridTemplateColumns = (hasRL?'auto ':'')+`repeat(${cols},1fr)`;
+  if (hasCL){
+    if (hasRL) grid.appendChild(el('div','collab',''));
+    for(let j=0;j<cols;j++) grid.appendChild(el('div','collab',opts.colLabels[j]||''));
+  }
+  const mx = opts.maxAbs || maxAbsOf(mat);
+  mat.forEach((row,i)=>{
+    if (hasRL) grid.appendChild(el('div','rowlab',opts.rowLabels[i]||''));
+    row.forEach((v,j)=>{
+      const c = el('div','cell'+(v===-Infinity?' masked':''), fmt(v));
+      c.dataset.r=i; c.dataset.c=j;
+      c.style.background = cellColor(v,mx);
+      if (opts.killIf && opts.killIf(i,j,v)) c.classList.add('killed');
+      grid.appendChild(c);
+    });
+  });
+  card.appendChild(grid);
+  if (opts.foot) card.appendChild(el('div','note',opts.foot));
+  stage.appendChild(card);
+  return card;
+}
+function operator(sym, cls){ stage.appendChild(el('div',cls||'op',sym)); }
+function fullWidth(html, cls){ const d=el('div',cls||'expand',html); stage.appendChild(d); return d; }
+
+function entrance(tl, card, delay){
+  const cells = card.querySelectorAll('.cell');
+  if (HAS_GSAP && !REDUCED)
+    tl.from(cells, {opacity:0, y:9, duration:0.32, stagger:0.028, ease:'power2.out'}, delay||'+=0');
+  return tl;
+}
+
+/* ═══════════════════════ 4 · Master diagram ═══════════════════════ */
+const PHASE_COLOR = {embed:'var(--keep)', norm:'var(--muted)', attn:'var(--speech)', mlp:'var(--violet)', repeat:'var(--cut)', out:'var(--warn)'};
+const PHASE_NAME  = {embed:'Embedding', norm:'Normalize', attn:'Attention', mlp:'MLP', repeat:'Repeat ×12', out:'Output'};
+const DNODES = [
+  {id:'tokens', label:'tokens',   sub:'[3]',      phase:'embed', steps:[1]},
+  {id:'embed',  label:'W_E',      sub:'lookup',   phase:'embed', steps:[2]},
+  {id:'pos',    label:'+W_pos',   sub:'[3,4]',    phase:'embed', steps:[3]},
+  {id:'x0',     label:'x₀',  sub:'[3,4]',    phase:'embed', steps:[4]},
+  {id:'ln1',    label:'LN₁', sub:'',         phase:'norm',  steps:[5],  inBlock:true},
+  {id:'qkv',    label:'Q K V',    sub:'4→2', phase:'attn',  steps:[6,7,8], inBlock:true},
+  {id:'scores', label:'Q·Kᵀ', sub:'/√d', phase:'attn', steps:[9], inBlock:true},
+  {id:'mask',   label:'mask',     sub:'−∞', phase:'attn', steps:[10], inBlock:true},
+  {id:'smax',   label:'softmax',  sub:'[3,3]',    phase:'attn',  steps:[11], inBlock:true},
+  {id:'z',      label:'@V',       sub:'mix',      phase:'attn',  steps:[12], inBlock:true},
+  {id:'concat', label:'concat',   sub:'2+2',      phase:'attn',  steps:[13], inBlock:true},
+  {id:'wo',     label:'W_O',      sub:'4→4', phase:'attn',  steps:[14], inBlock:true},
+  {id:'res1',   label:'+',        sub:'resid',    phase:'attn',  steps:[15], inBlock:true, small:true},
+  {id:'ln2',    label:'LN₂', sub:'',         phase:'norm',  steps:[16], inBlock:true},
+  {id:'mlpin',  label:'MLP↑',sub:'GELU',     phase:'mlp',   steps:[17], inBlock:true},
+  {id:'mlpout', label:'MLP↓',sub:'8→4', phase:'mlp',   steps:[18], inBlock:true},
+  {id:'res2',   label:'+',        sub:'resid',    phase:'mlp',   steps:[19], inBlock:true, small:true},
+  {id:'x12',    label:'×12', sub:'layers',   phase:'repeat',steps:[20]},
+  {id:'outp',   label:'LN→W_Eᵀ', sub:'→probs', phase:'out', steps:[21]},
+];
+let NODE_POS = {};
+const CX = 170;                      // center x of the vertical column
+(function layout(){
+  let y = 26; const gap = 24;
+  DNODES.forEach(n=>{
+    if (n.id==='ln1') y += 30;       // breathing room for the block-container label
+    if (n.id==='x12') y += 18;       // gap after the block container closes
+    const w = n.small ? 60 : 150;
+    const h = n.small ? 36 : 50;
+    NODE_POS[n.id] = {x: CX - w/2, y, w, h};
+    y += h + gap;
+  });
+  NODE_POS._totalH = y + 10;
+  NODE_POS._totalW = 360;            // column + residual-arc margin
+})();
+
+const svg = d3.select('#diagram');
+const gRoot = svg.append('g');
+function buildDiagram(){
+  // No viewBox: the SVG stays in CSS-pixel coordinates so d3-zoom transforms
+  // (computed from getBoundingClientRect) map 1:1 without double scaling.
+  // Layout is a vertical column: data flows top → bottom.
+
+  // Block container behind ln1..res2
+  const first=NODE_POS['ln1'], last=NODE_POS['res2'];
+  gRoot.append('rect')
+    .attr('x',CX-102).attr('y',first.y-30)
+    .attr('width',204).attr('height',last.y+last.h-first.y+44)
+    .attr('rx',14).attr('fill','none')
+    .attr('stroke','var(--line)').attr('stroke-width',1.5).attr('stroke-dasharray','7,4');
+  gRoot.append('text')
+    .attr('x',CX).attr('y',first.y-38).attr('text-anchor','middle')
+    .attr('font-size',10).attr('fill','var(--muted)').attr('letter-spacing','.1em')
+    .text('TRANSFORMER BLOCK ×12');
+
+  // Edges (vertical)
+  svg.append('defs').append('marker').attr('id','marr').attr('markerWidth',7).attr('markerHeight',5)
+    .attr('refX',6.5).attr('refY',2.5).attr('orient','auto')
+    .append('polygon').attr('points','0,0 7,2.5 0,5').attr('fill','var(--muted)');
+  for(let i=0;i<DNODES.length-1;i++){
+    const a=NODE_POS[DNODES[i].id], b=NODE_POS[DNODES[i+1].id];
+    gRoot.append('line')
+      .attr('x1',CX).attr('y1',a.y+a.h).attr('x2',CX).attr('y2',b.y-3)
+      .attr('stroke','var(--muted)').attr('stroke-width',1.4).attr('marker-end','url(#marr)');
+  }
+  // Residual arcs — bulge out to the right of the column
+  function resArc(fromId,toId,label){
+    const a=NODE_POS[fromId], b=NODE_POS[toId];
+    const x0=a.x+a.w, y0=a.y+a.h/2;
+    const x1=b.x+b.w, y1=b.y+b.h/2;
+    const bulge = CX + 148;
+    gRoot.append('path')
+      .attr('d',`M ${x0},${y0} C ${bulge},${y0} ${bulge},${y1} ${x1+3},${y1}`)
+      .attr('fill','none').attr('stroke','var(--keep)').attr('stroke-width',1.4)
+      .attr('stroke-dasharray','5,4').attr('marker-end','url(#marr)').attr('opacity',.75);
+    const my=(y0+y1)/2;
+    gRoot.append('text')
+      .attr('x',bulge-8).attr('y',my)
+      .attr('text-anchor','middle').attr('font-size',9.5).attr('fill','var(--keep)')
+      .attr('transform',`rotate(90,${bulge-8},${my})`)
+      .text(label);
+  }
+  resArc('x0','res1','residual +');
+  resArc('res1','res2','residual +');
+
+  // Nodes
+  const sel = gRoot.selectAll('g.dnode').data(DNODES).join('g')
+    .attr('class','dnode').attr('id',d=>'dn-'+d.id)
+    .attr('transform',d=>{const p=NODE_POS[d.id];return `translate(${p.x},${p.y})`})
+    .on('click',(ev,d)=>gotoStep(d.steps[0]));
+  sel.append('rect')
+    .attr('width',d=>NODE_POS[d.id].w).attr('height',d=>NODE_POS[d.id].h).attr('rx',10)
+    .attr('fill','var(--card)').attr('stroke',d=>PHASE_COLOR[d.phase]).attr('stroke-width',1.6);
+  sel.append('text')
+    .attr('x',d=>NODE_POS[d.id].w/2).attr('y',d=>NODE_POS[d.id].h/2-2)
+    .attr('text-anchor','middle').attr('font-size',13).attr('font-weight',600)
+    .attr('fill','var(--ink)').text(d=>d.label);
+  sel.append('text')
+    .attr('x',d=>NODE_POS[d.id].w/2).attr('y',d=>NODE_POS[d.id].h/2+14)
+    .attr('text-anchor','middle').attr('font-size',9.5)
+    .attr('fill',d=>PHASE_COLOR[d.phase]).text(d=>d.sub);
+}
+buildDiagram();
+
+// Zoom behavior
+const zoom = d3.zoom().scaleExtent([0.25,3.5]).on('zoom',ev=>gRoot.attr('transform',ev.transform));
+svg.call(zoom);
+function panelSize(){ const r=document.getElementById('diagramPanel').getBoundingClientRect(); return [r.width,r.height]; }
+function fitAll(animate){
+  const [W,H]=panelSize();
+  const k=Math.min(W/NODE_POS._totalW, H/NODE_POS._totalH)*0.96;
+  const t=d3.zoomIdentity.translate((W-NODE_POS._totalW*k)/2,(H-NODE_POS._totalH*k)/2).scale(k);
+  (animate? svg.transition().duration(650):svg).call(zoom.transform,t);
+}
+function zoomToNode(id, instant){
+  const p=NODE_POS[id]; if(!p) return fitAll(true);
+  const [W,H]=panelSize();
+  // Follow-cam: keep the column readable and the active node vertically centered.
+  // Scale is width-bound (column + residual margin must fit) and capped for legibility.
+  const k=Math.max(0.7, Math.min(1.3, W/NODE_POS._totalW));
+  const cy=p.y+p.h/2;
+  const t=d3.zoomIdentity.translate(W/2-CX*k, H/2-cy*k).scale(k);
+  if (instant) svg.call(zoom.transform,t);
+  else svg.transition().duration(750).ease(d3.easeCubicInOut).call(zoom.transform,t);
+}
+
+// ── Draggable splitter: resize the diagram rail ──
+(function(){
+  const splitter=document.getElementById('splitter');
+  const panel=document.getElementById('diagramPanel');
+  try{
+    const saved=localStorage.getItem('fp-rail-w');
+    if(saved) panel.style.flexBasis=saved+'px';
+  }catch(e){}
+  let dragging=false;
+  splitter.addEventListener('pointerdown',e=>{
+    dragging=true; splitter.classList.add('dragging');
+    splitter.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  splitter.addEventListener('pointermove',e=>{
+    if(!dragging) return;
+    const mainRect=document.getElementById('main').getBoundingClientRect();
+    const w=Math.max(220, Math.min(mainRect.width*0.6, e.clientX-mainRect.left));
+    panel.style.flexBasis=w+'px';
+    zoomToNode(STEPS[cur].node, true);
+  });
+  splitter.addEventListener('pointerup',e=>{
+    if(!dragging) return;
+    dragging=false; splitter.classList.remove('dragging');
+    try{localStorage.setItem('fp-rail-w',Math.round(panel.getBoundingClientRect().width))}catch(e2){}
+    zoomToNode(STEPS[cur].node);
+  });
+})();
+function highlightNode(stepNum){
+  DNODES.forEach(n=>{
+    const g=document.getElementById('dn-'+n.id);
+    const on=n.steps.includes(stepNum);
+    g.classList.toggle('active',on);
+    g.classList.toggle('dim',!on);
+  });
+}
+
+/* ═══════════════════════ 5 · Steps ═══════════════════════ */
+const RL = TOKENS;                        // row labels
+const CL4 = ['d0','d1','d2','d3'];
+const CL2 = ['d0','d1'];
+const CL8 = ['d0','d1','d2','d3','d4','d5','d6','d7'];
+
+const STEPS = [
+{ n:1, node:'tokens', phase:'embed', title:'Tokens → IDs',
+  eq:'tokens = ["The", "cat", "sat"]  →  ids = [0, 1, 2]',
+  cap:`Three words walk into a transformer. First, each becomes a number — its index in the vocabulary. Nothing clever yet: it's a phone book lookup. GPT-2's book has <strong>50,257 entries</strong>; ours has 8.`,
+  render(tl){
+    TOKENS.forEach((t,i)=>{
+      stage.appendChild(el('div','chip tok','"'+t+'"'));
+      stage.appendChild(el('div','arrow','→'));
+      stage.appendChild(el('div','chip idc','id '+IDS[i]));
+      if(i<2) stage.appendChild(el('div','op','·'));
+    });
+    fullWidth('vocabulary: '+VOCAB.map((w,i)=>i+':"'+w+'"').join(' · '),'note');
+    if(HAS_GSAP&&!REDUCED) tl.from('#stage .chip',{opacity:0,scale:.7,duration:.35,stagger:.12,ease:'back.out(2)'});
+  }},
+{ n:2, node:'embed', phase:'embed', title:'Token Embedding — a lookup, not a matmul',
+  eq:'tok_embed = W_E[ids]        toy [3,4] · GPT-2 [T,768]',
+  cap:`Each ID picks out one <strong>row</strong> of the embedding matrix W<sub>E</sub>. No multiplication — a table lookup. "cat" becomes 4 numbers (GPT-2: 768). These numbers are <em>learned</em>: during training the model itself decided what "cat" should mean.`,
+  render(tl){
+    const c1=tensorGrid(W_E,{label:'W_E — embedding table',color:'var(--keepdk)',toy:'[8, 4]',gpt:'[50257, 768]',rowLabels:VOCAB,colLabels:CL4});
+    operator('→','arrow');
+    const c2=tensorGrid(tr.tokE,{label:'tok_embed (rows 0,1,2 copied)',color:'var(--speech)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    tl.call(()=>{ c1.querySelectorAll('.cell').forEach(c=>{ if(+c.dataset.r<3) c.classList.add('hl-row'); }); });
+    entrance(tl,c1); entrance(tl,c2,'+=0.15');
+  }},
+{ n:3, node:'pos', phase:'embed', title:'Positional Embedding',
+  eq:'pos_embed = W_pos[:3]        toy [3,4] · GPT-2 [T,768] (table: [1024,768])',
+  cap:`Attention by itself has no idea about order — "cat sat" and "sat cat" would look identical. So each <strong>position</strong> gets its own learned vector: row 0 for the first slot, row 1 for the second, row 2 for the third. GPT-2's table has 1024 rows — that's the max context length; we slice off the first T.`,
+  render(tl){
+    const c=tensorGrid(tr.posE,{label:'W_pos[:3]',color:'var(--keepdk)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:['pos 0','pos 1','pos 2'],colLabels:CL4});
+    entrance(tl,c);
+  }},
+{ n:4, node:'x0', phase:'embed', title:'Add → the residual stream is born',
+  eq:'x₀ = tok_embed + pos_embed        [3,4] + [3,4] → [3,4]',
+  cap:`Add them, element by element. Word-meaning plus position, sharing the same 4 dimensions. This sum is the <strong>residual stream</strong> — the model's running state. Watch its shape: <strong>[3, 4]</strong> now, and still [3, 4] at the very end. Everything that follows only reads from it and adds to it.`,
+  render(tl){
+    const a=tensorGrid(tr.tokE,{label:'tok_embed',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    operator('+');
+    const b=tensorGrid(tr.posE,{label:'pos_embed',color:'var(--keepdk)',rowLabels:['p0','p1','p2'],colLabels:CL4});
+    operator('=');
+    const c=tensorGrid(tr.x0,{label:'x₀ — residual stream',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    entrance(tl,a); entrance(tl,b,'+=0.1'); entrance(tl,c,'+=0.2');
+    tl.call(()=>c.querySelectorAll('.cell').forEach(x=>x.classList.add('hl-res')));
+  }},
+{ n:5, node:'ln1', phase:'norm', title:'LayerNorm — put every token on the same scale',
+  eq:'x_ln = (x − μ) / σ   per row        [3,4] → [3,4]',
+  cap:(()=>{const s=M.lnStats(tr.x0[1]);return `Before attention reads the stream, standardize each token's vector: subtract its mean, divide by its spread. Take "cat": μ = ${fmt(s.mu)}, σ = ${fmt(s.sd)} — then each value becomes (x−μ)/σ. After this, every row has mean 0 and spread 1. Same information, tamed scale.`})(),
+  render(tl){
+    const a=tensorGrid(tr.x0,{label:'x₀',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    operator('→','arrow');
+    const b=tensorGrid(tr.ln1,{label:'x_ln (each row: μ=0, σ=1)',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    const s=M.lnStats(tr.x0[1]);
+    fullWidth(`"cat" row: [${tr.x0[1].map(fmt).join(', ')}] &nbsp;→&nbsp; μ=${fmt(s.mu)}, σ=${fmt(s.sd)} &nbsp;→&nbsp; [${tr.ln1[1].map(fmt).join(', ')}]`);
+    tl.call(()=>{a.querySelectorAll('.cell[data-r="1"]').forEach(c=>c.classList.add('hl-row'));
+                 b.querySelectorAll('.cell[data-r="1"]').forEach(c=>c.classList.add('hl-res'));});
+    entrance(tl,a); entrance(tl,b,'+=0.15');
+  }},
+{ n:6, node:'qkv', phase:'attn', title:'Queries — every token asks a question',
+  eq:'Q = x_ln @ W_Q        [3,4] @ [4,2] → [3,2]        (GPT-2: [T,768]@[768,64]→[T,64])',
+  cap:`Attention begins. Each token asks a question about the past — its <strong>query</strong>. Multiply the stream by W<sub>Q</sub>: 4 numbers in, 2 out. The head compresses everything into a tiny 2-dim question (GPT-2: 768→64). There are <strong>2 heads</strong>, each with its own W<sub>Q</sub> — we'll follow head 0.`,
+  render(tl){
+    const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    operator('@');
+    const w=tensorGrid(HEADS[0].W_Q,{label:'W_Q (head 0)',color:'var(--violet)',toy:'[4, 2]',gpt:'[768, 64]',colLabels:CL2});
+    operator('=');
+    const q=tensorGrid(tr.heads[0].Q,{label:'Q — queries',color:'var(--warn)',toy:'[3, 2]',gpt:'[T, 64]',rowLabels:RL,colLabels:CL2});
+    entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,q,'+=0.2');
+  }},
+{ n:7, node:'qkv', phase:'attn', title:'Keys — every token advertises what it holds',
+  eq:'K = x_ln @ W_K        [3,4] @ [4,2] → [3,2]',
+  cap:`Each token also advertises what it contains — its <strong>key</strong>. Same input, different matrix: W<sub>K</sub>. Queries ask; keys answer. A head "attends" where question and advertisement line up.`,
+  render(tl){
+    const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    operator('@');
+    const w=tensorGrid(HEADS[0].W_K,{label:'W_K (head 0)',color:'var(--violet)',toy:'[4, 2]',gpt:'[768, 64]',colLabels:CL2});
+    operator('=');
+    const k=tensorGrid(tr.heads[0].K,{label:'K — keys',color:'var(--keepdk)',toy:'[3, 2]',gpt:'[T, 64]',rowLabels:RL,colLabels:CL2});
+    entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,k,'+=0.2');
+  }},
+{ n:8, node:'qkv', phase:'attn', title:'Values — what each token will say if heard',
+  eq:'V = x_ln @ W_V        [3,4] @ [4,2] → [3,2]',
+  cap:`And each token prepares what it would pass along if anyone listens — its <strong>value</strong>. That's W<sub>V</sub>. Three roles, three projections, one shared input. Note what queries and keys <em>can't</em> do: move information. Only values move.`,
+  render(tl){
+    const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    operator('@');
+    const w=tensorGrid(HEADS[0].W_V,{label:'W_V (head 0)',color:'var(--violet)',toy:'[4, 2]',gpt:'[768, 64]',colLabels:CL2});
+    operator('=');
+    const v=tensorGrid(tr.heads[0].V,{label:'V — values',color:'var(--keepdk)',toy:'[3, 2]',gpt:'[T, 64]',rowLabels:RL,colLabels:CL2});
+    entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,v,'+=0.2');
+  }},
+{ n:9, node:'scores', phase:'attn', title:'Scores — every query meets every key',
+  eq:'scores = Q @ Kᵀ / √d_head        [3,2] @ [2,3] → [3,3]',
+  cap:`Score every query against every key: one dot product per pair, divided by √d<sub>head</sub> to keep softmax well-behaved. 3 queries × 3 keys = 9 numbers. The 2 inner dims get <strong>consumed</strong> by the dot product — what survives is the T×T grid. Watch one cell computed the long way:`,
+  render(tl){
+    const q=tensorGrid(tr.heads[0].Q,{label:'Q',color:'var(--speech)',rowLabels:RL,colLabels:CL2});
+    operator('@');
+    const k=tensorGrid(M.T(tr.heads[0].K),{label:'Kᵀ',color:'var(--keepdk)',rowLabels:CL2,colLabels:RL});
+    operator('=');
+    const s=tensorGrid(tr.heads[0].raw,{label:'scores (÷√2)',color:'var(--warn)',toy:'[3, 3]',gpt:'[T, T]',rowLabels:RL,colLabels:RL});
+    const Q1=tr.heads[0].Q[1], K0=tr.heads[0].K[0];
+    const dp=Q1[0]*K0[0]+Q1[1]*K0[1];
+    fullWidth(
+      `scores[<span class="eq-q">cat</span>, <span class="eq-k">The</span>] &nbsp;=&nbsp; `+
+      `<span class="eq-q">q_cat</span> · <span class="eq-k">k_The</span> / √2<br>`+
+      `= (<span class="eq-q">${fmt(Q1[0])}</span>×<span class="eq-k">${fmt(K0[0])}</span> + <span class="eq-q">${fmt(Q1[1])}</span>×<span class="eq-k">${fmt(K0[1])}</span>) / 1.41`+
+      ` &nbsp;=&nbsp; ${fmt(dp)} / 1.41 &nbsp;=&nbsp; <span class="eq-p eq-big">${fmt(tr.heads[0].raw[1][0])}</span>`);
+    tl.call(()=>{
+      q.querySelectorAll('.cell[data-r="1"]').forEach(c=>c.classList.add('hl-row'));
+      k.querySelectorAll('.cell[data-c="0"]').forEach(c=>c.classList.add('hl-col'));
+      s.querySelectorAll('.cell[data-r="1"][data-c="0"]').forEach(c=>c.classList.add('hl-res'));
+    });
+    entrance(tl,q); entrance(tl,k,'+=0.1'); entrance(tl,s,'+=0.25');
+  }},
+{ n:10, node:'mask', phase:'attn', title:'Causal mask — the future is walled off',
+  eq:'scores[i, j] = −∞   wherever j > i',
+  cap:`One problem: "The" shouldn't peek at "cat" — it comes <em>later</em>, and this model predicts left to right. Slam every future cell to <strong>−∞</strong>. After softmax, e<sup>−∞</sup> = 0: exactly zero attention. The upper-right triangle goes dark, permanently.`,
+  render(tl){
+    const a=tensorGrid(tr.heads[0].raw,{label:'scores',color:'var(--speech)',rowLabels:RL,colLabels:RL});
+    operator('→','arrow');
+    const b=tensorGrid(tr.heads[0].masked,{label:'masked scores',color:'var(--cut)',toy:'[3, 3]',gpt:'[T, T]',rowLabels:RL,colLabels:RL});
+    entrance(tl,a); entrance(tl,b,'+=0.2');
+    if(HAS_GSAP&&!REDUCED) tl.from(b.querySelectorAll('.cell.masked'),{scale:.4,duration:.4,stagger:.12,ease:'back.out(2)'},'+=0.1');
+  }},
+{ n:11, node:'smax', phase:'attn', title:'Softmax → the attention pattern',
+  eq:'pattern = softmax(masked, per row)        [3,3] → [3,3], each row sums to 1',
+  cap:`Exponentiate each row and divide by the row's sum. Every row becomes a <strong>probability distribution</strong> — it sums to exactly 1. This is the attention pattern: who looks at whom, and how much. "The" can only see itself, so its whole budget (1.00) lands there.`,
+  render(tl){
+    const p=tr.heads[0].pat;
+    const b=tensorGrid(p,{label:'attention pattern (head 0)',color:'var(--warn)',toy:'[3, 3]',gpt:'[T, T]',rowLabels:RL,colLabels:RL});
+    const sums=el('div','tcard');
+    sums.appendChild(el('div','tlabel','row sums'));
+    p.forEach((row,i)=>{
+      const s=row.reduce((a,x)=>a+x,0);
+      const d=el('div','', `<span style="font-family:var(--mono);font-size:11px;color:var(--muted)">${RL[i]}:</span> <span class="sumbadge">Σ = ${fmt(s)}</span>`);
+      d.style.margin='7px 0'; sums.appendChild(d);
+    });
+    stage.appendChild(sums);
+    entrance(tl,b);
+    if(HAS_GSAP&&!REDUCED) tl.from(sums.querySelectorAll('.sumbadge'),{opacity:0,x:-10,duration:.3,stagger:.12},'+=0.15');
+  }},
+{ n:12, node:'z', phase:'attn', title:'Spend the probabilities — mix the values',
+  eq:'z = pattern @ V        [3,3] @ [3,2] → [3,2]',
+  cap:(()=>{const p=tr.heads[0].pat[1];return `Now spend those probabilities: each token's output is a <strong>weighted average of values</strong>. "cat" takes ${fmt(p[0])}×V(The) + ${fmt(p[1])}×V(cat). This is the only place in the whole transformer where information moves <em>between positions</em> — everything else works on each token privately.`})(),
+  render(tl){
+    const a=tensorGrid(tr.heads[0].pat,{label:'pattern',color:'var(--speech)',rowLabels:RL,colLabels:RL});
+    operator('@');
+    const v=tensorGrid(tr.heads[0].V,{label:'V',color:'var(--keepdk)',rowLabels:RL,colLabels:CL2});
+    operator('=');
+    const z=tensorGrid(tr.heads[0].z,{label:'z (head 0)',color:'var(--warn)',toy:'[3, 2]',gpt:'[T, 64]',rowLabels:RL,colLabels:CL2});
+    const p=tr.heads[0].pat[1], V=tr.heads[0].V;
+    fullWidth(
+      `z[<span class="eq-q">cat</span>] = <span class="eq-p">${fmt(p[0])}</span>×<span class="eq-k">[${V[0].map(fmt).join(', ')}]</span> + `+
+      `<span class="eq-p">${fmt(p[1])}</span>×<span class="eq-k">[${V[1].map(fmt).join(', ')}]</span> `+
+      `= <span class="eq-big eq-p">[${tr.heads[0].z[1].map(fmt).join(', ')}]</span>`);
+    tl.call(()=>{
+      a.querySelectorAll('.cell[data-r="1"]').forEach(c=>c.classList.add('hl-row'));
+      z.querySelectorAll('.cell[data-r="1"]').forEach(c=>c.classList.add('hl-res'));
+    });
+    entrance(tl,a); entrance(tl,v,'+=0.1'); entrance(tl,z,'+=0.25');
+  }},
+{ n:13, node:'concat', phase:'attn', title:'Concatenate the heads',
+  eq:'z = concat(z₀, z₁)        [3,2] ‖ [3,2] → [3,4]',
+  cap:`Head 1 was running the whole time with its own W<sub>Q</sub>, W<sub>K</sub>, W<sub>V</sub> — its own search strategy. Each head produced 2 numbers per token; glue them side by side: 2+2 = 4. In GPT-2: 12 heads × 64 = 768. That's all "multi-head" means.`,
+  render(tl){
+    const a=tensorGrid(tr.heads[0].z,{label:'z head 0',color:'var(--speech)',rowLabels:RL,colLabels:CL2});
+    operator('‖');
+    const b=tensorGrid(tr.heads[1].z,{label:'z head 1',color:'var(--violet)',rowLabels:RL,colLabels:CL2});
+    operator('=');
+    const c=tensorGrid(tr.zcat,{label:'z concat',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:['h0·d0','h0·d1','h1·d0','h1·d1']});
+    entrance(tl,a); entrance(tl,b,'+=0.1'); entrance(tl,c,'+=0.2');
+  }},
+{ n:14, node:'wo', phase:'attn', title:'Output projection — blend the heads',
+  eq:'attn_out = z @ W_O        [3,4] @ [4,4] → [3,4]        (GPT-2: [T,768]@[768,768])',
+  cap:`One last mix: W<sub>O</sub> blends what the heads found and writes the answer back in <em>residual-stream coordinates</em>. The heads each worked in their private 2-dim (GPT-2: 64-dim) workspaces; W<sub>O</sub> is the translator back to the shared language.`,
+  render(tl){
+    const a=tensorGrid(tr.zcat,{label:'z concat',color:'var(--speech)',rowLabels:RL,colLabels:['h0·d0','h0·d1','h1·d0','h1·d1']});
+    operator('@');
+    const w=tensorGrid(W_O,{label:'W_O',color:'var(--violet)',toy:'[4, 4]',gpt:'[768, 768]',colLabels:CL4});
+    operator('=');
+    const c=tensorGrid(tr.attnOut,{label:'attn_out',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,c,'+=0.2');
+  }},
+{ n:15, node:'res1', phase:'attn', title:'Residual add #1 — deposit, don’t replace',
+  eq:'x₁ = x₀ + attn_out        [3,4] + [3,4] → [3,4]',
+  cap:`Add attention's contribution to what we already had. Attention doesn't <em>replace</em> the stream — it makes a <strong>deposit</strong>. The shape is still [3, 4]. This additive structure is why interpretability researchers can decompose a transformer: every component's contribution is just a term in a big sum.`,
+  render(tl){
+    const a=tensorGrid(tr.x0,{label:'x₀',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    operator('+');
+    const b=tensorGrid(tr.attnOut,{label:'attn_out',color:'var(--keepdk)',rowLabels:RL,colLabels:CL4});
+    operator('=');
+    const c=tensorGrid(tr.x1,{label:'x₁ — updated stream',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    entrance(tl,a); entrance(tl,b,'+=0.1'); entrance(tl,c,'+=0.2');
+    tl.call(()=>c.querySelectorAll('.cell').forEach(x=>x.classList.add('hl-res')));
+  }},
+{ n:16, node:'ln2', phase:'norm', title:'LayerNorm #2',
+  eq:'x_ln2 = LayerNorm(x₁)        [3,4] → [3,4]',
+  cap:`Standardize again before the next module reads the stream. Same recipe as before: per token, subtract the mean, divide by the spread. Two LayerNorms per block, every block.`,
+  render(tl){
+    const a=tensorGrid(tr.x1,{label:'x₁',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    operator('→','arrow');
+    const b=tensorGrid(tr.ln2,{label:'x_ln2',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    entrance(tl,a); entrance(tl,b,'+=0.15');
+  }},
+{ n:17, node:'mlpin', phase:'mlp', title:'MLP up-projection + GELU',
+  eq:'hidden = GELU(x_ln2 @ W_in + b_in)        [3,4] @ [4,8] → [3,8]        (GPT-2: 768→3072)',
+  cap:`Now the MLP — the transformer's private thinking space. Project each token up to 8 dimensions (GPT-2: 3072, always 4× wider), then apply GELU: <strong>negative numbers get crushed toward zero</strong> — the dimmed, struck cells below. Each of the 8 hidden units is a little detector that either fires or stays quiet. No cross-token traffic here: every token thinks alone.`,
+  render(tl){
+    const a=tensorGrid(tr.pre,{label:'pre-activation (x@W_in + b)',color:'var(--speech)',toy:'[3, 8]',gpt:'[T, 3072]',rowLabels:RL,colLabels:CL8});
+    operator('→','arrow');
+    const b=tensorGrid(tr.hidden,{label:'hidden = GELU(pre)',color:'var(--violet)',toy:'[3, 8]',gpt:'[T, 3072]',rowLabels:RL,colLabels:CL8,
+      killIf:(i,j)=>tr.pre[i][j]<0});
+    fullWidth('struck cells: pre-activation was negative → GELU squashed it toward 0 (the neuron stayed quiet)','note');
+    entrance(tl,a); entrance(tl,b,'+=0.2');
+  }},
+{ n:18, node:'mlpout', phase:'mlp', title:'MLP down-projection',
+  eq:'mlp_out = hidden @ W_out + b_out        [3,8] @ [8,4] → [3,4]',
+  cap:`Project back down: 8 → 4 (GPT-2: 3072 → 768). Whatever the detectors concluded, written back in stream coordinates. Up, think, down — that's the whole MLP.`,
+  render(tl){
+    const a=tensorGrid(tr.hidden,{label:'hidden',color:'var(--violet)',rowLabels:RL,colLabels:CL8});
+    operator('@');
+    const w=tensorGrid(W_out,{label:'W_out',color:'var(--violet)',toy:'[8, 4]',gpt:'[3072, 768]',colLabels:CL4});
+    operator('=');
+    const c=tensorGrid(tr.mlpOut,{label:'mlp_out',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,c,'+=0.2');
+  }},
+{ n:19, node:'res2', phase:'mlp', title:'Residual add #2 — one block done',
+  eq:'x₂ = x₁ + mlp_out        [3,4] + [3,4] → [3,4]',
+  cap:`Deposit into the stream again. One full transformer block is complete: LN → attention → add, LN → MLP → add. And the stream? <strong>Still [3, 4].</strong> It has never changed shape — only its contents got richer.`,
+  render(tl){
+    const a=tensorGrid(tr.x1,{label:'x₁',color:'var(--speech)',rowLabels:RL,colLabels:CL4});
+    operator('+');
+    const b=tensorGrid(tr.mlpOut,{label:'mlp_out',color:'var(--keepdk)',rowLabels:RL,colLabels:CL4});
+    operator('=');
+    const c=tensorGrid(tr.x2,{label:'x₂',color:'var(--warn)',toy:'[3, 4]',gpt:'[T, 768]',rowLabels:RL,colLabels:CL4});
+    entrance(tl,a); entrance(tl,b,'+=0.1'); entrance(tl,c,'+=0.2');
+    tl.call(()=>c.querySelectorAll('.cell').forEach(x=>x.classList.add('hl-res')));
+  }},
+{ n:20, node:'x12', phase:'repeat', title:'×12 — the block repeats',
+  eq:'for layer in range(12):  x = block(x)        shape stays [T, 768] the whole way',
+  cap:`In GPT-2, that entire block runs <strong>12 times in a row</strong>, each with its own learned weights, all reading and writing the same [T, 768] stream. The shapes never change from layer 1 to layer 12 — only the numbers get smarter. (Our toy runs it once.)`,
+  render(tl){
+    const strip=el('div','blockstrip');
+    for(let i=1;i<=12;i++) strip.appendChild(el('div','blk','L'+i));
+    stage.appendChild(strip);
+    fullWidth('each L is the full block you just watched: LN → attn → + → LN → MLP → +','note');
+    if(HAS_GSAP&&!REDUCED) tl.from(strip.querySelectorAll('.blk'),{opacity:0,y:12,duration:.25,stagger:.07,ease:'power2.out'});
+  }},
+{ n:21, node:'outp', phase:'out', title:'The finale — logits → next-word probabilities',
+  eq:'logits = LN(x₂) @ W_Eᵀ   →   probs = softmax(logits[last])        [3,4]@[4,8] → [3,8]',
+  cap:`Normalize one last time, then multiply by <strong>W<sub>E</sub> transposed</strong> — the same embedding table, reused backwards (weight tying). Each token gets a score per vocabulary word; softmax the <em>last</em> token's row and you have the model's bet on the next word. With our toy weights it says <strong>"${tr.pred}"</strong> — a trained model would have opinions worth listening to.`,
+  render(tl){
+    const lg=tensorGrid([tr.logits[2]],{label:'logits for "sat" (last token)',color:'var(--speech)',toy:'[1, 8]',gpt:'[1, 50257]',rowLabels:['sat'],colLabels:VOCAB});
+    operator('→','arrow');
+    const card=el('div','tcard');
+    card.appendChild(el('div','tlabel','softmax → P(next word)')).style.color='var(--warn)';
+    const bars=el('div','bars');
+    const win=tr.probsLast.indexOf(Math.max(...tr.probsLast));
+    tr.probsLast.forEach((p,i)=>{
+      const wr=el('div','bar-wrap');
+      wr.appendChild(el('div','bar-p',(p*100).toFixed(0)+'%'));
+      const bo=el('div','bar-outer');
+      const b=el('div','bar'+(i===win?' winner':''));
+      b.style.height=Math.max(2,p*150)+'px';
+      bo.appendChild(b); wr.appendChild(bo);
+      wr.appendChild(el('div','bar-w'+(i===win?' winner':''),VOCAB[i]));
+      bars.appendChild(wr);
+    });
+    card.appendChild(bars);
+    stage.appendChild(card);
+    entrance(tl,lg);
+    if(HAS_GSAP&&!REDUCED) tl.from(bars.querySelectorAll('.bar'),{height:2,duration:.6,stagger:.06,ease:'power2.out'},'+=0.2');
+  }},
+];
+
+/* ═══════════════════════ 6 · Player ═══════════════════════ */
+let cur = 0, playing=false, playTimer=null, activeTL=null;
+const $ = id=>document.getElementById(id);
+
+function renderStep(){
+  const s=STEPS[cur];
+  if (activeTL && activeTL.kill) activeTL.kill();
+  stage.innerHTML='';
+  $('stepTitle').textContent = s.n+'. '+s.title;
+  $('stepEq').textContent = s.eq;
+  $('stepCaption').innerHTML = s.cap;
+  $('progress').textContent = (cur+1)+' / '+STEPS.length;
+  const pill=$('phasePill');
+  pill.textContent = PHASE_NAME[s.phase];
+  pill.style.color = PHASE_COLOR[s.phase];
+  pill.style.background = 'color-mix(in srgb,'+PHASE_COLOR[s.phase]+' 12%, transparent)';
+  pill.style.border = '1px solid color-mix(in srgb,'+PHASE_COLOR[s.phase]+' 45%, transparent)';
+  highlightNode(s.n);
+  zoomToNode(s.node);
+  const tl = makeTL();
+  s.render(tl);
+  activeTL = tl;
+  if (playing && HAS_GSAP && !REDUCED){
+    tl.eventCallback('onComplete',()=>{ playTimer=setTimeout(()=>{ if(playing) next(); },1600); });
+  } else if (playing){
+    playTimer=setTimeout(()=>{ if(playing) next(); },2200);
+  }
+}
+function gotoStep(n){ cur=Math.min(STEPS.length-1,Math.max(0,n-1)); renderStep(); }
+function next(){ if(cur<STEPS.length-1){cur++;renderStep();} else stopPlay(); }
+function prev(){ stopPlay(); if(cur>0){cur--;renderStep();} }
+function stopPlay(){ playing=false; clearTimeout(playTimer); $('btnPlay').innerHTML='&#9654; Play'; $('btnPlay').classList.remove('primary'); $('btnNext').classList.add('primary'); }
+function togglePlay(){
+  if(playing){ stopPlay(); return; }
+  playing=true; $('btnPlay').innerHTML='&#10074;&#10074; Pause'; $('btnPlay').classList.add('primary'); $('btnNext').classList.remove('primary');
+  renderStep();
+}
+$('btnNext').onclick=()=>{stopPlay();next();};
+$('btnPrev').onclick=prev;
+$('btnPlay').onclick=togglePlay;
+$('btnReplay').onclick=()=>renderStep();
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'){stopPlay();next();}
+  else if(e.key==='ArrowLeft'){prev();}
+  else if(e.key===' '&&e.target===document.body){e.preventDefault();togglePlay();}
+});
+
+// Theme
+const tb=$('themebtn');
+function setTheme(d){
+  document.documentElement.classList.toggle('dark',d);
+  tb.textContent=d?'☀ light':'☾ dark';
+  try{localStorage.setItem('mi-theme',d?'dark':'light')}catch(e){}
+}
+setTheme(document.documentElement.classList.contains('dark'));
+tb.onclick=()=>setTheme(!document.documentElement.classList.contains('dark'));
+
+// Boot
+window.addEventListener('resize',()=>zoomToNode(STEPS[cur].node));
+fitAll(false);
+setTimeout(()=>renderStep(),150);
+</script>
+</body>
+</html>
