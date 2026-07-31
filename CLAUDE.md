@@ -37,3 +37,40 @@ Inline SVG diagrams for the mechanistic-interpretability posts live in `src/asse
 `<svg xmlns viewBox width="100%" role="img" aria-label="...">` — always keep the aria-label meaningful.
 
 Reference examples: `src/assets/diagrams/residual-stream.svg`, `src/assets/diagrams/induction-mechanism.svg`.
+
+## Interactive figures — data pipeline
+
+Figure data is **precomputed, never computed at request time**: a script in
+`scripts/figures/*.py` (run via `conda run -n mech_interp python …`) writes one
+JSON to `src/data/figures/` (≤ ~200 KB, values rounded to 3 dp), consumed by a
+component in `src/components/interactive/`. Contract and size budget:
+`src/data/figures/README.md`. This keeps the site deployable on any static
+host — the deliberate constraint behind staying on GitHub Pages.
+
+## Technical gotchas (learned the hard way)
+
+- **`@astrojs/mdx` must stay on the v4 line** — v5+/v7 require Astro ≥ 7; this
+  project is Astro 5. `astro add mdx` will install the wrong major.
+- **Never name an atlas.css class `group`** (or any Tailwind utility name).
+  `.group` styled every AstroPaper header button sitewide — hence `.gcard`.
+- **Atlas variables are sandboxed, not on `:root`** — `--muted` etc. collide
+  with the blog's theme tokens. When adding a new Atlas component class, add it
+  to *both* variable-scoping selector lists at the top of `atlas.css`.
+- **`@theme inline` emits no root-level CSS vars.** Component CSS cannot use
+  `var(--font-mono)` etc. — reference the Astro fonts API vars directly
+  (`--font-google-sans-code`, `--font-literata`); those do exist at runtime.
+  Canvas code should read `getComputedStyle(el).fontFamily` from a live element
+  (loaded font-family names are hash-mangled).
+- **MDX + Prettier fragmentation:** multi-line JSX text children become
+  separate `<p>`s — an inline link wrapped by Prettier turns into
+  `<a><p>…</p></a>` mid-sentence. For prose inside styled containers, write
+  markdown-in-div (blank lines around the markdown); for structured rows, wrap
+  text in `div` (valid with injected `<p>`), never `span`.
+- **Drafts preview locally:** `draft: true` posts render on the dev server but
+  are excluded from production builds (all routes go through
+  `src/utils/postFilter.ts` — keep new routes on it, don't inline
+  `!data.draft`).
+- **Client scripts must handle `astro:page-load`** (ClientRouter is on;
+  `DOMContentLoaded` fires once per session) and clean up on
+  `astro:before-swap`. See `AttentionPattern.astro` / `PostToc.astro` for the
+  mount pattern.
