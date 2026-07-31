@@ -110,6 +110,8 @@ svg text{font-family:var(--mono)}
 #stageInner{max-width:1060px;margin:0 auto}
 #stepTitle{font-size:24px;font-weight:700;letter-spacing:-.01em;margin:2px 0 2px}
 #stepEq{font-family:var(--mono);font-size:13.5px;color:var(--speech);margin:2px 0 10px}
+#stepEq .eqshapes{color:var(--ink2);font-size:12px;margin-left:12px;padding-left:12px;border-left:1.5px solid var(--line)}
+#stepEq .eqgap{display:inline-block;width:14px}
 #stepCaption{
   font-size:15.5px;color:var(--ink2);line-height:1.6;max-width:62em;margin:0 0 18px;
   border-left:3px solid var(--warn);padding:6px 0 6px 14px;background:var(--warn-bg);border-radius:0 8px 8px 0;
@@ -1267,7 +1269,12 @@ function buildStep(){
   if (veil) inner.style.opacity='0';
   stage.innerHTML='';
   $('stepTitle').textContent = s.n+'. '+s.title;
-  $('stepEq').innerHTML = renderDims(s.eq.replace(/&/g,'&amp;').replace(/</g,'&lt;'));
+  // eq strings separate the calculation from the shape annotation with a run
+  // of 6+ spaces; split there so the shapes render as their own muted segment
+  const eqParts = s.eq.replace(/&/g,'&amp;').replace(/</g,'&lt;').split(/\s{6,}/);
+  $('stepEq').innerHTML = renderDims(
+    `<span class="eqcalc">${eqParts[0]}</span>` +
+    (eqParts.length>1 ? `<span class="eqshapes">${eqParts.slice(1).join('<span class="eqgap"></span>')}</span>` : ''));
   $('stepCaption').innerHTML = renderDims(s.cap);
   $('progress').textContent = (cur+1)+' / '+STEPS.length;
   const pill=$('phasePill');
