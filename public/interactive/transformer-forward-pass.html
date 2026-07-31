@@ -129,6 +129,11 @@ svg text{font-family:var(--mono)}
 
 /* Tensor cards */
 .tcard{background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:4px 4px 0 var(--hair)}
+/* Per-head tensors: ghost cards fanned behind = the n_heads axis as depth */
+.tcard.stacked{box-shadow:
+  5px 5px 0 -1.5px var(--card), 5px 5px 0 0 var(--line),
+  10px 10px 0 -1.5px var(--card), 10px 10px 0 0 var(--hair)}
+.pill.stackpill{border-style:dashed;color:var(--muted)}
 .tcard .tlabel{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;margin-bottom:2px}
 .tcard .tpills{display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap}
 .pill{font-family:var(--mono);font-size:9.5px;padding:2px 8px;border-radius:12px;border:1px solid var(--line);color:var(--ink2);background:var(--paper);white-space:nowrap}
@@ -472,8 +477,10 @@ function tensorGrid(mat, opts){
     const pills = el('div','tpills');
     pills.appendChild(el('span','pill gpt',renderDims(opts.shape)));
     if (opts.pillNote) pills.appendChild(el('span','pill',renderDims(opts.pillNote)));
+    if (opts.stack) pills.appendChild(el('span','pill stackpill',renderDims('head 0 of 12/n_heads')));
     card.appendChild(pills);
   }
+  if (opts.stack) card.classList.add('stacked');
   const cols = mat[0].length;
   const grid = el('div','tgrid');
   const hasRL = !!opts.rowLabels, hasCL = !!opts.colLabels;
@@ -947,9 +954,9 @@ const STEPS = [
   render(tl){
     const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',shape:'[B, T, 768/d_model]',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('@');
-    const w=tensorGrid(HEADS[0].W_Q,{label:'W_Q (head 0)',color:'var(--violet)',shape:'[768/d_model, 64/d_head]',colLabels:CL2,ellip:true,ellipRows:true});
+    const w=tensorGrid(HEADS[0].W_Q,{label:'W_Q (head 0)',color:'var(--violet)',shape:'[768/d_model, 64/d_head]',colLabels:CL2,ellip:true,ellipRows:true,stack:true});
     operator('=');
-    const q=tensorGrid(tr.heads[0].Q,{label:'Q — queries',color:'var(--warn)',shape:'[B, T, 64/d_head]',rowLabels:RL,colLabels:CL2,ellip:true});
+    const q=tensorGrid(tr.heads[0].Q,{label:'Q — queries',color:'var(--warn)',shape:'[B, T, 64/d_head]',rowLabels:RL,colLabels:CL2,ellip:true,stack:true});
     entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,q,'+=0.2');
   }},
 { n:7, node:'k', phase:'attn', title:'Keys — every token advertises what it holds',
@@ -958,9 +965,9 @@ const STEPS = [
   render(tl){
     const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',shape:'[B, T, 768/d_model]',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('@');
-    const w=tensorGrid(HEADS[0].W_K,{label:'W_K (head 0)',color:'var(--violet)',shape:'[768/d_model, 64/d_head]',colLabels:CL2,ellip:true,ellipRows:true});
+    const w=tensorGrid(HEADS[0].W_K,{label:'W_K (head 0)',color:'var(--violet)',shape:'[768/d_model, 64/d_head]',colLabels:CL2,ellip:true,ellipRows:true,stack:true});
     operator('=');
-    const k=tensorGrid(tr.heads[0].K,{label:'K — keys',color:'var(--keepdk)',shape:'[B, T, 64/d_head]',rowLabels:RL,colLabels:CL2,ellip:true});
+    const k=tensorGrid(tr.heads[0].K,{label:'K — keys',color:'var(--keepdk)',shape:'[B, T, 64/d_head]',rowLabels:RL,colLabels:CL2,ellip:true,stack:true});
     entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,k,'+=0.2');
   }},
 { n:8, node:'v', phase:'attn', title:'Values — what each token will say if heard',
@@ -969,9 +976,9 @@ const STEPS = [
   render(tl){
     const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',shape:'[B, T, 768/d_model]',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('@');
-    const w=tensorGrid(HEADS[0].W_V,{label:'W_V (head 0)',color:'var(--violet)',shape:'[768/d_model, 64/d_head]',colLabels:CL2,ellip:true,ellipRows:true});
+    const w=tensorGrid(HEADS[0].W_V,{label:'W_V (head 0)',color:'var(--violet)',shape:'[768/d_model, 64/d_head]',colLabels:CL2,ellip:true,ellipRows:true,stack:true});
     operator('=');
-    const v=tensorGrid(tr.heads[0].V,{label:'V — values',color:'var(--keepdk)',shape:'[B, T, 64/d_head]',rowLabels:RL,colLabels:CL2,ellip:true});
+    const v=tensorGrid(tr.heads[0].V,{label:'V — values',color:'var(--keepdk)',shape:'[B, T, 64/d_head]',rowLabels:RL,colLabels:CL2,ellip:true,stack:true});
     entrance(tl,a); entrance(tl,w,'+=0.1'); entrance(tl,v,'+=0.2');
   }},
 { n:9, node:'scores', phase:'attn', title:'Scores — every query meets every key',
@@ -982,7 +989,7 @@ const STEPS = [
     operator('@');
     const k=tensorGrid(M.T(tr.heads[0].K),{label:'Kᵀ',color:'var(--keepdk)',shape:'[B, 64/d_head, T]',rowLabels:CL2,colLabels:RL,ellipRows:true});
     operator('=');
-    const s=tensorGrid(tr.heads[0].raw,{label:'scores (÷√d_head)',color:'var(--warn)',shape:'[B, T, T]',rowLabels:RL,colLabels:RL});
+    const s=tensorGrid(tr.heads[0].raw,{label:'scores (÷√d_head)',color:'var(--warn)',shape:'[B, T, T]',rowLabels:RL,colLabels:RL,stack:true});
     const Q1=tr.heads[0].Q[1], K0=tr.heads[0].K[0];
     fullWidth(
       `scores[<span class="eq-q">cat</span>, <span class="eq-k">The</span>] &nbsp;=&nbsp; `+
@@ -1018,7 +1025,7 @@ const STEPS = [
   render(tl){
     const a=tensorGrid(tr.heads[0].raw,{label:'scores',color:'var(--speech)',shape:'[B, T, T]',rowLabels:RL,colLabels:RL});
     operator('→','arrow');
-    const b=tensorGrid(tr.heads[0].masked,{label:'masked scores',color:'var(--cut)',shape:'[B, T, T]',rowLabels:RL,colLabels:RL});
+    const b=tensorGrid(tr.heads[0].masked,{label:'masked scores',color:'var(--cut)',shape:'[B, T, T]',rowLabels:RL,colLabels:RL,stack:true});
     entrance(tl,a); entrance(tl,b,'+=0.2');
     if(HAS_GSAP&&!REDUCED) tl.from(b.querySelectorAll('.cell.masked'),{scale:.4,duration:.4,stagger:.12,ease:'back.out(2)'},'+=0.1');
   }},
@@ -1027,7 +1034,7 @@ const STEPS = [
   cap:`Exponentiate each row and divide by the row's sum. Every row becomes a <strong>probability distribution</strong> — it sums to exactly 1. This is the attention pattern: who looks at whom, and how much. "The" can only see itself, so its whole budget (1.00) lands there. This T×T grid is complete — no dims hidden.`,
   render(tl){
     const p=tr.heads[0].pat;
-    const b=tensorGrid(p,{label:'attention pattern (head 0)',color:'var(--warn)',shape:'[B, T, T]',rowLabels:RL,colLabels:RL});
+    const b=tensorGrid(p,{label:'attention pattern (head 0)',color:'var(--warn)',shape:'[B, T, T]',rowLabels:RL,colLabels:RL,stack:true});
     const sums=el('div','tcard');
     sums.appendChild(el('div','tlabel','row sums'));
     p.forEach((row,i)=>{
@@ -1047,7 +1054,7 @@ const STEPS = [
     operator('@');
     const v=tensorGrid(tr.heads[0].V,{label:'V',color:'var(--keepdk)',shape:'[B, T, 64/d_head]',rowLabels:RL,colLabels:CL2,ellip:true});
     operator('=');
-    const z=tensorGrid(tr.heads[0].z,{label:'z (head 0)',color:'var(--warn)',shape:'[B, T, 64/d_head]',rowLabels:RL,colLabels:CL2,ellip:true});
+    const z=tensorGrid(tr.heads[0].z,{label:'z (head 0)',color:'var(--warn)',shape:'[B, T, 64/d_head]',rowLabels:RL,colLabels:CL2,ellip:true,stack:true});
     const p=tr.heads[0].pat[1], V=tr.heads[0].V;
     fullWidth(
       `z[<span class="eq-q">cat</span>] = <span class="eq-p">${fmt(p[0])}</span>×<span class="eq-k">[${V[0].map(fmt).join(', ')}, ⋯]</span> + `+
