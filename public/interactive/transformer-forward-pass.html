@@ -614,6 +614,32 @@ function buildDiagram(){
     .attr('font-size',9.5).attr('fill','var(--muted)').attr('letter-spacing','.1em')
     .text('TRANSFORMER BLOCK');
 
+  // ── Attention sub-structure: nested containment ──
+  // Inner region = the per-head self-attention mechanism (Q/K/V → scores →
+  // mask → softmax → @V). The outer region adds what makes it MULTI-head:
+  // 12 such heads in parallel, concat, and the W_O mix. Labels sit in the
+  // empty column right of the spine so they never cross an edge.
+  gRoot.append('rect')
+    .attr('x',200).attr('y',364).attr('width',227).attr('height',496).attr('rx',12)
+    .attr('fill','color-mix(in srgb, var(--speech) 4%, transparent)')
+    .attr('stroke','color-mix(in srgb, var(--speech) 30%, transparent)').attr('stroke-width',1);
+  gRoot.append('rect')
+    .attr('x',206).attr('y',372).attr('width',214).attr('height',354).attr('rx',10)
+    .attr('fill','color-mix(in srgb, var(--speech) 5%, transparent)')
+    .attr('stroke','color-mix(in srgb, var(--speech) 30%, transparent)').attr('stroke-width',1)
+    .attr('stroke-dasharray','3,3');
+  gRoot.append('text')
+    .attr('x',412).attr('y',570).attr('text-anchor','middle')
+    .attr('font-size',8).attr('fill','var(--speech)').attr('opacity',.8).attr('letter-spacing','.12em')
+    .attr('transform','rotate(-90,412,570)')
+    .text('SELF-ATTENTION · ONE HEAD');
+  const mhaCap = gRoot.append('text')
+    .attr('x',418).attr('y',798).attr('text-anchor','end')
+    .attr('font-size',8).attr('fill','var(--speech)').attr('opacity',.85).attr('letter-spacing','.1em');
+  mhaCap.append('tspan').text('MULTI-HEAD ATTENTION');
+  mhaCap.append('tspan').attr('x',418).attr('dy',11).attr('font-size',6.8).attr('fill-opacity',.75)
+    .text('12 HEADS → CONCAT → W_O');
+
   // ── Embedding chain (before the stream is born) ──
   edge([[SX,60],[SX,89]]); edge([[SX,136],[SX,165]]); edge([[SX,212],[SX,241]]);
 
