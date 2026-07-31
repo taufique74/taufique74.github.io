@@ -78,7 +78,15 @@ body{
 #splitter::after{content:'';position:absolute;left:-4px;right:-4px;top:0;bottom:0}  /* wider hit area */
 #diagramPanel svg{width:100%;height:100%;display:block;cursor:grab}
 #diagramPanel svg:active{cursor:grabbing}
-#diagramPanel .hint{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:9px;color:var(--muted);pointer-events:none}
+#diagramPanel .hint{position:absolute;bottom:8px;left:8px;right:8px;text-align:center;font-family:var(--mono);font-size:9px;color:var(--muted);pointer-events:none}
+/* Concept chips: press to highlight a functional region of the diagram */
+#conceptBar{position:absolute;bottom:26px;left:6px;right:6px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px;z-index:5}
+#conceptBar button{font-family:var(--mono);font-size:9px;letter-spacing:.03em;padding:3px 9px;
+  border-radius:10px;border:1px solid var(--line);cursor:pointer;color:var(--ink2);
+  background:color-mix(in srgb,var(--paper) 82%,transparent)}
+#conceptBar button:hover{border-color:var(--c,var(--speech))}
+#conceptBar button.on{color:var(--c,var(--speech));border-color:var(--c,var(--speech));font-weight:600;
+  background:color-mix(in srgb,var(--c,var(--speech)) 12%, var(--paper))}
 .dnode{cursor:pointer;transition:opacity .4s}
 .dnode.dim{opacity:.32}
 .dnode rect{transition:stroke-width .3s}
@@ -217,6 +225,7 @@ svg text{font-family:var(--mono)}
 @media (max-width:760px){
   #main{flex-direction:column}
   #diagramPanel{flex:0 0 200px !important;width:100%;border-bottom:1px solid var(--hair)}
+  #conceptBar{display:none}
   #splitter{display:none}
   #stepTitle{font-size:19px}
   .cell{min-width:38px;height:30px;font-size:10.5px}
@@ -236,6 +245,7 @@ svg text{font-family:var(--mono)}
 <div id="main">
   <div id="diagramPanel">
     <svg id="diagram"></svg>
+    <div id="conceptBar"></div>
     <div class="hint">scroll / drag to explore · click to jump</div>
   </div>
 
@@ -794,6 +804,78 @@ function highlightNode(stepNum){
   });
 }
 
+// ── Concept chips: highlight a functional region of the diagram ──
+// QK azure (WHERE to attend) vs OV teal (WHAT moves) mirrors the edge colors
+// already in the diagram: the pattern math is azure, the V bypass is teal.
+const CONCEPTS = [
+  {id:'embedding', label:'embedding', color:'var(--keep)',
+   nodes:['tokens','embed','pos','x0'],
+   note:'token IDs become vectors: W_E lookup + W_pos, summed into x₀'},
+  {id:'sa', label:'self-attention', color:'var(--speech)',
+   nodes:['q','k','v','scores','mask','smax','z'],
+   note:'one head: decide where to look (Q·Kᵀ → softmax), then move V accordingly'},
+  {id:'mha', label:'multi-head', color:'var(--speech)',
+   nodes:['q','k','v','scores','mask','smax','z','concat','wo'],
+   note:'12 heads run in parallel; concat + W_O blend them back to d_model'},
+  {id:'qk', label:'QK circuit', color:'var(--speech)',
+   nodes:['q','k','scores','mask','smax'],
+   note:'W_Q·W_K decide WHERE to attend — they shape the pattern, never the content'},
+  {id:'ov', label:'OV circuit', color:'var(--keepdk)',
+   nodes:['v','z','concat','wo'],
+   note:'W_V·W_O decide WHAT moves — content flows V → z → W_O into the stream'},
+  {id:'mlp', label:'MLP block', color:'var(--violet)',
+   nodes:['ln2','mlpin','mlpout'],
+   note:'per-token processing: expand ×4 to d_mlp, GELU, project back down'},
+  {id:'stream', label:'residual stream', color:'var(--speech)',
+   nodes:['x0','res1','res2','lnF'],
+   note:'the shared [B, T, d_model] highway every sublayer reads from and writes back to'},
+  {id:'lns', label:'layernorms', color:'var(--warn)',
+   nodes:['ln1','ln2','lnF'],
+   note:'every read off the stream is normalized first; LN_f cleans up before unembedding'},
+  {id:'unembed', label:'unembed', color:'var(--warn)',
+   nodes:['lnF','outp','probs'],
+   note:'stream → vocab logits via the tied W_Eᵀ → softmax → P(next token)'},
+];
+let activeConcept = null;
+const HINT_DEFAULT = 'scroll / drag to explore · click to jump';
+const hintEl = document.querySelector('#diagramPanel .hint');
+function zoomToConcept(c){
+  const ps=c.nodes.map(id=>NODE_POS[id]);
+  const x0=Math.min(...ps.map(p=>p.x))-34, y0=Math.min(...ps.map(p=>p.y))-40;
+  const x1=Math.max(...ps.map(p=>p.x+p.w))+34, y1=Math.max(...ps.map(p=>p.y+p.h))+40;
+  const [W,H]=panelSize();
+  const k=Math.max(0.25, Math.min(1.5, Math.min(W/(x1-x0), H/(y1-y0))));
+  const t=d3.zoomIdentity.translate(W/2-(x0+x1)/2*k, H/2-(y0+y1)/2*k).scale(k);
+  svg.transition().duration(650).ease(d3.easeCubicInOut).call(zoom.transform,t);
+}
+function setConcept(c){
+  activeConcept = c.id;
+  document.querySelectorAll('#conceptBar button').forEach(b=>b.classList.toggle('on', b.dataset.cid===c.id));
+  DNODES.forEach(n=>{
+    const g=document.getElementById('dn-'+n.id);
+    const on=c.nodes.includes(n.id);
+    g.classList.toggle('active',on);
+    g.classList.toggle('dim',!on);
+  });
+  hintEl.textContent = c.note;
+  zoomToConcept(c);
+}
+function clearConcept(restore){
+  activeConcept = null;
+  document.querySelectorAll('#conceptBar button.on').forEach(b=>b.classList.remove('on'));
+  hintEl.textContent = HINT_DEFAULT;
+  if (restore){ highlightNode(STEPS[cur].n); zoomToNode(STEPS[cur].node); }
+}
+(function buildConceptBar(){
+  const bar=document.getElementById('conceptBar');
+  CONCEPTS.forEach(c=>{
+    const b=document.createElement('button');
+    b.textContent=c.label; b.dataset.cid=c.id; b.style.setProperty('--c',c.color);
+    b.onclick=()=>{ activeConcept===c.id ? clearConcept(true) : setConcept(c); };
+    bar.appendChild(b);
+  });
+})();
+
 /* ═══════════════════════ 5 · Steps ═══════════════════════ */
 const RL = TOKENS;                        // row labels
 const CL4 = ['d0','d1','d2','d3'];
@@ -1308,6 +1390,7 @@ function buildStep(){
   pill.style.color = PHASE_COLOR[s.phase];
   pill.style.background = 'color-mix(in srgb,'+PHASE_COLOR[s.phase]+' 12%, transparent)';
   pill.style.border = '1px solid color-mix(in srgb,'+PHASE_COLOR[s.phase]+' 45%, transparent)';
+  if (activeConcept) clearConcept(false);   // step navigation overrides concept mode
   highlightNode(s.n);
   zoomToNode(s.node);
   const tl = makeTL();
