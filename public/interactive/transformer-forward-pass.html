@@ -902,7 +902,7 @@ const STEPS = [
   }},
 { n:14, node:'wo', phase:'attn', title:'Output projection — blend the heads',
   eq:'attn_out = z @ W_O        [B, T, 768/d_model] @ [768/d_model, 768/d_model] → [B, T, 768/d_model]',
-  cap:`One last mix: W<sub>O</sub> blends what the 12 heads found and writes the answer back in <em>residual-stream coordinates</em>. The heads each worked in their private 64-dim workspaces; W<sub>O</sub> is the translator back to the shared 768-dim language.`,
+  cap:`One last mix: W<sub>O</sub> blends what the 12 heads found and writes the answer back in <em>residual-stream coordinates</em>. The heads each worked in their private 64-dim workspaces; W<sub>O</sub> is the translator back to the shared 768-dim language. Attention <strong>stops here</strong> — it returns attn_out and never touches the stream itself. The write (<span style="font-family:var(--mono)">x = x + attn_out</span>, the "+" node on the spine) lives one level up, in <span style="font-family:var(--mono)">TransformerBlock.forward</span> — next step.`,
   render(tl){
     const a=tensorGrid(tr.zcat,{label:'z concat',color:'var(--speech)',rowLabels:RL,colLabels:['h0·d0','h0·d1','h1·d0','h1·d1'],ellip:true});
     operator('@');
@@ -945,7 +945,7 @@ const STEPS = [
   }},
 { n:18, node:'mlpout', phase:'mlp', title:'MLP down-projection',
   eq:'mlp_out = hidden @ W_out + b_out        [B, T, 3072/d_mlp] @ [3072/d_mlp, 768/d_model] → [B, T, 768/d_model]',
-  cap:`Project back down: 3072 → 768. Whatever the detectors concluded, written back in stream coordinates. Up, think, down — that's the whole MLP.`,
+  cap:`Project back down: 3072 → 768. Whatever the detectors concluded, written back in stream coordinates. Up, think, down — that's the whole MLP. Like attention, the MLP <strong>returns</strong> its result — the actual write to the stream (<span style="font-family:var(--mono)">x = x + mlp_out</span>) happens in <span style="font-family:var(--mono)">TransformerBlock.forward</span>, next step.`,
   render(tl){
     const a=tensorGrid(tr.hidden,{label:'hidden',color:'var(--violet)',rowLabels:RL,colLabels:CL8,ellip:true});
     operator('@');
@@ -1030,12 +1030,15 @@ const STEP_CODE = {
   11:['pattern = scores.softmax(dim=-1)      # [B,T,T], each row sums to 1'],
   12:['z = pattern @ V                       # [B,T,T] @ [B,T,64] -> [B,T,64]'],
   13:['z = torch.cat([z_0, ..., z_11], dim=-1)   # 12 heads x 64 -> [B,T,768]'],
-  14:['attn_out = z @ W_O                    # [B,T,768] @ [768,768] -> [B,T,768]'],
+  14:['attn_out = z @ W_O                    # [B,T,768] @ [768,768] -> [B,T,768]',
+      '# Attention returns attn_out and stops. The write into the stream is',
+      '# TransformerBlock’s job:  x = x + attn_out   (next step)'],
   15:['x = x + attn_out                      # deposit back into the stream'],
   16:['x_ln2 = layer_norm(x)                 # same recipe as LN1, own gamma/beta'],
   17:['hidden = x_ln2 @ W_in + b_in          # [B,T,768] @ [768,3072] -> [B,T,3072]',
       'hidden = gelu(hidden)                 # negatives crushed toward zero'],
-  18:['mlp_out = hidden @ W_out + b_out      # [B,T,3072] @ [3072,768] -> [B,T,768]'],
+  18:['mlp_out = hidden @ W_out + b_out      # [B,T,3072] @ [3072,768] -> [B,T,768]',
+      '# The MLP returns mlp_out; TransformerBlock writes it:  x = x + mlp_out'],
   19:['x = x + mlp_out                       # block done; still [B,T,768]'],
   20:['for block in blocks:                  # 12 of them in GPT-2 small',
       '    x = x + attn(ln1(x))',
