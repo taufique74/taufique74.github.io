@@ -25,10 +25,10 @@
   color-scheme:light;
   --paper:#faf9f5; --card:#f0efe8; --ink:#141413; --ink2:#6b6a62; --muted:#9e9d95;
   --hair:#dddcd4; --line:#c5c4bb;
-  --speech:#4a90d9; --speech-bg:rgba(74,144,217,0.10);
-  --keep:#2fad7a; --keepdk:#27a06e; --keep-bg:rgba(47,173,122,0.10);
-  --cut:#d95050; --cut-bg:rgba(217,80,80,0.10);
-  --warn:#cf9630; --warn-bg:rgba(207,150,48,0.12);
+  --speech:#3f8fd6; --speech-bg:rgba(63,143,214,0.10);
+  --keep:#1fa294; --keepdk:#178c80; --keep-bg:rgba(31,162,148,0.10);
+  --cut:#d4608e; --cut-bg:rgba(212,96,142,0.10);
+  --warn:#c9942e; --warn-bg:rgba(201,148,46,0.12);
   --violet:#9376e0; --violet-bg:rgba(147,118,224,0.12);
   --mono:'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
 }
@@ -37,9 +37,9 @@ html.dark{
   --paper:#131312; --card:#1d1d1b; --ink:#f2f1ec; --ink2:#c3c2b7; --muted:#8f8d85;
   --hair:#32312d; --line:#45443f;
   --speech:#6da7ec; --speech-bg:rgba(109,167,236,0.14);
-  --keep:#34c48f; --keepdk:#4ad39c; --keep-bg:rgba(52,196,143,0.14);
-  --cut:#e66767; --cut-bg:rgba(230,103,103,0.14);
-  --warn:#e0a33b; --warn-bg:rgba(224,163,59,0.14);
+  --keep:#3dbdae; --keepdk:#52cabc; --keep-bg:rgba(61,189,174,0.14);
+  --cut:#e57ea6; --cut-bg:rgba(229,126,166,0.14);
+  --warn:#dfa845; --warn-bg:rgba(223,168,69,0.14);
   --violet:#a78bfa; --violet-bg:rgba(167,139,250,0.16);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -374,7 +374,7 @@ function el(tag, cls, html){ const e=document.createElement(tag); if(cls)e.class
 function cellColor(v, maxAbs){
   if (v===-Infinity) return '';
   const a = Math.min(1, Math.abs(v)/(maxAbs||1)) * 0.55;
-  return v>=0 ? `rgba(207,150,48,${a})` : `rgba(74,144,217,${a})`;
+  return v>=0 ? `rgba(201,148,46,${a})` : `rgba(63,143,214,${a})`;
 }
 function maxAbsOf(Mx){ let m=0; Mx.forEach(r=>r.forEach(v=>{ if(isFinite(v)) m=Math.max(m,Math.abs(v)); })); return m||1; }
 
