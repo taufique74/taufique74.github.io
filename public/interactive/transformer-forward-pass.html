@@ -558,7 +558,7 @@ const DNODES = [
 ];
 let NODE_POS = {};
 DNODES.forEach(n=>{ NODE_POS[n.id]={x:n.x,y:n.y,w:n.w,h:n.h}; });
-NODE_POS._totalW = 440;
+NODE_POS._totalW = 448;   // includes the layer-stack ghost overhang (x 432→444)
 NODE_POS._totalH = 1296;
 
 const svg = d3.select('#diagram');
@@ -622,14 +622,21 @@ function buildDiagram(){
   rsCap.append('tspan').attr('x',SX+24).attr('dy',10).text('STREAM');
 
   // ── Block container around the two detours ──
+  // Ghost outlines fanned behind = the n_layers axis as depth, mirroring the
+  // stacked per-head tensor cards on the stage. This block is layer 0 of 12.
+  [[12,12,.22],[6,6,.4]].forEach(([dx,dy,op])=>gRoot.append('rect')
+    .attr('x',196+dx).attr('y',294+dy).attr('width',236).attr('height',782)
+    .attr('rx',14).attr('fill','none')
+    .attr('stroke','var(--line)').attr('stroke-width',1.5).attr('stroke-dasharray','7,4')
+    .attr('opacity',op));
   gRoot.append('rect')
     .attr('x',196).attr('y',294).attr('width',236).attr('height',782)
-    .attr('rx',14).attr('fill','none')
+    .attr('rx',14).attr('fill','var(--paper)')
     .attr('stroke','var(--line)').attr('stroke-width',1.5).attr('stroke-dasharray','7,4');
   gRoot.append('text')
     .attr('x',428).attr('y',288).attr('text-anchor','end')
     .attr('font-size',9.5).attr('fill','var(--muted)').attr('letter-spacing','.1em')
-    .text('TRANSFORMER BLOCK');
+    .text('TRANSFORMER BLOCK · LAYER 0 OF 12');
 
   // ── Attention sub-structure: nested containment ──
   // Inner region = the per-head self-attention mechanism (Q/K/V → scores →
