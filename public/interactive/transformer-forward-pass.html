@@ -411,20 +411,37 @@ function renderDims(html){
   });
   return html;
 }
+// Toggling is SCOPED: clicking a chip cycles only its own container (that
+// tensor card's pill, or the eq line, or the caption). The "dims" button in
+// the controls cycles the global default and clears per-scope overrides.
+function dimScopeOf(elm){
+  return elm.closest('.tcard, #stepEq, #stepCaption, .codecard, .classcard') || document.body;
+}
+function dimModeOf(scope){
+  return scope.dataset.dimMode !== undefined ? +scope.dataset.dimMode : dimGlobalMode;
+}
 function refreshDims(){
-  const m = dimGlobalMode;
   document.querySelectorAll('.dimchip').forEach(sp=>{
+    const m = dimModeOf(dimScopeOf(sp));
     const name=sp.dataset.name, num=sp.dataset.num;
     sp.textContent = m===0 ? name : m===1 ? num : DIM_TOY[name];
     sp.dataset.mode = ['name','gpt2','toy'][m];
-    sp.title = 'click to toggle ALL dims: names → GPT-2 sizes → toy sizes';
+    sp.title = 'click: toggle THIS shape (names → GPT-2 → toy) · "dims" button toggles all';
   });
   const b = document.getElementById('btnDims');
-  if (b) b.textContent = 'dims: ' + ['names','GPT-2','toy'][m];
+  if (b) b.textContent = 'dims: ' + ['names','GPT-2','toy'][dimGlobalMode];
 }
-function cycleDims(){ dimGlobalMode = (dimGlobalMode+1)%3; refreshDims(); }
 document.addEventListener('click',e=>{
-  if (e.target.closest('.dimchip') || e.target.id==='btnDims') cycleDims();
+  const sp = e.target.closest('.dimchip');
+  if (sp){
+    const sc = dimScopeOf(sp);
+    sc.dataset.dimMode = (dimModeOf(sc)+1)%3;
+    refreshDims();
+  } else if (e.target.id==='btnDims'){
+    dimGlobalMode = (dimGlobalMode+1)%3;
+    document.querySelectorAll('[data-dim-mode]').forEach(el=>{ delete el.dataset.dimMode; });
+    refreshDims();
+  }
 });
 
 function cellColor(v, maxAbs){
