@@ -189,6 +189,13 @@ svg text{font-family:var(--mono)}
 
 .note{font-family:var(--mono);font-size:11px;color:var(--muted);width:100%;margin-top:4px}
 
+/* Per-step Python snippet */
+.codecard{width:100%;margin-top:14px;background:color-mix(in srgb,var(--card) 88%,var(--paper));
+  border:1px solid var(--hair);border-radius:10px;padding:10px 14px}
+.codecard .codetag{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--muted);margin-bottom:6px}
+.codecard pre{font-family:var(--mono);font-size:11.5px;line-height:1.65;color:var(--ink);overflow-x:auto;margin:0}
+.codecard .cmt{color:var(--muted)}
+
 @media (max-width:760px){
   #main{flex-direction:column}
   #diagramPanel{flex:0 0 200px !important;width:100%;border-bottom:1px solid var(--hair)}
@@ -974,6 +981,56 @@ const STEPS = [
   }},
 ];
 
+/* ═══════════ 5b · Python snippet per step (real GPT-2 shapes) ═══════════ */
+const STEP_CODE = {
+  1: ['tokens = ["The", "cat", "sat"]',
+      'ids = tokenizer.encode(tokens)        # [B, T] = [1, 3]'],
+  2: ['# W_E: [50257, 768] — one learned row per vocab word',
+      'tok_embed = W_E[ids]                  # [B, T, 768]'],
+  3: ['# W_pos: [1024, 768] — one learned row per position',
+      'pos_embed = W_pos[:T]                 # [T, 768], broadcasts over B'],
+  4: ['x = tok_embed + pos_embed             # [B, T, 768] — the residual stream'],
+  5: ['mu = x.mean(-1, keepdim=True)         # per-token mean over 768 dims',
+      'sd = x.std(-1, keepdim=True)',
+      'x_ln = (x - mu) / sd                  # (learned gamma/beta omitted)'],
+  6: ['Q = x_ln @ W_Q                        # [B,T,768] @ [768,64] -> [B,T,64]'],
+  7: ['K = x_ln @ W_K                        # [B,T,768] @ [768,64] -> [B,T,64]'],
+  8: ['V = x_ln @ W_V                        # [B,T,768] @ [768,64] -> [B,T,64]'],
+  9: ['scores = Q @ K.transpose(-2, -1)      # [B,T,64] @ [B,64,T] -> [B,T,T]',
+      'scores = scores / sqrt(64)            # tame the scale before softmax'],
+  10:['mask = torch.triu(torch.ones(T, T), diagonal=1).bool()',
+      'scores = scores.masked_fill(mask, float("-inf"))   # future: j > i'],
+  11:['pattern = scores.softmax(dim=-1)      # [B,T,T], each row sums to 1'],
+  12:['z = pattern @ V                       # [B,T,T] @ [B,T,64] -> [B,T,64]'],
+  13:['z = torch.cat([z_0, ..., z_11], dim=-1)   # 12 heads x 64 -> [B,T,768]'],
+  14:['attn_out = z @ W_O                    # [B,T,768] @ [768,768] -> [B,T,768]'],
+  15:['x = x + attn_out                      # deposit back into the stream'],
+  16:['x_ln2 = layer_norm(x)                 # same recipe as LN1, own gamma/beta'],
+  17:['hidden = x_ln2 @ W_in + b_in          # [B,T,768] @ [768,3072] -> [B,T,3072]',
+      'hidden = gelu(hidden)                 # negatives crushed toward zero'],
+  18:['mlp_out = hidden @ W_out + b_out      # [B,T,3072] @ [3072,768] -> [B,T,768]'],
+  19:['x = x + mlp_out                       # block done; still [B,T,768]'],
+  20:['for block in blocks:                  # 12 of them in GPT-2 small',
+      '    x = x + attn(ln1(x))',
+      '    x = x + mlp(ln2(x))'],
+  21:['x = ln_f(x)                           # final LayerNorm',
+      'logits = x @ W_E.T                    # weight tying -> [B,T,50257]',
+      'probs = logits[:, -1].softmax(-1)     # last token: next-word distribution'],
+};
+function codeBlock(lines){
+  const card = el('div','codecard');
+  card.appendChild(el('div','codetag','PYTHON'));
+  const pre = document.createElement('pre');
+  pre.innerHTML = lines.map(l=>{
+    const esc = l.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    const i = esc.indexOf('#');
+    return i>=0 ? esc.slice(0,i)+'<span class="cmt">'+esc.slice(i)+'</span>' : esc;
+  }).join('\n');
+  card.appendChild(pre);
+  stage.appendChild(card);
+  return card;
+}
+
 /* ═══════════════════════ 6 · Player ═══════════════════════ */
 let cur = 0, playing=false, playTimer=null, activeTL=null;
 const $ = id=>document.getElementById(id);
@@ -1017,6 +1074,10 @@ function buildStep(){
   zoomToNode(s.node);
   const tl = makeTL();
   s.render(tl);
+  if (STEP_CODE[s.n]){
+    const cb = codeBlock(STEP_CODE[s.n]);
+    if (HAS_GSAP && !REDUCED) tl.from(cb,{opacity:0,y:10,duration:.35,ease:'power2.out'},'+=0.15');
+  }
   if (veil && tl.progress){
     // Force-render every tween's start state SYNCHRONOUSLY. Empirically,
     // from() start-states (opacity:0) otherwise apply several frames late —
