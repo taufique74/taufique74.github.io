@@ -814,6 +814,22 @@ const STEPS = [
       s.querySelectorAll('.cell[data-r="1"][data-c="0"]').forEach(c=>c.classList.add('hl-res'));
     });
     entrance(tl,q); entrance(tl,k,'+=0.1'); entrance(tl,s,'+=0.25');
+    // Demo: the same grid for a longer prompt, so the T×T structure is visible
+    // at a realistic size. Hand-picked scores with interpretable structure
+    // (sat→cat, mat→on, articles echoing "The"). Full square — no mask yet.
+    const demoToks=['The','cat','sat','on','the','mat'];
+    const demoS=[
+      [ 0.9,-0.3, 0.1,-0.4, 0.2,-0.1],
+      [ 1.4, 1.1,-0.2, 0.0,-0.3, 0.4],
+      [ 0.6, 2.1, 0.8,-0.1, 0.3, 0.5],
+      [ 0.2, 0.4, 1.6, 0.7,-0.2, 0.1],
+      [ 1.2,-0.1, 0.3, 0.9, 0.6,-0.3],
+      [ 0.5, 0.3, 0.8, 1.7, 1.3, 0.4],
+    ];
+    const d=tensorGrid(demoS,{label:'demo — same grid for a longer prompt: "The cat sat on the mat" (T=6)',
+      color:'var(--speech)',shape:'[6, 6]',rowLabels:demoToks,colLabels:demoToks,
+      foot:'queries down the side, keys across the top — one score per pair. Brighter = stronger pull: "sat" is drawn to "cat", "mat" to "on". Note the upper-right half exists too — tokens scored the FUTURE. The causal mask erases exactly that half in the next step.'});
+    entrance(tl,d,'+=0.3');
   }},
 { n:10, node:'mask', phase:'attn', title:'Causal mask — the future is walled off',
   eq:'scores[i, j] = −∞   wherever j > i        [B, T, T] → [B, T, T]',
