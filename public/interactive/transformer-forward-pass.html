@@ -501,8 +501,11 @@ function buildDiagram(){
   }
 
   // ── The residual stream: a literal spine, not an arrow chain ──
+  // Both ends tuck BEHIND their nodes (x₀ spans y244–290, LN_f y1092–1130;
+  // nodes are opaque and drawn later): the stream emerges from underneath x₀
+  // and dives under LN_f. Flush-abutting caps read as a separate pill node.
   gRoot.append('rect')
-    .attr('x',SX-18).attr('y',290).attr('width',36).attr('height',802).attr('rx',12)
+    .attr('x',SX-18).attr('y',260).attr('width',36).attr('height',852).attr('rx',12)
     .attr('fill','color-mix(in srgb, var(--speech) 12%, transparent)')
     .attr('stroke','color-mix(in srgb, var(--speech) 35%, transparent)').attr('stroke-width',1.2);
   gRoot.append('text')
@@ -574,6 +577,16 @@ function buildDiagram(){
   edge([[SX,1058],[SX,1089]]); edge([[SX,1130],[SX,1155]]); edge([[SX,1202],[SX,1227]]);
 
   // ── Nodes ──
+  // Opaque paper masks under every node, OUTSIDE the .dnode groups: inactive
+  // nodes are dimmed via group opacity, and without a full-opacity backing the
+  // stream band and transit edges show through them (worst at x₀/LN_f, where
+  // the band tucks behind the node, and at the "+" circles sitting on it).
+  DNODES.forEach(d=>{
+    gRoot.append('rect')
+      .attr('x',d.x).attr('y',d.y).attr('width',d.w).attr('height',d.h)
+      .attr('rx',d.round?d.w/2:10)
+      .attr('fill','color-mix(in srgb,var(--paper) 94%,var(--card))');
+  });
   const sel = gRoot.selectAll('g.dnode').data(DNODES).join('g')
     .attr('class','dnode').attr('id',d=>'dn-'+d.id)
     .attr('transform',d=>`translate(${d.x},${d.y})`)
