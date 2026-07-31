@@ -943,7 +943,7 @@ const STEPS = [
   }},
 { n:6, node:'q', phase:'attn', title:'Queries — every token asks a question',
   eq:'Q = x_ln @ W_Q        [B, T, 768/d_model] @ [768/d_model, 64/d_head] → [B, T, 64/d_head]',
-  cap:`Attention begins. Each token asks a question about the past — its <strong>query</strong>. Multiply the stream by W<sub>Q</sub>: 768 numbers in, 64 out. The head compresses everything it knows into a small question. GPT-2 small has <strong>12 heads</strong> per layer, each with its own W<sub>Q</sub> — we follow head 0.`,
+  cap:`Attention begins. Each token asks a question about the past — its <strong>query</strong>. Multiply the stream by W<sub>Q</sub>: 768 numbers in, 64 out. The head compresses everything it knows into a small question. GPT-2 small has <strong>12 heads</strong> per layer, each with its own W<sub>Q</sub> — we follow head 0. In real code the full shape is [B, 12/n_heads, T, 64/d_head] (see the class below) — heads never mix until concat, so the head axis is batch-like and we show the head-0 slice through steps 6–12.`,
   render(tl){
     const a=tensorGrid(tr.ln1,{label:'x_ln',color:'var(--speech)',shape:'[B, T, 768/d_model]',rowLabels:RL,colLabels:CL4,ellip:true});
     operator('@');
