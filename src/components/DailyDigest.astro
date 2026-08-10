@@ -48,7 +48,7 @@ const { day } = Astro.props as { day: DailyData };
       {
         day.papers.map(p => (
           <li class="rounded-lg border border-border p-4">
-            <h3 class="font-semibold">
+            <h3 class="font-semibold text-balance">
               {p.links[0]?.url ? (
                 <a
                   href={p.links[0].url}
@@ -104,7 +104,7 @@ const { day } = Astro.props as { day: DailyData };
       {
         day.radar.map(r => (
           <li class="rounded-lg border border-border p-4">
-            <h3 class="font-semibold">
+            <h3 class="font-semibold text-balance">
               {r.url ? (
                 <a href={r.url} class="hover:text-accent hover:underline">
                   {r.title}
