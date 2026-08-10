@@ -23,13 +23,16 @@ export async function getStaticPaths() {
       dates: days.map(d => d.date),
       newer: days[i - 1]?.date ?? null,
       older: days[i + 1]?.date ?? null,
-      pretty: new globalThis.Date(day.date + "T00:00:00Z").toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        timeZone: "UTC",
-      }),
+      pretty: new globalThis.Date(day.date + "T00:00:00Z").toLocaleDateString(
+        "en-US",
+        {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          timeZone: "UTC",
+        }
+      ),
     },
   }));
 }

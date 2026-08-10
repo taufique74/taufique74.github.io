@@ -12,8 +12,18 @@ const months = [
 ].sort((a, b) => (a < b ? 1 : -1)); // newest month first
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -41,7 +51,7 @@ function monthGrid(ym: string) {
           </p>
           <div class="grid w-56 grid-cols-7 gap-1 text-center text-xs">
             {WEEKDAYS.map(w => (
-              <span class="py-1 font-medium text-muted">{w}</span>
+              <span class="py-1 font-medium text-foreground/60">{w}</span>
             ))}
             {cells.map(d =>
               d === null ? (
@@ -60,7 +70,9 @@ function monthGrid(ym: string) {
                   {Number(d.slice(8))}
                 </a>
               ) : (
-                <span class="py-1 text-muted/60">{Number(d.slice(8))}</span>
+                <span class="py-1 text-foreground/40">
+                  {Number(d.slice(8))}
+                </span>
               )
             )}
           </div>
