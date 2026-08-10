@@ -13,7 +13,12 @@
           "url": "https://huggingface.co/papers/2608.02831"
         }
       ],
-      "tags": ["speech-ai", "rl", "rubric-rewards", "benchmarks"]
+      "tags": [
+        "speech-ai",
+        "rl",
+        "rubric-rewards",
+        "benchmarks"
+      ]
     },
     {
       "title": "SFT Conflicts, RL Coexists: Multi-Task Learning for LLMs",
@@ -27,7 +32,11 @@
           "url": "https://huggingface.co/papers/2608.03573"
         }
       ],
-      "tags": ["llm-training", "rl", "multi-task"]
+      "tags": [
+        "llm-training",
+        "rl",
+        "multi-task"
+      ]
     },
     {
       "title": "Beyond Simply Environment Scaling: Environment Distributions for Multimodal Agent Learning",
@@ -41,7 +50,11 @@
           "url": "https://huggingface.co/papers/2608.03571"
         }
       ],
-      "tags": ["agents", "multimodal", "data-curation"]
+      "tags": [
+        "agents",
+        "multimodal",
+        "data-curation"
+      ]
     },
     {
       "title": "Zero Gap Is Not Restoration: Stratified Per-Question Evaluation of Benchmark Contamination",
@@ -55,7 +68,11 @@
           "url": "https://huggingface.co/papers/2608.07341"
         }
       ],
-      "tags": ["evals", "contamination", "methodology"]
+      "tags": [
+        "evals",
+        "contamination",
+        "methodology"
+      ]
     },
     {
       "title": "Skaling: Chinchilla's Exponents Meet Kaplan's Coupling",
@@ -69,7 +86,10 @@
           "url": "https://huggingface.co/papers/2608.07222"
         }
       ],
-      "tags": ["scaling-laws", "llm-training"]
+      "tags": [
+        "scaling-laws",
+        "llm-training"
+      ]
     }
   ],
   "radar": [
@@ -79,8 +99,12 @@
       "title": "Universal-3.5 Pro validated by three independent benchmarks in one week",
       "summary": "Led all 31 models on Coval's rebuilt hard STT benchmark (3.4% WER); on the Pareto frontier of Daily's Pipecat agent benchmark (282 ms median time-to-final, 1.22% semantic WER at P95); near the top of the HF Open ASR Leaderboard.",
       "why": "Independent validation across both noisy agent audio and clean read speech. (Disclosure: I work on this.)",
-      "url": "",
-      "tags": ["asr", "benchmarks", "speech-ai"]
+      "url": "https://www.linkedin.com/posts/assemblyai_every-speech-to-text-vendor-claims-best-in-class-activity-7489003489143128064-lcKy",
+      "tags": [
+        "asr",
+        "benchmarks",
+        "speech-ai"
+      ]
     },
     {
       "source": "LinkedIn",
@@ -88,8 +112,12 @@
       "title": "NeMo restructured: NVIDIA-NeMo/Speech v3.0, dedicated to ASR/TTS/SpeechLLM",
       "summary": "~1M deprecated LOC removed, 100+ dependencies cut, uv migration, NeMo Automodel integration for distributed SpeechLLM training, MagpieTTS.",
       "why": "Major restructuring of one of the main open-source speech toolkits.",
-      "url": "",
-      "tags": ["speech-ai", "toolkits", "open-source"]
+      "url": "https://www.linkedin.com/posts/piotr-%C5%BCelasko-937b33102_nvidia-nemo-speech-developer-docs-activity-7491476025370066946-_x8Y",
+      "tags": [
+        "speech-ai",
+        "toolkits",
+        "open-source"
+      ]
     },
     {
       "source": "LinkedIn",
@@ -97,8 +125,12 @@
       "title": "Pocket TTS — 100M params, CPU-only, ~200 ms first audio",
       "summary": "~6× real time on two CPU cores of a MacBook, voice cloning, six languages. pip install pocket-tts.",
       "why": "CPU-only TTS shifts the cost/latency floor for voice pipelines.",
-      "url": "",
-      "tags": ["tts", "on-device", "open-source"]
+      "url": "https://www.linkedin.com/posts/alvaro-cintas_you-dont-need-a-gpu-to-run-text-to-speech-activity-7491662237057703936-CrdF",
+      "tags": [
+        "tts",
+        "on-device",
+        "open-source"
+      ]
     },
     {
       "source": "LinkedIn",
@@ -106,8 +138,12 @@
       "title": "Open-source real-time voice assistant pipeline",
       "summary": "VAD→STT→LLM→TTS in swappable threaded stages, WebSocket API speaking OpenAI's Realtime protocol (pip install speech-to-speech); already backing 9,000+ Reachy Mini robots.",
       "why": "An open speech-to-speech reference stack — and a ready-made benchmark harness for voice agents.",
-      "url": "",
-      "tags": ["speech-ai", "voice-agents", "open-source"]
+      "url": "https://www.linkedin.com/posts/devi-t_ai-opensource-huggingface-activity-7491138517708853249-FKc4",
+      "tags": [
+        "speech-ai",
+        "voice-agents",
+        "open-source"
+      ]
     },
     {
       "source": "LinkedIn",
@@ -115,8 +151,12 @@
       "title": "Harness choice can dominate model quality on SWE-bench Pro",
       "summary": "10 coding-agent harnesses × 2 models: pass@1 swings 23→52% and 15→36% by harness alone; harness rankings don't transfer between models (rank correlation ≈ 0). Vendor harnesses collapse on small models.",
       "why": "Eval scaffolding can swamp model effects — a standing caution for benchmark design.",
-      "url": "https://x.com/joelniklaus/status/2085725862142623875",
-      "tags": ["evals", "agents", "benchmarks"]
+      "url": "https://www.linkedin.com/posts/joelniklaus_codex-is-overoptimised-for-large-models-activity-7491491553044049920-tkJ9",
+      "tags": [
+        "evals",
+        "agents",
+        "benchmarks"
+      ]
     },
     {
       "source": "LinkedIn",
@@ -124,8 +164,12 @@
       "title": "Pokee-Isaac 28B claims 10M-token context on a single GPU",
       "summary": "93.3% RULER at 10M tokens, 137K tok/s prefill on one B200, $0.15/M in · $1/M out, Day-0 vLLM/SGLang support; non-decoder-only proprietary architecture.",
       "why": "If external evals confirm it, a real shift in long-context economics.",
-      "url": "",
-      "tags": ["model-release", "long-context", "inference"]
+      "url": "https://www.linkedin.com/posts/zheqingzhubill_releasing-pokee-isaac-28b-the-worlds-first-activity-7490448187682344960-i83g",
+      "tags": [
+        "model-release",
+        "long-context",
+        "inference"
+      ]
     },
     {
       "source": "X",
@@ -134,7 +178,10 @@
       "summary": "A Public Benefit Corporation founded by Jeff Dean with Sanjay Ghemawat, Oriol Vinyals, and Quoc Le, aiming to automate machine learning research itself.",
       "why": "One of the biggest lab-formation stories of the year.",
       "url": "https://x.com/JeffDean/status/2085034604172603724",
-      "tags": ["research-labs", "automated-research"]
+      "tags": [
+        "research-labs",
+        "automated-research"
+      ]
     },
     {
       "source": "X",
@@ -143,7 +190,11 @@
       "summary": "Open plugins released days before Qwen3.8 goes open-weight (confirmed by Qwen on LinkedIn).",
       "why": "Pulls audio understanding into mainstream agent stacks.",
       "url": "https://x.com/Alibaba_Qwen/status/2086664887560970531",
-      "tags": ["agents", "multimodal", "open-source"]
+      "tags": [
+        "agents",
+        "multimodal",
+        "open-source"
+      ]
     },
     {
       "source": "X",
@@ -152,7 +203,140 @@
       "summary": "Launched after the reported incident of agents spontaneously coordinating across services: tell/lookup APIs so agents share learned knowledge deliberately instead of covertly.",
       "why": "Emergent multi-agent coordination, and infrastructure responses to it, are becoming a real design topic.",
       "url": "https://x.com/amasad/status/2086628413322981747",
-      "tags": ["agents", "ai-safety"]
+      "tags": [
+        "agents",
+        "ai-safety"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Adi Margolin (NVIDIA)",
+      "title": "Full-duplex speech-to-speech: NemotronLabs-VoiceChat-11B on a single DGX Spark",
+      "summary": "Pipecat got NVIDIA's full-duplex speech-to-speech model running on deskside hardware — confirmed working, with a Hugging Face link.",
+      "why": "Full-duplex on local hardware is a step-change for voice agents — barge-in and overlapped turn-taking without cloud round-trips.",
+      "url": "",
+      "tags": [
+        "speech-to-speech",
+        "full-duplex",
+        "on-device"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Brooke Hopkins (Coval)",
+      "title": "Picking a voice model is four decisions, not one",
+      "summary": "Public benchmarks only build a shortlist; then test on your own data, run the full voice-agent pipeline end to end, and validate in production with real accents and noise. From her Ai4 talk.",
+      "why": "A practical STT evaluation methodology from a benchmark vendor — how customers actually choose between ASR providers.",
+      "url": "",
+      "tags": [
+        "voice-ai",
+        "stt-evaluation",
+        "benchmarks"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "AssemblyAI (reposting Coval)",
+      "title": "Coval's 30-minute-cycle STT benchmark moved to a harder dataset",
+      "summary": "Universal 3.5 Pro leads overall at 3.3% WER (best on clipping/far-field); GPT-4o Transcribe wins accents/noise/phone-codec/reverb; Parakeet TDT 0.6B v3 fastest at 61ms median TTFS.",
+      "why": "Condition-level split shows no single model dominates. (Disclosure: I work on this.)",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7483956231968018432/",
+      "tags": [
+        "asr",
+        "wer",
+        "benchmarks"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Avi Chawla",
+      "title": "NVIDIA makes KV caches transferable across models",
+      "summary": "Per-layer/per-head linear maps with cross-layer selection and RoPE-stripped fitting convert one model's cache into another's — 73–98% of standalone accuracy on four of six pairs, 2.7–25× faster than re-prefilling. Same-family pairs only so far.",
+      "why": "If KV caches survive model switches, LLM routers stop paying full re-prefill on every model change.",
+      "url": "",
+      "tags": [
+        "kv-cache",
+        "llm-inference",
+        "model-routing"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Linas Beliūnas",
+      "title": "kimi-k3-in-c: a 176 KB C99 engine runs the 2.78T-param Kimi K3 on a normal PC",
+      "summary": "Keeps the dense trunk in 8.24 GB RAM and streams the 16-of-896 active experts from NVMe per token, using original MXFP4 weights with zero conversion (~3K GitHub stars).",
+      "why": "MoE sparsity plus disk streaming breaks the assumption that all weights must live in fast memory.",
+      "url": "",
+      "tags": [
+        "llm-inference",
+        "moe",
+        "edge-inference"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Suvash Sedhain",
+      "title": "Speculative decoding from first principles",
+      "summary": "Why decode is memory-bound, the draft-and-verify loop with the rejection-sampling proof of distribution-exactness, draft sources (Medusa, EAGLE, n-gram), when it stops paying off at high batch size.",
+      "why": "The memory-bandwidth framing applies equally to speeding up ASR and speech-LLM serving.",
+      "url": "",
+      "tags": [
+        "speculative-decoding",
+        "llm-inference",
+        "gpu"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "vLLM",
+      "title": "Kimi K3 Day-0 on vLLM: 2.8T MoE, 1M context, Kimi Delta Attention",
+      "summary": "16 of 896 experts active, native multimodal understanding, and a linear/full attention hybrid that makes million-token context affordable. Recipes and a draft model shipped.",
+      "why": "One of the largest open-weight models ever released, serveable from day one — the K3 wave dominated both feeds.",
+      "url": "",
+      "tags": [
+        "kimi-k3",
+        "vllm",
+        "open-weights",
+        "moe"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "@harshbhatt7585",
+      "title": "SDPO: Self-Distillation Policy Optimization (ETH/MPI/MIT/Stanford)",
+      "summary": "RL via self-distillation using non-verifiable feedback; substantially outperforms an improved GRPO on LiveCodeBench v6 with Qwen3-8B.",
+      "why": "A post-GRPO RL method that works with non-verifiable feedback — relevant to post-training recipes for LLM and speech-LLM work.",
+      "url": "https://x.com/harshbhatt7585/status/2086680983521366460",
+      "tags": [
+        "rl",
+        "post-training",
+        "grpo"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "@chelseabfinn",
+      "title": "Pretraining a Q-function often doesn't help RL finetuning",
+      "summary": "Initializing Q from a pretrained policy beats pretraining the Q-function itself — pretraining's usual transfer story breaks down for value functions.",
+      "why": "A counterintuitive negative result about what pretraining actually transfers in RL.",
+      "url": "https://x.com/chelseabfinn/status/2086449418027270646",
+      "tags": [
+        "rl",
+        "q-learning",
+        "pretraining"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "@YichuanM",
+      "title": "Zero train–inference mismatch, now for linear attention under async RL",
+      "summary": "Bitwise-exact trainer/generator parity for Gated DeltaNet (Qwen3.5-9B / 35B-A3B) on TorchTitan.",
+      "why": "Numerical mismatch silently corrupts RL training signals; exact parity removes a whole class of debugging pain.",
+      "url": "https://x.com/YichuanM/status/2085463113189802207",
+      "tags": [
+        "rl-infra",
+        "linear-attention"
+      ]
     }
   ],
   "noted": [
@@ -185,6 +369,31 @@
       "source": "X",
       "author": "@sophiamyang",
       "summary": "Real-time interactive AI video generation for shopping, on DecartAI's realtime video model."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Yannic Kilcher",
+      "summary": "Video against Kimi K3 self-hosting FOMO — most companies are better off buying inference than running a 2.8T model themselves."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Lan Chu",
+      "summary": "Curated LLM-inference learning path: fundamentals → transformer internals → GPU hardware → optimization → engines (vLLM/SGLang/llama.cpp)."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Srinivasa Rao Bittla",
+      "summary": "Book launch: 'AI Performance Engineering: From GPU Kernels to LLM Inference' — 31 chapters from profiling to production serving."
+    },
+    {
+      "source": "X",
+      "author": "@dhh",
+      "summary": "Claims Claude Fable one-shotted a Rust rewrite of the TerminalTextEffects Python library — 87ms→2ms startup, 9.6× faster rendering."
+    },
+    {
+      "source": "X",
+      "author": "@ChrisJMcCormick",
+      "summary": "Building a GSM8K 'RL speedrun' on Qwen2.5-0.5B — a minimal reproducible RL-finetuning exercise."
     }
   ]
 }
