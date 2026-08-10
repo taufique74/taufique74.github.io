@@ -1,0 +1,133 @@
+---
+// Renders one day of the "What's New Daily" digest (papers + tech radar + briefly noted).
+interface Link {
+  label: string;
+  url: string;
+}
+interface Paper {
+  title: string;
+  org: string;
+  summary: string;
+  why?: string;
+  topic: string;
+  upvotes?: number;
+  links: Link[];
+}
+interface RadarItem {
+  source: string;
+  author: string;
+  title: string;
+  summary: string;
+  why?: string;
+  topic: string;
+  url?: string;
+}
+interface NotedItem {
+  source: string;
+  author: string;
+  summary: string;
+}
+export interface DailyData {
+  date: string;
+  papers: Paper[];
+  radar: RadarItem[];
+  noted?: NotedItem[];
+}
+
+const { day } = Astro.props as { day: DailyData };
+---
+
+<div class="flex flex-col gap-10">
+  <section>
+    <h2 class="mb-4 text-xl font-semibold">
+      Papers <sup class="text-sm text-muted">{day.papers.length}</sup>
+    </h2>
+    <ul class="flex flex-col gap-4">
+      {
+        day.papers.map(p => (
+          <li class="rounded-lg border border-border p-4">
+            <h3 class="font-medium">
+              {p.links[0]?.url ? (
+                <a
+                  href={p.links[0].url}
+                  class="hover:text-accent hover:underline"
+                >
+                  {p.title}
+                </a>
+              ) : (
+                p.title
+              )}
+            </h3>
+            <p class="mt-0.5 text-sm text-muted">
+              {p.org} · {p.topic}
+              {typeof p.upvotes === "number" && <> · ▲{p.upvotes}</>}
+              {p.links.map(l => (
+                <>
+                  {" · "}
+                  <a href={l.url} class="text-accent hover:underline">
+                    {l.label} ↗
+                  </a>
+                </>
+              ))}
+            </p>
+            <p class="mt-2 text-sm">{p.summary}</p>
+            {p.why && <p class="mt-1.5 text-sm text-muted italic">{p.why}</p>}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="mb-4 text-xl font-semibold">
+      Tech radar <sup class="text-sm text-muted">{day.radar.length}</sup>
+    </h2>
+    <ul class="flex flex-col gap-4">
+      {
+        day.radar.map(r => (
+          <li class="rounded-lg border border-border p-4">
+            <h3 class="font-medium">
+              {r.url ? (
+                <a href={r.url} class="hover:text-accent hover:underline">
+                  {r.title}
+                </a>
+              ) : (
+                r.title
+              )}
+            </h3>
+            <p class="mt-0.5 text-sm text-muted">
+              {r.author} · {r.topic} ·{" "}
+              {r.url ? (
+                <a href={r.url} class="text-accent hover:underline">
+                  {r.source} ↗
+                </a>
+              ) : (
+                r.source
+              )}
+            </p>
+            <p class="mt-2 text-sm">{r.summary}</p>
+            {r.why && <p class="mt-1.5 text-sm text-muted italic">{r.why}</p>}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {
+    day.noted && day.noted.length > 0 && (
+      <section>
+        <h2 class="mb-4 text-xl font-semibold">
+          Briefly noted <sup class="text-sm text-muted">{day.noted.length}</sup>
+        </h2>
+        <ul class="flex list-disc flex-col gap-2 ps-5">
+          {day.noted.map(n => (
+            <li class="text-sm">
+              <span class="font-medium">{n.author}</span>
+              <span class="text-muted"> ({n.source})</span> — {n.summary}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</div>

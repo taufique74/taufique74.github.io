@@ -1,0 +1,71 @@
+---
+// Month-grid calendar of available daily digests. Days with an entry link to
+// /whats-new/YYYY-MM-DD; other days are muted. Pure static markup, no JS.
+const { dates, activeDate } = Astro.props as {
+  dates: string[]; // ISO dates that have digests
+  activeDate?: string; // date being viewed (highlighted)
+};
+
+const dateSet = new Set(dates);
+const months = [
+  ...new Set(dates.map(d => d.slice(0, 7))), // "YYYY-MM"
+].sort((a, b) => (a < b ? 1 : -1)); // newest month first
+
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
+
+function monthGrid(ym: string) {
+  const [y, m] = ym.split("-").map(Number);
+  const first = new Date(Date.UTC(y, m - 1, 1));
+  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const lead = (first.getUTCDay() + 6) % 7; // Monday-first offset
+  const cells: (string | null)[] = Array(lead).fill(null);
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push(`${ym}-${String(d).padStart(2, "0")}`);
+  }
+  return { y, m, cells };
+}
+---
+
+<div class="flex flex-wrap gap-8">
+  {
+    months.map(ym => {
+      const { y, m, cells } = monthGrid(ym);
+      return (
+        <div>
+          <p class="mb-2 text-sm font-semibold">
+            {MONTH_NAMES[m - 1]} {y}
+          </p>
+          <div class="grid w-56 grid-cols-7 gap-1 text-center text-xs">
+            {WEEKDAYS.map(w => (
+              <span class="py-1 font-medium text-muted">{w}</span>
+            ))}
+            {cells.map(d =>
+              d === null ? (
+                <span />
+              ) : dateSet.has(d) ? (
+                <a
+                  href={`/whats-new/${d}`}
+                  class:list={[
+                    "rounded py-1 font-medium",
+                    d === activeDate
+                      ? "bg-accent text-background"
+                      : "text-accent hover:bg-muted/25",
+                  ]}
+                  aria-current={d === activeDate ? "date" : undefined}
+                >
+                  {Number(d.slice(8))}
+                </a>
+              ) : (
+                <span class="py-1 text-muted/60">{Number(d.slice(8))}</span>
+              )
+            )}
+          </div>
+        </div>
+      );
+    })
+  }
+</div>

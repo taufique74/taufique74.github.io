@@ -1,0 +1,60 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import Main from "@/layouts/Main.astro";
+import DailyDigest from "@/components/DailyDigest.astro";
+import type { DailyData } from "@/components/DailyDigest.astro";
+import DailyCalendar from "@/components/DailyCalendar.astro";
+import { SITE } from "@/config";
+
+const modules = import.meta.glob<{ default: DailyData }>(
+  "../../data/daily/*.json",
+  { eager: true }
+);
+const days = Object.values(modules)
+  .map(m => m.default)
+  .sort((a, b) => (a.date < b.date ? 1 : -1));
+
+const latest = days[0];
+const dates = days.map(d => d.date);
+---
+
+<Layout title={`What's New Daily | ${SITE.title}`}>
+  <Header />
+  <Main
+    pageTitle="What's New Daily"
+    pageDesc="Daily picks of new papers and tech updates — auto-curated each morning by my briefing agent from Hugging Face daily papers and my LinkedIn/X feeds. Only the interesting ones survive."
+  >
+    {
+      latest ? (
+        <>
+          <div class="mb-8 flex items-baseline justify-between gap-4">
+            <h2 class="text-lg font-semibold">
+              <time datetime={latest.date}>
+                {new Date(latest.date + "T00:00:00Z").toLocaleDateString(
+                  "en-US",
+                  {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    timeZone: "UTC",
+                  }
+                )}
+              </time>
+            </h2>
+            <span class="text-sm text-muted">latest</span>
+          </div>
+          <DailyDigest day={latest} />
+          <hr class="my-10 border-border" />
+          <h2 class="mb-4 text-lg font-semibold">Past days</h2>
+          <DailyCalendar dates={dates} activeDate={latest.date} />
+        </>
+      ) : (
+        <p>No digests yet — the first one lands tomorrow morning.</p>
+      )
+    }
+  </Main>
+  <Footer />
+</Layout>

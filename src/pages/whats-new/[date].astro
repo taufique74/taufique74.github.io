@@ -1,0 +1,70 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import Main from "@/layouts/Main.astro";
+import DailyDigest from "@/components/DailyDigest.astro";
+import type { DailyData } from "@/components/DailyDigest.astro";
+import DailyCalendar from "@/components/DailyCalendar.astro";
+import { SITE } from "@/config";
+
+export async function getStaticPaths() {
+  const modules = import.meta.glob<{ default: DailyData }>(
+    "../../data/daily/*.json",
+    { eager: true }
+  );
+  const days = Object.values(modules)
+    .map(m => m.default)
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
+  return days.map((day, i) => ({
+    params: { date: day.date },
+    props: {
+      day,
+      dates: days.map(d => d.date),
+      newer: days[i - 1]?.date ?? null,
+      older: days[i + 1]?.date ?? null,
+      pretty: new globalThis.Date(day.date + "T00:00:00Z").toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: "UTC",
+      }),
+    },
+  }));
+}
+
+const { day, dates, newer, older, pretty } = Astro.props;
+---
+
+<Layout title={`${day.date} | What's New Daily | ${SITE.title}`}>
+  <Header />
+  <Main pageTitle={["What's New — ", pretty]} titleTransition={day.date}>
+    <div class="mb-8 flex items-baseline justify-between gap-4 text-sm">
+      <a href="/whats-new" class="text-accent hover:underline">
+        ← latest digest
+      </a>
+      <span class="flex gap-4">
+        {
+          older && (
+            <a href={`/whats-new/${older}`} class="text-accent hover:underline">
+              ← {older}
+            </a>
+          )
+        }
+        {
+          newer && (
+            <a href={`/whats-new/${newer}`} class="text-accent hover:underline">
+              {newer} →
+            </a>
+          )
+        }
+      </span>
+    </div>
+    <DailyDigest day={day} />
+    <hr class="my-10 border-border" />
+    <h2 class="mb-4 text-lg font-semibold">Past days</h2>
+    <DailyCalendar dates={dates} activeDate={day.date} />
+  </Main>
+  <Footer />
+</Layout>

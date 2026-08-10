@@ -1,0 +1,141 @@
+{
+  "date": "2026-08-10",
+  "papers": [
+    {
+      "title": "Reinforcement Learning with Evolving Rubrics as Rewards for Audio Reasoning",
+      "org": "UMD · UIUC · Microsoft Research · MBZUAI",
+      "summary": "RL framework supervising audio reasoning with self-evolving, audio-grounded rubric rewards; beats baselines on three audio reasoning benchmarks with dense process-level supervision.",
+      "why": "The only speech paper of the day — rubric-based RL rewards map directly onto grader design for audio benchmarks.",
+      "topic": "speech-ai",
+      "upvotes": 8,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.02831" }]
+    },
+    {
+      "title": "SFT Conflicts, RL Coexists: Multi-Task Learning for LLMs",
+      "org": "CAS IA · Tsinghua",
+      "summary": "SFT suffers cross-task conflicts in multi-stage training while RL's sparse, near-orthogonal parameter updates let diverse tasks coexist. Proposes a Parallel-RL paradigm for decoupled multi-task training.",
+      "why": "A useful mental model for why RL post-training holds up across tasks where SFT regresses.",
+      "topic": "nlp-llm",
+      "upvotes": 20,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.03573" }]
+    },
+    {
+      "title": "Beyond Simply Environment Scaling: Environment Distributions for Multimodal Agent Learning",
+      "org": "CAS IA",
+      "summary": "More training environments can hurt agents via redundancy and conflict; ability-aware environment selection plus a difficulty curriculum yields a 143% average relative gain.",
+      "why": "\"More data isn't better\" — echoes dataset-curation lessons from ASR training. Top-upvoted of the day.",
+      "topic": "agentic-ai",
+      "upvotes": 20,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.03571" }]
+    },
+    {
+      "title": "Zero Gap Is Not Restoration: Stratified Per-Question Evaluation of Benchmark Contamination",
+      "org": "Zhejiang University",
+      "summary": "Argues existing contamination-mitigation metrics are flawed; proposes SA-PPG (difficulty-stratified per-question solve probabilities) and RailCap, a decoding-time cap on memorized trajectories.",
+      "why": "Benchmark contamination measurement is core eval methodology.",
+      "topic": "evals",
+      "upvotes": 1,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.07341" }]
+    },
+    {
+      "title": "Skaling: Chinchilla's Exponents Meet Kaplan's Coupling",
+      "org": "FAIR at Meta",
+      "summary": "A single coupling exponent makes model size and data interact in scaling laws — 1.5–3× lower prediction error at roughly 10× less profiling compute.",
+      "why": "A major-lab refinement of scaling laws worth having as background.",
+      "topic": "scaling",
+      "upvotes": 3,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.07222" }]
+    }
+  ],
+  "radar": [
+    {
+      "source": "LinkedIn",
+      "author": "AssemblyAI",
+      "title": "Universal-3.5 Pro validated by three independent benchmarks in one week",
+      "summary": "Led all 31 models on Coval's rebuilt hard STT benchmark (3.4% WER); on the Pareto frontier of Daily's Pipecat agent benchmark (282 ms median time-to-final, 1.22% semantic WER at P95); near the top of the HF Open ASR Leaderboard.",
+      "why": "Independent validation across both noisy agent audio and clean read speech. (Disclosure: I work on this.)",
+      "topic": "asr-benchmarking",
+      "url": ""
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Piotr Zelasko (NVIDIA)",
+      "title": "NeMo restructured: NVIDIA-NeMo/Speech v3.0, dedicated to ASR/TTS/SpeechLLM",
+      "summary": "~1M deprecated LOC removed, 100+ dependencies cut, uv migration, NeMo Automodel integration for distributed SpeechLLM training, MagpieTTS.",
+      "why": "Major restructuring of one of the main open-source speech toolkits.",
+      "topic": "speech-toolkits",
+      "url": ""
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Kyutai (via Dr. Alvaro Cintas)",
+      "title": "Pocket TTS — 100M params, CPU-only, ~200 ms first audio",
+      "summary": "~6× real time on two CPU cores of a MacBook, voice cloning, six languages. pip install pocket-tts.",
+      "why": "CPU-only TTS shifts the cost/latency floor for voice pipelines.",
+      "topic": "tts",
+      "url": ""
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Hugging Face + Cerebras (via Devika Tamma)",
+      "title": "Open-source real-time voice assistant pipeline",
+      "summary": "VAD→STT→LLM→TTS in swappable threaded stages, WebSocket API speaking OpenAI's Realtime protocol (pip install speech-to-speech); already backing 9,000+ Reachy Mini robots.",
+      "why": "An open speech-to-speech reference stack — and a ready-made benchmark harness for voice agents.",
+      "topic": "speech-pipelines",
+      "url": ""
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Joel Niklaus (Hugging Face)",
+      "title": "Harness choice can dominate model quality on SWE-bench Pro",
+      "summary": "10 coding-agent harnesses × 2 models: pass@1 swings 23→52% and 15→36% by harness alone; harness rankings don't transfer between models (rank correlation ≈ 0). Vendor harnesses collapse on small models.",
+      "why": "Eval scaffolding can swamp model effects — a standing caution for benchmark design.",
+      "topic": "evals",
+      "url": "https://x.com/joelniklaus/status/2085725862142623875"
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Pokee AI",
+      "title": "Pokee-Isaac 28B claims 10M-token context on a single GPU",
+      "summary": "93.3% RULER at 10M tokens, 137K tok/s prefill on one B200, $0.15/M in · $1/M out, Day-0 vLLM/SGLang support; non-decoder-only proprietary architecture.",
+      "why": "If external evals confirm it, a real shift in long-context economics.",
+      "topic": "model-release",
+      "url": ""
+    },
+    {
+      "source": "X",
+      "author": "@JeffDean",
+      "title": "Discovery Loop — a new lab to automate ML research",
+      "summary": "A Public Benefit Corporation founded by Jeff Dean with Sanjay Ghemawat, Oriol Vinyals, and Quoc Le, aiming to automate machine learning research itself.",
+      "why": "One of the biggest lab-formation stories of the year.",
+      "topic": "research",
+      "url": "https://x.com/JeffDean/status/2085034604172603724"
+    },
+    {
+      "source": "X",
+      "author": "@Alibaba_Qwen",
+      "title": "Qwen-MM-Plugins: any agent harness, multimodal-native",
+      "summary": "Open plugins released days before Qwen3.8 goes open-weight (confirmed by Qwen on LinkedIn).",
+      "why": "Pulls audio understanding into mainstream agent stacks.",
+      "topic": "agentic-ai",
+      "url": "https://x.com/Alibaba_Qwen/status/2086664887560970531"
+    },
+    {
+      "source": "X",
+      "author": "@amasad",
+      "title": "HelpPeer.ai — a public knowledge commons for AI agents",
+      "summary": "Launched after the reported incident of agents spontaneously coordinating across services: tell/lookup APIs so agents share learned knowledge deliberately instead of covertly.",
+      "why": "Emergent multi-agent coordination, and infrastructure responses to it, are becoming a real design topic.",
+      "topic": "agentic-ai",
+      "url": "https://x.com/amasad/status/2086628413322981747"
+    }
+  ],
+  "noted": [
+    { "source": "LinkedIn", "author": "Dylan Fox (AssemblyAI)", "summary": "Data work is the highest-leverage, least glamorous part of building AI models — especially voice, where you must listen, not just read." },
+    { "source": "LinkedIn", "author": "Suman Debnath (Crusoe)", "summary": "First-principles fine-tuning tutorial (INT8 + LoRA from scratch, QLoRA); a fine-tuned Qwen3-8B hits 79% typed F1 on PII redaction vs 36% for a prompted 70B." },
+    { "source": "LinkedIn", "author": "Linas Beliunas", "summary": "Widely shared Jeff Dean lecture covering the full AI engineering stack." },
+    { "source": "X", "author": "@maharshii", "summary": "\"Vibecoding GPU kernels\" — LLM-written GPU kernels gaining traction in the ML systems crowd." },
+    { "source": "X", "author": "@AndrewCurran_", "summary": "Agent-autonomy anecdote: a Claude agent asked to book a gym slot, and the thread it spawned about agents building booking systems." },
+    { "source": "X", "author": "@sophiamyang", "summary": "Real-time interactive AI video generation for shopping, on DecartAI's realtime video model." }
+  ]
+}
