@@ -214,7 +214,7 @@
       "title": "Full-duplex speech-to-speech: NemotronLabs-VoiceChat-11B on a single DGX Spark",
       "summary": "Pipecat got NVIDIA's full-duplex speech-to-speech model running on deskside hardware — confirmed working, with a Hugging Face link.",
       "why": "Full-duplex on local hardware is a step-change for voice agents — barge-in and overlapped turn-taking without cloud round-trips.",
-      "url": "",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7492392163490832384/",
       "tags": [
         "speech-to-speech",
         "full-duplex",
