@@ -74,3 +74,19 @@ host — the deliberate constraint behind staying on GitHub Pages.
   `DOMContentLoaded` fires once per session) and clean up on
   `astro:before-swap`. See `AttentionPattern.astro` / `PostToc.astro` for the
   mount pattern.
+
+## What's New Daily (`/whats-new`)
+
+Auto-curated daily digest — papers + tech updates — fed by the briefing
+automation in `~/projects/automation` (its `/brief` skill writes here; see that
+repo's CLAUDE.md and `.claude/skills/brief/SKILL.md` step 6).
+
+- **Data**: one JSON per day in `src/data/daily/YYYY-MM-DD.json` — shape:
+  `{ date, papers[], radar[], noted[] }` (match an existing file). Skill-managed;
+  hand-edit only to fix content.
+- **Pages**: `src/pages/whats-new/index.astro` (latest day + calendar) and
+  `src/pages/whats-new/[date].astro` (per-day, prev/next). Shared components:
+  `DailyDigest.astro`, `DailyCalendar.astro`. Nav link "Daily" in `Header.astro`.
+- **Privacy rule (hard)**: only public sources appear here — Hugging Face papers
+  and LinkedIn/X radar. Slack and Gmail content must never enter this repo.
+- Deploys like everything else: push to `main`.
