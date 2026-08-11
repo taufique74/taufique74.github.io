@@ -1,0 +1,114 @@
+{
+  "date": "2026-08-11",
+  "papers": [
+    {
+      "title": "DuplexGen: Adaptive Synthesis of Human-AI Turn-Taking Dialogues",
+      "org": "UIUC · Seoul National · Columbia · Berkeley · Georgia Tech",
+      "summary": "Generates dialogue data with scenario-adaptive turn-taking by calibrating LLM predictions against a small set of slot-level human preference annotations, rather than scaling the corpus or tuning prompts. Across six cooperative and competitive tasks where human turn-taking preferences genuinely differ, models trained on its data track those preferences better than uncalibrated prompting or generic human-human speech.",
+      "why": "Turn-taking is the hard part of full-duplex voice agents, and the claim here is that human calibration — not corpus scale — is what makes it scenario-specific.",
+      "upvotes": 5,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2607.26178"
+        }
+      ],
+      "tags": [
+        "speech-ai",
+        "turn-taking",
+        "dialogue",
+        "datasets"
+      ]
+    },
+    {
+      "title": "FATE: Frame-Level Audio-Visual Temporal Embedding",
+      "org": "Kaisi Guan et al.",
+      "summary": "Keeps frame-level sequences from both encoders instead of pooling each modality into a single vector, aligns audio and video on the physical timeline, and scores cross-modal similarity as the mean inner product over aligned frame pairs — trained with a semantic contrastive loss across videos plus a temporal soft-contrastive loss within them. Intra-video V2A Recall@3 of 55.74% against Synchformer's 38.89%, and 48.3% zero-shot on AVE event localization, matching supervised baselines.",
+      "why": "Captures synchronization rather than just semantics — the same frame-level alignment problem that forced alignment and word-level timing run into.",
+      "upvotes": 7,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.01310"
+        }
+      ],
+      "tags": [
+        "audio",
+        "temporal-alignment",
+        "representation-learning"
+      ]
+    },
+    {
+      "title": "When Activation Oracles Learn Not to Read: Concept-Specific Blind Spots in Fine-Tuned Oracles",
+      "org": "BAISH · Queen Mary University of London",
+      "summary": "Fine-tuning a model to answer questions about another model's activations turns it into a concept-specific anti-reader. On Taboo Word Guessing, exact recovery drops from 94% with a base oracle to 35% with an oracle fine-tuned on the matching concept, while cross-trained oracles do better. Linear probes confirm the concept is still decodable inside the fine-tuned oracle, and layer ablations localize the suppression to readout layers L18–L23.",
+      "why": "A clean negative result about interpretability tooling itself: training a probe on the concept you care about can be exactly what blinds it.",
+      "upvotes": 0,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2607.23379"
+        }
+      ],
+      "tags": [
+        "interpretability",
+        "probing",
+        "evals"
+      ]
+    },
+    {
+      "title": "MatrAIx: Simulating the World with 8.3 Billion Persona Agents",
+      "org": "MIT · Harvard",
+      "summary": "Simulated-user evaluation infrastructure: 8.3 billion persona records across 1,290 categorical dimensions (1M released publicly, 599,847 of them human-grounded), a playground with Survey, Chatbot, Web, and App environments, and 1,010 reusable task specs across 25+ domains. 18,189 evaluation trials were run; a 400-trial controlled study found 91.5% behavioral adherence.",
+      "why": "The day's runaway top paper at 498 upvotes, and a serious attempt at population-scale simulated-user eval for cases where human evaluation is the bottleneck.",
+      "upvotes": 498,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.04205"
+        }
+      ],
+      "tags": [
+        "evals",
+        "simulated-users",
+        "benchmarks"
+      ]
+    },
+    {
+      "title": "OneEmo: A Unified Multimodal Reasoning Model for Emotion",
+      "org": "Tongji · Fujian Normal · Shenzhen Tech · HK PolyU",
+      "summary": "Introduces EmoWorld-130K, a 130k-sample corpus with psychology-grounded reasoning traces across eight emotion tasks, plus Emo-Chord, a multi-task RL strategy pairing an offline cold start with online exploration. The 4.5B model beats Gemini-3.1-Pro by 3.08 points on intent recognition and reaches 72.48% average WAF on basic emotion recognition.",
+      "why": "Worth noting for the dataset — but it is vision-language only, with no audio path, which is precisely the gap for paralinguistics from speech.",
+      "upvotes": 9,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.06013"
+        }
+      ],
+      "tags": [
+        "emotion",
+        "multimodal",
+        "datasets"
+      ]
+    },
+    {
+      "title": "Evidence-RL: Towards Evidence-intensive Visual Reasoning",
+      "org": "hhj-ai et al.",
+      "summary": "GRPO post-training with a counterfactual reward: neutralize the hypothesized evidence region via mean-token replacement, then reward answers whose confidence actually drops — pushing the model off language priors and dataset shortcuts. Trained on 15,314 filtered COCO samples and evaluated on nine benchmarks across three backbones, with no inference-time overhead.",
+      "why": "Rewards causal reliance on evidence rather than plausible-sounding output, and the counterfactual-ablation trick generalizes past vision to any grounding eval.",
+      "upvotes": 3,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.08021"
+        }
+      ],
+      "tags": [
+        "evals",
+        "interpretability",
+        "rl-post-training"
+      ]
+    }
+  ]
+}

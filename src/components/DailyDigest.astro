@@ -32,7 +32,7 @@ interface NotedItem {
 export interface DailyData {
   date: string;
   papers: Paper[];
-  radar: RadarItem[];
+  radar?: RadarItem[];
   noted?: NotedItem[];
 }
 
@@ -95,14 +95,15 @@ const { day } = Astro.props as { day: DailyData };
     </ul>
   </section>
 
-  <section>
-    <h2 class="mb-4 text-xl font-semibold">
-      Tech radar <sup class="text-sm text-foreground/60">{day.radar.length}</sup
-      >
-    </h2>
-    <ul class="flex flex-col gap-4">
-      {
-        day.radar.map(r => (
+  {
+    day.radar && day.radar.length > 0 && (
+      <section>
+        <h2 class="mb-4 text-xl font-semibold">
+          Tech radar{" "}
+          <sup class="text-sm text-foreground/60">{day.radar.length}</sup>
+        </h2>
+        <ul class="flex flex-col gap-4">
+          {day.radar.map(r => (
           <li class="rounded-lg border border-border p-4">
             <h3 class="font-semibold text-balance">
               {r.url ? (
@@ -142,10 +143,11 @@ const { day } = Astro.props as { day: DailyData };
               )}
             </p>
           </li>
-        ))
-      }
-    </ul>
-  </section>
+          ))}
+        </ul>
+      </section>
+    )
+  }
 
   {
     day.noted && day.noted.length > 0 && (
