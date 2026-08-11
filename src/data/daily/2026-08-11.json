@@ -7,18 +7,8 @@
       "summary": "Generates dialogue data with scenario-adaptive turn-taking by calibrating LLM predictions against a small set of slot-level human preference annotations, rather than scaling the corpus or tuning prompts. Across six cooperative and competitive tasks where human turn-taking preferences genuinely differ, models trained on its data track those preferences better than uncalibrated prompting or generic human-human speech.",
       "why": "Turn-taking is the hard part of full-duplex voice agents, and the claim here is that human calibration — not corpus scale — is what makes it scenario-specific.",
       "upvotes": 5,
-      "links": [
-        {
-          "label": "HF",
-          "url": "https://huggingface.co/papers/2607.26178"
-        }
-      ],
-      "tags": [
-        "speech-ai",
-        "turn-taking",
-        "dialogue",
-        "datasets"
-      ]
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2607.26178" }],
+      "tags": ["speech-ai", "turn-taking", "dialogue", "datasets"]
     },
     {
       "title": "FATE: Frame-Level Audio-Visual Temporal Embedding",
@@ -26,17 +16,8 @@
       "summary": "Keeps frame-level sequences from both encoders instead of pooling each modality into a single vector, aligns audio and video on the physical timeline, and scores cross-modal similarity as the mean inner product over aligned frame pairs — trained with a semantic contrastive loss across videos plus a temporal soft-contrastive loss within them. Intra-video V2A Recall@3 of 55.74% against Synchformer's 38.89%, and 48.3% zero-shot on AVE event localization, matching supervised baselines.",
       "why": "Captures synchronization rather than just semantics — the same frame-level alignment problem that forced alignment and word-level timing run into.",
       "upvotes": 7,
-      "links": [
-        {
-          "label": "HF",
-          "url": "https://huggingface.co/papers/2608.01310"
-        }
-      ],
-      "tags": [
-        "audio",
-        "temporal-alignment",
-        "representation-learning"
-      ]
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.01310" }],
+      "tags": ["audio", "temporal-alignment", "representation-learning"]
     },
     {
       "title": "When Activation Oracles Learn Not to Read: Concept-Specific Blind Spots in Fine-Tuned Oracles",
@@ -44,17 +25,8 @@
       "summary": "Fine-tuning a model to answer questions about another model's activations turns it into a concept-specific anti-reader. On Taboo Word Guessing, exact recovery drops from 94% with a base oracle to 35% with an oracle fine-tuned on the matching concept, while cross-trained oracles do better. Linear probes confirm the concept is still decodable inside the fine-tuned oracle, and layer ablations localize the suppression to readout layers L18–L23.",
       "why": "A clean negative result about interpretability tooling itself: training a probe on the concept you care about can be exactly what blinds it.",
       "upvotes": 0,
-      "links": [
-        {
-          "label": "HF",
-          "url": "https://huggingface.co/papers/2607.23379"
-        }
-      ],
-      "tags": [
-        "interpretability",
-        "probing",
-        "evals"
-      ]
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2607.23379" }],
+      "tags": ["interpretability", "probing", "evals"]
     },
     {
       "title": "MatrAIx: Simulating the World with 8.3 Billion Persona Agents",
@@ -62,17 +34,26 @@
       "summary": "Simulated-user evaluation infrastructure: 8.3 billion persona records across 1,290 categorical dimensions (1M released publicly, 599,847 of them human-grounded), a playground with Survey, Chatbot, Web, and App environments, and 1,010 reusable task specs across 25+ domains. 18,189 evaluation trials were run; a 400-trial controlled study found 91.5% behavioral adherence.",
       "why": "The day's runaway top paper at 498 upvotes, and a serious attempt at population-scale simulated-user eval for cases where human evaluation is the bottleneck.",
       "upvotes": 498,
-      "links": [
-        {
-          "label": "HF",
-          "url": "https://huggingface.co/papers/2608.04205"
-        }
-      ],
-      "tags": [
-        "evals",
-        "simulated-users",
-        "benchmarks"
-      ]
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.04205" }],
+      "tags": ["evals", "simulated-users", "benchmarks"]
+    },
+    {
+      "title": "SPOT: Sparse Probing and Outcome Calibration for On-Policy Distillation",
+      "org": "CUHK-Shenzhen · East China Normal · Beihang · City University of Hong Kong",
+      "summary": "Targets a known failure of on-policy distillation: standard reverse-KL training under-weights other plausible continuations. SPOT uses an acquisition-exploration-exploitation procedure — normalized teacher entropy, top-k probability mass, student-teacher mismatch — to choose where to probe, then derives outcome-calibrated targets from verifier-scored continuations anchored to the teacher distribution.",
+      "why": "A concrete fix for reverse-KL mode-seeking in student-from-teacher training, pairing uncertainty probing with verifier-based calibration.",
+      "upvotes": 14,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.04419" }],
+      "tags": ["llm-distillation", "on-policy-training", "verifier-calibration"]
+    },
+    {
+      "title": "RoMeRL: Balancing Feedback Coverage and the Memory-Reward Trap in Self-Evolving Agent Memory",
+      "org": "Nanjing · Xiamen · Zhejiang University",
+      "summary": "Identifies a \"memory-reward trap\" where co-retrieved memories in self-evolving agents receive misleading utility updates despite contributing little causally to task success. Replacing expanding trajectory-indexed utilities with a fixed four-dimensional state organized by outcome polarity and memory dynamics gives 80% fewer cold-start utilities, 6× higher feedback density, an 84.4% smaller memory footprint, and 21.1% fewer LLM calls — with no change to the base model.",
+      "why": "Credit assignment in agent memory is an under-examined failure mode, and the entire win comes from bookkeeping rather than a bigger model.",
+      "upvotes": 8,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.02508" }],
+      "tags": ["agent-memory", "credit-assignment", "efficiency"]
     },
     {
       "title": "OneEmo: A Unified Multimodal Reasoning Model for Emotion",
@@ -80,17 +61,8 @@
       "summary": "Introduces EmoWorld-130K, a 130k-sample corpus with psychology-grounded reasoning traces across eight emotion tasks, plus Emo-Chord, a multi-task RL strategy pairing an offline cold start with online exploration. The 4.5B model beats Gemini-3.1-Pro by 3.08 points on intent recognition and reaches 72.48% average WAF on basic emotion recognition.",
       "why": "Worth noting for the dataset — but it is vision-language only, with no audio path, which is precisely the gap for paralinguistics from speech.",
       "upvotes": 9,
-      "links": [
-        {
-          "label": "HF",
-          "url": "https://huggingface.co/papers/2608.06013"
-        }
-      ],
-      "tags": [
-        "emotion",
-        "multimodal",
-        "datasets"
-      ]
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.06013" }],
+      "tags": ["emotion", "multimodal", "datasets"]
     },
     {
       "title": "Evidence-RL: Towards Evidence-intensive Visual Reasoning",
@@ -98,17 +70,299 @@
       "summary": "GRPO post-training with a counterfactual reward: neutralize the hypothesized evidence region via mean-token replacement, then reward answers whose confidence actually drops — pushing the model off language priors and dataset shortcuts. Trained on 15,314 filtered COCO samples and evaluated on nine benchmarks across three backbones, with no inference-time overhead.",
       "why": "Rewards causal reliance on evidence rather than plausible-sounding output, and the counterfactual-ablation trick generalizes past vision to any grounding eval.",
       "upvotes": 3,
-      "links": [
-        {
-          "label": "HF",
-          "url": "https://huggingface.co/papers/2608.08021"
-        }
-      ],
-      "tags": [
-        "evals",
-        "interpretability",
-        "rl-post-training"
-      ]
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.08021" }],
+      "tags": ["evals", "interpretability", "rl-post-training"]
+    }
+  ],
+  "radar": [
+    {
+      "source": "X",
+      "author": "@yifanzhang_",
+      "title": "Prefill-decode kernel mismatch quietly corrupts RL training",
+      "summary": "Equal checkpoints are not an on-policy guarantee: the effective policy is parameters plus execution path, so prefill and decode kernels silently diverge and corrupt the training signal.",
+      "why": "A train/inference mismatch caused by the serving stack rather than the model — the class of harness effect that silently invalidates eval and RL results.",
+      "url": "https://x.com/yifanzhang_/status/2086950444769878194",
+      "tags": ["rl-scaling", "inference-serving", "eval-methodology"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Daniel Han (Unsloth AI)",
+      "title": "Meta releases Muse Glimmer 30B — Apache 2.0, 18GB RAM, vision",
+      "summary": "Open weights, runs locally in 18GB RAM with vision support, pitched as the strongest agentic-coding model at its size.",
+      "why": "A permissively licensed 30B that fits on one consumer machine is a real option for local eval harnesses and tool-use experiments.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7492521133334798336/",
+      "tags": ["model-release", "open-weights", "agentic-coding"]
+    },
+    {
+      "source": "X",
+      "author": "@AIatMeta",
+      "title": "Muse Glimmer — the official release",
+      "summary": "Open weights on Hugging Face, a technical blog, and developer resources, positioned for local AI agents on everyday hardware.",
+      "why": "The primary source for the day's biggest open-weights release, with a published technical report.",
+      "url": "https://x.com/AIatMeta/status/2086757850790109574",
+      "tags": ["model-release", "open-weights", "meta"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "DAIR.AI",
+      "title": "Programmatic tool calling beats JSON on 11 of 14 models",
+      "summary": "Tools exposed as typed Python stubs invoked through code, compared against native JSON tool calling across 14 models on BFCL v4. The GPT-5.6 family gains 10.6% over the JSON baseline.",
+      "why": "Tool-calling format is normally treated as a fixed default; this quantifies it as a measurable accuracy lever on a standard agentic benchmark.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7492612491990958081/",
+      "tags": ["benchmark", "tool-calling", "eval-methodology"]
+    },
+    {
+      "source": "X",
+      "author": "Composio, via @tokenbender",
+      "title": "Another same-model-different-harness sweep",
+      "summary": "DeepSeek V4 Flash run through four more agent harnesses — Hermes, Pi, Prime, Deep Agent — to isolate how much the harness rather than the model drives agentic scores.",
+      "why": "Reinforces yesterday's SWE-bench Pro finding: agentic leaderboards measure the scaffold as much as the model.",
+      "url": "https://x.com/tokenbender/status/2086914530727362560",
+      "tags": ["agent-harness", "benchmarking", "eval-methodology"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "AssemblyAI",
+      "title": "Sync API — text in as few as ~134ms after speech ends",
+      "summary": "Synchronous speech-to-text completing a three-tier lineup alongside Realtime, which returns text during speech, and async batch. Post is about three weeks old, resurfaced in the feed.",
+      "why": "Speaks to STT latency tiering and the turn-end latency budget for voice agents. (Disclosure: I work on this.)",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7482826978908225536/",
+      "tags": ["speech-to-text", "latency", "realtime"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Hao Hoang",
+      "title": "The HF speech-to-speech stack, restated with the API-compatibility angle",
+      "summary": "VAD → STT → LLM → TTS as four swappable components behind an OpenAI Realtime-compatible WebSocket API, so existing clients switch by changing one URL.",
+      "why": "The same release covered in yesterday's digest, resurfacing — the point that each stage stays independently benchmarkable is the part worth keeping.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7489648224354607104/",
+      "tags": ["speech-to-speech", "voice-agents", "open-source"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "SGLang",
+      "title": "SGLang v0.5.17: Kimi K3 in main, DSpark speculative decoding, 1M context",
+      "summary": "KDA-aware prefix caching and DCP for 1M-token context, running on both NVIDIA and AMD; MiniMax-H3 added to SGLang-Diffusion.",
+      "why": "Serving-stack support for long context and speculative decoding, with verified recipes for both GPU vendors.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7492635165093994496/",
+      "tags": ["inference", "speculative-decoding", "long-context"]
+    },
+    {
+      "source": "X",
+      "author": "@Prince_Canuma",
+      "title": "Muse Glimmer 30B day-0 serving numbers",
+      "summary": "Roughly 400 tok/s prefill and 33 tok/s decode on a single request via Nativ, with throughput holding out to 128K context.",
+      "why": "Day-0 numbers including the long-context throughput claim that usually degrades — useful reference points for inference benchmarking.",
+      "url": "https://x.com/Prince_Canuma/status/2086943543159910707",
+      "tags": ["inference-serving", "throughput", "long-context"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Unsloth AI",
+      "title": "2-bit Muse Glimmer made 100+ tool calls on 14GB RAM",
+      "summary": "A five-minute repo bug hunt that produced evidence, a repro, a fix, tests, and a PR writeup.",
+      "why": "Evidence that aggressive 2-bit quantization survives long multi-step tool-calling chains, not just single-turn generation.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7492580063046144000/",
+      "tags": ["quantization", "gguf", "agentic-ai"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Daniel Han (Unsloth AI)",
+      "title": "Kimi K3 at 1-bit: 1.56TB → 594GB, ~78.9% accuracy retained",
+      "summary": "The 2-bit variant at 861.3GB reaches roughly 90%. Runs on a Mac Studio with a 128GB RAM device attached.",
+      "why": "A concrete accuracy-versus-size curve for extreme quantization of a 2.8T-parameter frontier open model.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7488230160455020544/",
+      "tags": ["quantization", "kimi-k3", "local-inference"]
+    },
+    {
+      "source": "X",
+      "author": "@sama, quoting Eric Wallace",
+      "title": "OpenAI ships GPT-5.6-Cyber, a defense-scoped model",
+      "summary": "Described as OpenAI's first large-scale attempt at directly improving cyber-defense capability, with the framing that defenders should use it to harden their own systems.",
+      "why": "A frontier lab shipping a domain-specialized model rather than a general upgrade, with a stated defensive-security target.",
+      "url": "https://x.com/sama/status/2086881528282587524",
+      "tags": ["model-release", "openai", "cybersecurity"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Tom Aarsen (Hugging Face)",
+      "title": "Ant Ling open-weights an 8B MoE with 1.3B active params",
+      "summary": "Following Ling-3.0-flash, positioned against similarly sized Qwen and Gemma models.",
+      "why": "A sparse 8B at 1.3B active parameters is an efficiency point worth benchmarking against dense models in the same class.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7492622000843112448/",
+      "tags": ["model-release", "moe", "efficiency"]
+    },
+    {
+      "source": "X",
+      "author": "Daniel Isaac, via @0xSero",
+      "title": "Prefill on a DGX Spark, decode on a MacBook",
+      "summary": "One model split across two machines, using each box for the phase it is better suited to.",
+      "why": "Disaggregated prefill/decode is normally a datacenter technique; doing it across consumer and workstation hardware is a novel take on local serving economics.",
+      "url": "https://x.com/0xSero/status/2086946641181855997",
+      "tags": ["heterogeneous-inference", "prefill-decode", "local-inference"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Maxime Labonne (Liquid AI)",
+      "title": "Exploration as a third pre-training scaling axis",
+      "summary": "Beyond parameters and data: how many candidate outputs a model tries at each training step. Motivated by mode-averaging, where one input maps to many valid outputs and the plain loss lands on a blurred average.",
+      "why": "Mode-averaging on one-to-many targets is exactly the failure mode in generative speech tasks like TTS.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7489990353085788160/",
+      "tags": ["pretraining", "scaling", "research-paper"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Elvis S.",
+      "title": "Meta's coupled scaling law, with the error numbers attached",
+      "summary": "Couples model capacity and data through a single interaction exponent rather than treating them independently, cutting mean absolute percentage error 1.5–3× on both interpolation and extrapolation, with the largest corrections in data-scarce and heavy-overtraining regimes.",
+      "why": "The same Skaling paper picked up yesterday, now with the error reduction quantified and the regimes where it actually bites.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7492611491712393217/",
+      "tags": ["scaling-laws", "pretraining"]
+    },
+    {
+      "source": "X",
+      "author": "@SpotifyEng",
+      "title": "Spotify open-sources Xirp, its multi-vendor agent environment",
+      "summary": "A vendor-neutral agentic development environment managing agent sessions across Claude Code, Gemini CLI, and OpenAI Codex from one place, with 1,300+ Spotify engineers already using it internally.",
+      "why": "A large engineering org shipping its internal agent orchestration layer with a real adoption number attached.",
+      "url": "https://x.com/SpotifyEng/status/2086795659651191106",
+      "tags": ["agentic-ai", "coding-tools", "developer-tooling"]
+    },
+    {
+      "source": "X",
+      "author": "@pidotdev",
+      "title": "Pi ships four tools total: read, bash, edit, write",
+      "summary": "The argument being that this minimal set covers most coding work.",
+      "why": "Deliberate minimalism against the trend of expanding tool surfaces — it bears on how much agent performance comes from tool design versus model capability.",
+      "url": "https://x.com/pidotdev/status/2086777926016540888",
+      "tags": ["agentic-ai", "tool-use", "coding-agents"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Rudragouda Patil",
+      "title": "Measuring prefix caching mostly found a bug in the harness",
+      "summary": "A week on two consumer GPUs with a chat workload that replays the whole conversation each turn; the measurement surfaced a bug unrelated to caching, which the author argues was the more useful result.",
+      "why": "Benchmarking harnesses routinely measure their own defects before they measure the feature under test.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7491862824659582977/",
+      "tags": ["benchmarking", "inference", "measurement"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Stanley Winata (AMD)",
+      "title": "TLX on AMD MI350X: 1.8× on fused GEMM+GLU",
+      "summary": "Triton Low-Level Language Extensions against the existing baseline on Instinct MI350X.",
+      "why": "Kernel-level headroom on AMD matters for anyone evaluating non-NVIDIA inference paths.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7492690092365381632/",
+      "tags": ["gpu-kernels", "amd", "inference-optimization"]
+    },
+    {
+      "source": "X",
+      "author": "@lukaszkaiser",
+      "title": "An unreleased Claude took a run at the Riemann hypothesis",
+      "summary": "It did not solve it, but the attempt was substantive enough that Kaiser, at OpenAI, joked about wanting a prediction market on the problem falling this year.",
+      "why": "Frontier-math attempts from unreleased checkpoints are one of the few public capability signals ahead of release, and a rival lab researcher's reaction is itself informative.",
+      "url": "https://x.com/lukaszkaiser/status/2086932442594873367",
+      "tags": ["frontier-math", "reasoning", "capability-signals"]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Jay Alammar, sharing Ali Asaria",
+      "title": "Primus: prompt to paper in one agent loop",
+      "summary": "Transformer Lab's agent takes a single prompt through the full ML-research loop.",
+      "why": "Another automated-research agent, and a useful eval target given this category's known failure modes around hallucinated results and fabricated citations.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7492601436724375553/",
+      "tags": ["agentic-ai", "research-automation"]
+    },
+    {
+      "source": "X",
+      "author": "@TechFollowrazzi",
+      "title": "SGLang as the serving layer in a commercial managed-infra play",
+      "summary": "radixark is turning open-source AI systems into managed infrastructure, with SGLang handling model serving.",
+      "why": "A small signal about which open inference engines are winning production adoption.",
+      "url": "https://x.com/TechFollowrazzi/status/2086933768753844560",
+      "tags": ["inference-serving", "sglang", "managed-infrastructure"]
+    }
+  ],
+  "noted": [
+    {
+      "source": "LinkedIn",
+      "author": "Dylan Fox (AssemblyAI)",
+      "summary": "Over 120 million weekly voice conversations handled in Q2 — the highest volume yet — across phone-call voice agents, contact-center automation, healthcare ambient scribes, and consumer apps. (Disclosure: I work there.)"
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Sebastian Raschka",
+      "summary": "The LLMs-from-scratch repository passed 100,000 GitHub stars."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Leonie Monigatti (Liquid AI)",
+      "summary": "A fine-tuning cookbook covering text, vision, audio, and encoder models across CPT, SFT, DPO, and GRPO, with Unsloth and TRL notebooks."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Ahmed Haroon",
+      "summary": "Walkthrough of vLLM internals: continuous batching, paged attention, prefix caching, disaggregated prefill/decode, and speculative decoding."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Thomas J. Fan (Modal)",
+      "summary": "Running the PyTorch profiler without a local GPU, with traces saved locally for inspection."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Massimiliano Viola",
+      "summary": "Writeup on HGNetV2, the backbone behind real-time detectors like D-FINE and DEIMv2, which never had its own arXiv paper."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Jiri Borovec (Roboflow)",
+      "summary": "trackers 2.6.0 adds dynamic frame-rate support for object tracking on live video with variable frame timing."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Charles Maddock",
+      "summary": "Spotify's Xirp vibe-coding platform, reportedly used daily by around 99% of Spotify's developers."
+    },
+    {
+      "source": "X",
+      "author": "@OwainEvans_UK",
+      "summary": "Moonshot, the lab behind Kimi K3, appears to have only 400–500 staff, against roughly 5,000 at Anthropic."
+    },
+    {
+      "source": "X",
+      "author": "@AndrewCurran_",
+      "summary": "Follow-on point: the Chinese labs went from zero to the frontier in just over two years, which is arguably more remarkable than the headcount gap."
+    },
+    {
+      "source": "X",
+      "author": "@0xMarioNawfal",
+      "summary": "Clip of the creator of Claude Code claiming 90% of their engineers now run dozens or hundreds of agents simultaneously."
+    },
+    {
+      "source": "X",
+      "author": "@trq212",
+      "summary": "Argues AI work rewards two skills: compute allocation — deciding where to spend model effort when there is no task list — and verification."
+    },
+    {
+      "source": "X",
+      "author": "@drfeifei",
+      "summary": "A 2h08m Huberman Lab episode on using AI to increase intelligence, covering vision, human perception's contribution to AI, and the computer-vision revolution."
+    },
+    {
+      "source": "X",
+      "author": "Carlos E. Perez",
+      "summary": "Carl Feynman announced he has stopped doing AI research and has been trying to talk peers out of it, calling current models superhuman in many ways and aggressively out of control."
+    },
+    {
+      "source": "X",
+      "author": "Pedro Domingos",
+      "summary": "Endorses Mark Zuckerberg's essay on Meta's superintelligence philosophy as a needed dose of common sense in the AI debate."
+    },
+    {
+      "source": "X",
+      "author": "CJ Zafir",
+      "summary": "Claims DeepSeek Flash 0731, run inside the Hermes or Pi harness, surfaces deep-research findings that Fable 5 and GPT 5.6 deep-research modes missed."
     }
   ]
 }
