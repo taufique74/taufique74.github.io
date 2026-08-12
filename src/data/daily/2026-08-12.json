@@ -1,0 +1,68 @@
+{
+  "date": "2026-08-12",
+  "papers": [
+    {
+      "title": "Ex-Omni-2D: Expressive Omni-Modal Dialogue Models with Native Visual Presence",
+      "org": "Affiliations not listed on the paper page",
+      "summary": "An omni-modal dialogue framework that answers a multimodal query with coordinated text, personalized speech, and reference-conditioned avatar video, driven by a structured \"Visual Thought Plan\" and native multi-codebook speech units. A full-sequence video teacher is distilled into a few-step block-causal streaming student, reaching an end-to-end RTF of 1.293 at 400×720 on four GPUs.",
+      "why": "The speech tokens are the shared acoustic-temporal interface that video frames align to, which lets the speech and avatar pathways train from separate, heterogeneous corpora instead of requiring paired query-text-speech-video supervision. Sidestepping the paired-data bottleneck is the real contribution, and it makes the audio tokenizer the load-bearing component of a video system.",
+      "upvotes": 9,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.10720" }],
+      "tags": ["speech-ai", "audio-tokenizer", "multimodal-dialogue", "streaming"]
+    },
+    {
+      "title": "Reference-Free Post-Training of Open LLMs for Multilingual Machine Translation",
+      "org": "Xiaomi",
+      "summary": "GRPO post-training on the MiLMMT-46 SFT models with a reward that averages two reference-free quality-estimation models, gated by language ID, then linear interpolation between the SFT and RL checkpoints. Across 46 languages it beats Seed-X, HY-MT2 and TranslateGemma, and leads on reference-free scores against Google Translate, Gemini 3 Pro and GPT-5.",
+      "why": "An eval-methodology result as much as a translation one: the entire training signal is QE models with no references, so the headline win is scored by relatives of the same metrics being optimized — worth reading for the reward-hacking exposure before the leaderboard line. That on-policy distillation reaches but never exceeds the RL-plus-checkpoint-interpolation frontier is a clean negative result, and the weights are released.",
+      "upvotes": 66,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.10812" }],
+      "tags": ["machine-translation", "open-weights", "reward-models", "rlhf"]
+    },
+    {
+      "title": "Decoding-Level Taboo: A Diagnostic Stress Test for LLM Robustness",
+      "org": "Kamijo, Rottenstreich, Conde, Martínez, Reviriego",
+      "summary": "A zero-prompt diagnostic that intervenes directly in logit space at runtime, dynamically masking top candidate tokens at word boundaries to force circumlocution. Across several open-weight families, off-path robustness scales with both parameter count and post-training instruction alignment.",
+      "why": "It attacks the benchmark-to-deployment gap from the decoding side rather than the prompt side: benchmarks only ever measure models inside a narrow, heavily optimized generation corridor, while guardrails and system prompts push them out of it constantly. Requiring no prompt engineering, it doubles as a primitive for synthetic data generation and guardrail stress-testing.",
+      "upvotes": 7,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.09900" }],
+      "tags": ["evals", "robustness", "decoding", "llm-safety"]
+    },
+    {
+      "title": "Co-Evolution in Agentic Systems: Toward Self-Directed Evolution Beyond Human Design",
+      "org": "HKUST · UIUC · CUHK · HKU · Peking University",
+      "summary": "A survey arguing that single-entity self-evolution is bounded by a static learning context, organizing the literature into three stages: agent-agent co-evolution (adversarial, collaborative, organizational), agent-environment co-evolution through adaptive tasks and feedback, and meta co-evolution where the evolution mechanism itself becomes evolvable.",
+      "why": "The taxonomy is framed as a progression of how much human-engineered scaffolding the system sheds at each stage, which makes it a usable map rather than a reading list. It also flags evaluation of co-evolving systems as an open problem in its own right — moving targets break the fixed-benchmark assumption entirely.",
+      "upvotes": 99,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.10299" }],
+      "tags": ["agentic-ai", "survey", "self-improvement", "evals"]
+    },
+    {
+      "title": "Mendel Gödel Machine: Recursive Self-Improving Coding Agents via Comparative Evolution",
+      "org": "UESTC · LMU Munich / Munich Center for Machine Learning",
+      "summary": "Self-improving coding agents normally derive each self-modification from a single failure trajectory. MGM adds two comparative operators — reaction-norm mutation, editing from trajectories across several tasks at once, and cross-lineage hybridization, editing using a reference agent's trajectory on the same task — with gains confirmed on SWE-bench and Polyglot.",
+      "why": "It brings a theoretical convergence argument under an additive fitness-landscape model plus surrogate simulation, not just empirical SWE-bench deltas, which is rare in this literature. The core claim is that an agent's archive of past attempts carries comparative signal that single-trajectory methods simply discard.",
+      "upvotes": 15,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.07645" }],
+      "tags": ["agentic-ai", "ai-coding-tools", "self-improvement", "swe-bench"]
+    },
+    {
+      "title": "SPIEval: Evaluating LLMs as Mobile Assistants over Scattered Personal Information",
+      "org": "Fudan University · Tencent Hunyuan",
+      "summary": "250 human-curated multi-turn tasks over 4,335 personal records spread across 10 apps and 21 tools, organized around five cognitive capabilities: reasoning, disambiguation, integration, preference inference, and multi-intent decomposition. The best model, GPT-5.5 at xhigh, reaches only 57.3%; the weakest gets 16.4%.",
+      "why": "The failure analysis carries it: 79% of failures trace to inaccurate information localization, where models commit to plausible-but-wrong records instead of continuing to retrieve and verify. Fewer than 2% of retrieval actions use advanced search methods at all, which points at a specific, fixable behavioural gap rather than a general capability ceiling.",
+      "upvotes": 5,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.10692" }],
+      "tags": ["benchmarks", "evals", "agentic-ai", "retrieval"]
+    },
+    {
+      "title": "DSAgentBench: Can Agents Automate End-to-End Data-Science Workflows in Real Computer Environments?",
+      "org": "York University · NTU · Salesforce AI Research",
+      "summary": "275 long-horizon data-science tasks spanning wrangling, exploration, modeling, visualization and validation, executed inside real operating environments with notebooks, IDEs, terminals, browsers and databases. Across 15 models the best result is Claude-4.6-Sonnet at 56.70% success.",
+      "why": "The spread is the story: open-source agents land below 1% success against roughly 57% for the strongest frontier model — a far wider frontier-to-open gap than most agentic benchmarks report, which suggests the difficulty is harness and long-horizon tool orchestration rather than raw model capability.",
+      "upvotes": 2,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.10366" }],
+      "tags": ["benchmarks", "agentic-ai", "evals", "tool-use"]
+    }
+  ]
+}
