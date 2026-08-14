@@ -1,0 +1,32 @@
+{
+  "date": "2026-08-14",
+  "papers": [
+    {
+      "title": "How Can Rhetoric Reward-Hack AI Reviewers? Dissecting Rhetorical Sensitivity in AI-Based Peer Review",
+      "org": "Affiliations not listed on the paper page",
+      "summary": "4,200 ICLR 2026 submissions are rewritten by LLMs along six rhetorical dimensions with the reported scientific content held fixed, then scored by five LLM reviewers. Sensitivity turns out to be structured rather than uniform: evidence framing and novelty stance move scores, the other dimensions barely register. Movement is anchored to the baseline rating — low-scoring papers drift up, high-scoring papers drift down. Recursive and reviewer-guided rewriting workflows do not reliably beat a single joint rewrite, and a stricter review protocol lowers mean scores by about 1.36 points without changing the sensitivity pattern.",
+      "why": "A controlled demonstration that judge scores track framing over substance, with the responsible dimensions isolated rather than asserted. The baseline-anchored drift is the nastier finding for eval design: it compresses the score range in a way that looks like calibration and is not.",
+      "upvotes": 1,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.08975" }],
+      "tags": ["llm-as-judge", "evals", "reward-hacking", "benchmarks"]
+    },
+    {
+      "title": "Intern-S2-Preview: Scientific Agentic Foundation Model",
+      "org": "InternLM team · 149 authors",
+      "summary": "A foundation model series aimed at scientific work — multimodal understanding, reasoning, generation and long-horizon agentic tasks. Multimodal pre-training over rendered scientific documents and interleaved image-text data, then SFT, RL and on-policy distillation. The 397B-parameter variant adds time-series modeling for numerical forecasting, and a separate Memory Decoder extension lifts specialized-task performance, moving Biology-Instructions from 56.92 to 60.32.",
+      "why": "Time-series as a first-class modality alongside text and images is unusual, and the Memory Decoder is a bolt-on rather than a retrain. Both are worth watching as patterns for extending an existing recipe instead of replacing it.",
+      "upvotes": 2,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.13505" }],
+      "tags": ["model-release", "agentic-ai", "multimodal", "benchmarks"]
+    },
+    {
+      "title": "OmniScientist: An Omni-Modal Omni-Discipline AI Scientist",
+      "org": "National University of Singapore",
+      "summary": "A perception layer plus three agents — ideation, experiment, writeup — running raw evidence through to a finished manuscript. The perception layer ingests images, signals, audio, video, 3-D structures, trajectories, tables, formulae and graphs directly rather than consuming precomputed features. Evaluated on 36 real-world cases across five disciplines, claiming that direct raw-evidence perception improves all seven evaluation dimensions over a precomputed-feature baseline.",
+      "why": "The raw-signal-beats-extracted-features claim is the same argument made for end-to-end speech models, which makes it interesting outside its own domain. But 36 cases scored on seven self-defined dimensions is thin support for a clean sweep of all seven.",
+      "upvotes": 1,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.13558" }],
+      "tags": ["agentic-ai", "multimodal", "ai-for-science"]
+    }
+  ]
+}
