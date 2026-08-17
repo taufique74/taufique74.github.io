@@ -1,0 +1,59 @@
+{
+  "date": "2026-08-17",
+  "papers": [
+    {
+      "title": "LLMRouter: Unified Infrastructure for Developing, Evaluating, and Deploying LLM Routers",
+      "org": "UIUC-led",
+      "summary": "Routing is reframed as a sequential decision process with five separable components — context encoders, model encoders, scoring functions, decision rules, learning signals — which lets routers that were previously described as monolithic systems be compared part by part. The accompanying xRouteBench scores routers jointly on response quality and inference cost across generic, memory-augmented, vision, time-series and personalized routing, and the released library ships 16+ routers. Learned routers beat the strongest fixed-model baseline by 14.6% relative.",
+      "why": "The interesting part is not the 14.6% but the decision to make cost a first-class axis of the benchmark rather than a footnote. A router that wins on quality alone is not a router, it is a model choice — scoring both together is what makes the comparison mean anything. The component decomposition is the other half: it turns 'which router is best' into 'which part of the router did the work'.",
+      "upvotes": 2360,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.06867" }],
+      "tags": ["llm-routing", "benchmarks", "inference-optimization", "evals"]
+    },
+    {
+      "title": "How Can Rhetoric Reward-Hack AI Reviewers? Dissecting Rhetorical Sensitivity in AI-Based Peer Review",
+      "org": "US academic collaboration",
+      "summary": "4,200 content-preserving variants are built from 120 anonymized ICLR 2026 submissions by perturbing six rhetorical dimensions in opposing directions, then scored by five LLM reviewers under several review protocols. Sensitivity is structured rather than uniform: evidence framing and novelty stance move scores most, effects regress toward the mean, and more elaborate review workflows do not reliably reduce the bias.",
+      "why": "A controlled demonstration that LLM-as-judge scores track presentation rather than substance, with the responsible dimensions isolated instead of asserted. The finding that elaborate scaffolding fails to fix it is the part worth carrying: the instinct on discovering judge bias is to add review stages, and this says that instinct is wrong.",
+      "upvotes": 47,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.08975" }],
+      "tags": ["llm-as-judge", "evals", "reward-hacking", "benchmarks"]
+    },
+    {
+      "title": "Massive Activations in Hybrid Linear Attention Large Language Models: Pre-Attention Spikes and Inter-Spike Plateaus",
+      "org": "HKU-led academic collaboration",
+      "summary": "The first systematic study of massive activations in layer-interleaved hybrid linear-attention models identifies two distinct phenomena — spikes immediately before attention layers, and plateaus that persist across intermediate layers — consistently across architectures from 1.2B to 397B parameters and several data domains. Controlled pretraining runs show both emerge early, respond differently to output gating, and cancel on distinct schedules that converge toward full-attention behavior.",
+      "why": "Massive-activation structure is the usual culprit behind quantization and outlier-handling failures, so this reads as both an interpretability result and a practical warning. Hybrid linear attention is being adopted on efficiency grounds; this is a reminder that the efficiency story and the quantization story are not independent.",
+      "upvotes": 28,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.12149" }],
+      "tags": ["interpretability", "linear-attention", "quantization", "activations"]
+    },
+    {
+      "title": "UniSwap: Streaming Audio-Visual Identity Swapping for Talking Videos",
+      "org": "Qwen Applications Business Group, Alibaba, with CUHK",
+      "summary": "A single audio-visual diffusion transformer jointly swaps appearance and vocal timbre in talking videos while preserving source motion, background and linguistic content, trained through a swap-and-reconstruct data pipeline and three-stage progressive adaptation. Streaming generation cuts denoising from 30 steps per block to 3.",
+      "why": "Joint voice-timbre and face swapping in a streaming setting moves synthetic-speech realism forward on both the capability side and the adversarial side. Every improvement in voice cloning is simultaneously a harder input distribution for ASR and speaker-attribution systems, and the streaming constraint is what makes this one land rather than sit in an offline demo.",
+      "upvotes": 20,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.11752" }],
+      "tags": ["speech-ai", "voice-cloning", "audio-visual", "streaming"]
+    },
+    {
+      "title": "From Inaudible Inputs to Model Failures: Low-Frequency Safety Risks in LALMs",
+      "org": "Academic collaboration; affiliations not listed on the paper page",
+      "summary": "A black-box red-teaming method builds a universal low-frequency waveform — via sentence-attention scale estimation plus phase-continuous frequency confusion transfer — that humans effectively cannot hear but which corrupts large audio-language models. Across six models it drops audio-understanding accuracy by up to 67 points at a mean human audibility rating of 1.33 against 1.17 for clean audio. The proposed Distributional Requery Guard recovers attacked accuracy from 28.5% to 46.1%.",
+      "why": "A universal perturbation matters more than a per-sample one, and near-inaudibility means the usual human spot-check does not catch it. Worth noting the defense recovers to 46.1% from a 28.5% floor — that is mitigation, not a fix, and the gap to clean performance is where the actual problem still lives.",
+      "upvotes": 10,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.09158" }],
+      "tags": ["speech-ai", "audio-language-models", "robustness", "red-teaming"]
+    },
+    {
+      "title": "Beyond Final Scores: A Systematic Evaluation of Agents for Long-Horizon AI Research and Development",
+      "org": "Meituan and University of Chinese Academy of Sciences",
+      "summary": "Seven frontier models are evaluated on 36 long-horizon R&D tasks with a framework that decomposes performance into Solution Framing, Execution and Feedback Control rather than reporting a single final score, and separately measures experience reuse and harness design effects. The conclusion is that current agents behave as optimization engines — competent at executing known solutions, inconsistent run to run, and rarely methodologically novel.",
+      "why": "The process-level decomposition is the transferable idea: an aggregate score hides which stage failed, and 'inconsistent run to run' is invisible in any single number. The harness-effect measurement is the other useful half — scaffolding confounds model comparison, and most agent benchmarks still report as though it does not.",
+      "upvotes": 9,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.13417" }],
+      "tags": ["evals", "agentic-ai", "benchmarks", "methodology"]
+    }
+  ]
+}
