@@ -1,0 +1,150 @@
+{
+  "date": "2026-08-18",
+  "papers": [
+    {
+      "title": "Prototype-Rectified Iterative Self-supervised Manifold Denoising under Severe Acoustic Shift",
+      "org": "Shukla, Thakur, Das, Kurmi",
+      "summary": "PRISM is a training-free, source-free test-time adaptation method for audio-text foundation models under severe acoustic noise. It assumes noise induces a low-rank affine shift in the multimodal latent space (>90% of distortion energy in the leading 60 principal components), estimates and reverses it using frozen text prototypes as geometric anchors, and compiles the correction into a single static projection matrix applied in 0.0009 ms per inference. Reports +12.94 points over zero-shot on UrbanSound8K and +9.41 over an oracle-assisted TTA baseline.",
+      "why": "The mechanism is unusually cheap for what it claims: one matrix-vector multiply at inference, no gradients, no noise annotations, no access to source data. What makes it worth checking rather than just noting is that the central claim is falsifiable on any audio embedding space — that severe acoustic shift shows up as a low-rank affine translation, with most of the distortion energy in a few dozen principal components. It also names its own failure mode for broadband polyphonic classes instead of burying it.",
+      "upvotes": 0,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.15037"
+        }
+      ],
+      "tags": [
+        "speech-ai",
+        "audio-language-models",
+        "robustness",
+        "test-time-adaptation"
+      ]
+    },
+    {
+      "title": "Prior Audit-Repair Context Shifts LLM Verifier Thresholds Toward Leniency",
+      "org": "Mazaheri & Mazaheri",
+      "summary": "Measures whether a completed audit-then-repair episode earlier in context changes what an LLM checker reports on a byte-identical present task. Across 15 of 15 model x wording combinations, false alarms on human-verified-correct ProcessBench traces drop by 2.8-11.5 points versus a length-matched non-audit control (9-25% relative). Signal-detection analysis localizes the change to the decision criterion, not discrimination: the criterion moves in 15/15 and survives correction in 13, while d' survives in none.",
+      "why": "A harness effect measured the way harness effects should be measured: byte-identical task, length-matched control, and a signal-detection decomposition that separates the judge getting better from the judge getting more lenient. The criterion moves in all 15 conditions and discrimination moves in none, which is about as clean as this kind of result gets. The honest caveat is that a hand audit found 82% of those false alarms were simply wrong, so at this operating point the leniency may be a correction rather than a defect — worth sitting with before treating it as pure drift.",
+      "upvotes": 2,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.16003"
+        }
+      ],
+      "tags": [
+        "llm-as-judge",
+        "eval-methodology",
+        "harness-effects"
+      ]
+    },
+    {
+      "title": "HarnessEval-W: Agentifying the Evaluation of Visual Worlds",
+      "org": "43 authors, incl. Ziwei Liu, Ming-Yu Liu",
+      "summary": "Replaces scalar-score benchmarking of world models with an agentified pipeline: evaluation questions are decomposed into measurable subproblems handled by specialized sub-agents with tailored context and diagnostic tools, producing a transparent evidence tree whose reasoning chain justifies each result. Applied to 18 world models across 330 evaluation cases and released open-source as a live benchmark.",
+      "why": "The methodological argument travels much further than the domain it is demonstrated on: a benchmark should ship the reasoning that justifies its score, not only the number. Decomposing an evaluation question into measurable subproblems handled by separate agents, each leaving an evidence trail, is a direct answer to the familiar complaint that a single scalar hides which stage actually failed. Useful for the decomposition design even to readers with no interest in world models.",
+      "upvotes": 33,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.16859"
+        }
+      ],
+      "tags": [
+        "benchmarks",
+        "eval-methodology",
+        "agentic-ai"
+      ]
+    },
+    {
+      "title": "R^3-Bench: LLMs Struggle with Resource-Rational Reasoning under Shared Budgets",
+      "org": "HKUST-DSAIL",
+      "summary": "Evaluates six-problem suites under a shared compute budget across math, competitive programming and abstract reasoning, in tool-free and agentic settings, calibrating against each model's own single-problem response curves as an empirical oracle. Across 72 cells for six models the oracle mean beats the contest mean in 71; under moderate pressure even naive equal-allocation replay beats contest performance for four of six models. Trajectory diagnostics show limited strategy updating.",
+      "why": "Most benchmarks hand every task its own budget, which quietly measures something other than how models get deployed. The calibration move is the good part — scoring a suite against the same model's demonstrated single-problem competence turns a vague 'it did worse' into a specific claim about allocation rather than capability. That naive equal-allocation replay beats the model's own scheduling for four of six models under pressure is a blunt finding.",
+      "upvotes": 11,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.16033"
+        }
+      ],
+      "tags": [
+        "benchmarks",
+        "eval-methodology",
+        "reasoning"
+      ]
+    },
+    {
+      "title": "Gathered, Not Admitted: How Attention Brings a Latent Variable into Verbalizable Form",
+      "org": "UC Santa Cruz",
+      "summary": "Tests two hypotheses for why LLMs can verbalize a latent quantity: a gating/admission mechanism at the query position versus attention-mediated gathering. Using Jacobian lenses on open-weight models, finds no gating at the query position; instead task demand raises the concept's lens visibility (delta R_z = +0.050), a single linear map decodes the variable across all conditions at 6.4-9.0x above chance, and transport concentrates at least 17x within a mid-depth window appearing at consistent fractional depth across architectures.",
+      "why": "A clean result on a question that matters well beyond this setup: whether a model knows something and withholds it, or has simply not assembled the representation yet. Finding no gating at the query position and locating the work in attention-mediated transport is the more mundane answer, and probably the right one. The detail worth carrying forward is that the transport concentrates in a mid-depth window appearing at consistent fractional depth across architectures — the kind of structural regularity that tends to transfer.",
+      "upvotes": 2,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.15022"
+        }
+      ],
+      "tags": [
+        "interpretability",
+        "mechanistic-interp",
+        "probing"
+      ]
+    },
+    {
+      "title": "ClawGym II: Exploring Black-Box RL on Agent Harness",
+      "org": "Renmin University of China",
+      "summary": "A unified black-box RL framework for training agents through complex, opaque harnesses: sandboxed execution decouples policy optimization from harness execution, multi-turn trajectories are reconstructed with prefix trees, and mix-harness training handles heterogeneous harnesses. Demonstrated on ClawGym-Bench and other benchmarks with Qwen3-30A3B.",
+      "why": "Treats the agent harness as an unmodifiable black box to train through rather than a library to instrument, which is the realistic situation for most production agent stacks. Reconstructing multi-turn trajectories with prefix trees is the piece worth borrowing for anyone who needs to do RL over an agent loop they do not control.",
+      "upvotes": 29,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.16798"
+        }
+      ],
+      "tags": [
+        "agentic-ai",
+        "rl",
+        "harness-effects"
+      ]
+    },
+    {
+      "title": "DumpsterCluster: From Dumpster Diving to Serving LLaMA-70B on $60 GPUs",
+      "org": "Quettaflop AI, Oxford, Cambridge",
+      "summary": "Asks whether GPUs retired from AI datacenters have a productive afterlife serving modern LLM inference. A 128-GPU V100 cluster costing $22K reaches competitive LLaMA-70B throughput against new systems at a fraction of the price, but the environmental case only holds with low-carbon electricity - operational emissions can be 40x higher for large models on a typical grid.",
+      "why": "Concrete cost-per-throughput numbers for serving a 70B model on secondary-market hardware, which is genuinely hard to find outside vendor marketing. The paper is better than its title: it splits the economic result, which is clearly favorable at $22K for a 128-GPU cluster, from the environmental one, which holds only on low-carbon electricity and inverts badly on a typical grid. Reporting the half that undercuts the pitch is the reason to trust the other half.",
+      "upvotes": 0,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.14614"
+        }
+      ],
+      "tags": [
+        "inference-serving",
+        "efficiency",
+        "sustainability"
+      ]
+    },
+    {
+      "title": "AnyTalk: Speech Animation for Arbitrary Characters Leveraging a Video Generation Model",
+      "org": "KAIST, Sungshin Women's University",
+      "summary": "Generates 3D speech animation for arbitrary characters with no animation training data, by adapting a pre-trained video diffusion model via character-specific fine-tuning on rendered images paired with zeroed-out audio embeddings, then uplifting the resulting talking-head video to 3D by optimizing blendshape parameters. Distilled into AnyTalkRT for real-time performance.",
+      "why": "Sidesteps the paired-animation-data bottleneck entirely by adapting a pre-trained video diffusion model, then uplifting the generated talking head to 3D through blendshape optimization. The conditioning trick is the transferable bit: pairing rendered frames with zeroed-out audio embeddings to teach the model what 'no motion' looks like, which should carry to other audio-conditioned generation setups.",
+      "upvotes": 3,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.16143"
+        }
+      ],
+      "tags": [
+        "speech-ai",
+        "audio-driven-generation",
+        "real-time"
+      ]
+    }
+  ]
+}
