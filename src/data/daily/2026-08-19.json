@@ -1,0 +1,62 @@
+{
+  "date": "2026-08-19",
+  "papers": [
+    {
+      "title": "From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents",
+      "org": "Chinese Academy of Sciences (ISCAS)",
+      "summary": "RUPA models an agent's execution history as a directed graph and propagates uncertainty over it, so risk that accumulates and transfers across interaction steps is captured rather than only local per-step confidence. Combined with behavioral and alignment signals it scores confidence for whole trajectories, tested on several benchmarks across six open-source models.",
+      "why": "Confidence at the trajectory level rather than the token level is the same problem as knowing when any long-running model output should be distrusted. The graph framing is a concrete alternative to averaging per-step scores, which is what most failure-detection heuristics still amount to — and the claim is checkable, since a propagated score should catch failures earlier than a local one on the same traces.",
+      "upvotes": 3,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.16002"
+        }
+      ],
+      "tags": [
+        "evaluation",
+        "agents",
+        "uncertainty-quantification",
+        "llm"
+      ]
+    },
+    {
+      "title": "Agentic ESOpt: Fine-Tuning Long-Horizon LLM Agents with Minimal GPU Requirements",
+      "org": "NUS / SUSTech / Oxford",
+      "summary": "Argues evolution strategies beat RL for fine-tuning LLM agents over long reasoning horizons, doing full-parameter optimization using only inference-level GPU memory through parameter perturbations and reward-weighted updates. Reports +6.69% on WebArena-Lite and demonstrates prompt-parameter co-evolution.",
+      "why": "Full-parameter tuning at inference-level memory is a strong enough claim that the harness deserves more scrutiny than the headline number. The question worth asking is whether WebArena-Lite actually exercises the horizon length the method claims to fix — a gain measured on tasks shorter than the problem would not mean much.",
+      "upvotes": 1,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.17310"
+        }
+      ],
+      "tags": [
+        "agents",
+        "rl",
+        "training-efficiency",
+        "benchmarks"
+      ]
+    },
+    {
+      "title": "Dynamic Multi-Byte Prediction With Hierarchical Language Models",
+      "org": "Ohio State University and collaborators",
+      "summary": "Speeds up byte-level hierarchical (tokenizer-free) LMs by predicting several bytes in parallel instead of one at a time, using a variable-length prediction window aligned to latent tokens plus an attention mask that keeps generation causal. Adds no parameters, and reports minimal quality loss across generation, instruction following, QA, summarization and machine translation.",
+      "why": "Decode throughput is the standing objection to tokenizer-free models, and this is a parameter-free fix in the speculative-decoding family. Something like it would have to exist before byte-level architectures could be considered for streaming or real-time work at all, so the interesting number is the throughput gain against the quality loss, not either alone.",
+      "upvotes": 1,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.15454"
+        }
+      ],
+      "tags": [
+        "inference-optimization",
+        "architectures",
+        "tokenizers",
+        "llm"
+      ]
+    }
+  ]
+}
