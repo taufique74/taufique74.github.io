@@ -1,0 +1,551 @@
+{
+  "date": "2026-08-21",
+  "papers": [
+    {
+      "title": "Evaluating Music Context Preservation: A Multi-facet Framework for Music Editing Systems",
+      "org": "UCSD · ISMIR 2026",
+      "summary": "MuseCPEval measures whether a music editing system leaves intact the parts it was never asked to change, with metrics grouped into four facets of musical attributes and validated both objectively and with human listeners.",
+      "why": "It flips audio evaluation from \"is the edit good\" to \"what did the edit silently break\". That collateral-damage failure mode goes largely unmeasured in speech enhancement and voice conversion too, where a system can improve its headline metric while quietly degrading something nobody scored. Packaging it as a diagnostic rather than a leaderboard is the right shape for that problem.",
+      "upvotes": 2,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2512.14629"
+        }
+      ],
+      "tags": [
+        "audio",
+        "evaluation",
+        "metric-design",
+        "benchmarks"
+      ]
+    },
+    {
+      "title": "VA-Judger: Reward Modeling from Human Preference Feedback for Joint Video-Audio Generation",
+      "org": "Huang, Tu, Han, Jiang, Wu et al.",
+      "summary": "Introduces VAPref-10K — roughly 9k prompts and 10.3k pairwise human comparisons — plus VA-Judger-Bench, and trains a chain-of-thought reward model that scores jointly generated video and audio across separate quality dimensions. Used as an RL reward signal it improves generation quality in post-training.",
+      "why": "The transferable idea is decomposing a single binary preference label into per-facet judgments to get a denser reward signal from the same human effort. It is also one of the few preference datasets that treats the audio track as a first-class object rather than something scored incidentally alongside the video.",
+      "upvotes": 5,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.18607"
+        }
+      ],
+      "tags": [
+        "reward-models",
+        "llm-as-judge",
+        "audio",
+        "evaluation"
+      ]
+    },
+    {
+      "title": "Training Leaves Traces: Centered Residual Signatures for Language Model Lineage Verification",
+      "org": "Aman Singh Thakur, Rayan Khoury",
+      "summary": "Asks whether weights alone reveal ancestry between language model checkpoints. The method strips shared residual components and compares checkpoint-specific block structure, producing a symmetric lineage score calibrated against independent checkpoints.",
+      "why": "Reports perfect separation — AUROC 1.0 — of fine-tuned, LoRA-merged, pruned and quantized descendants from unrelated models, and claims robustness to deliberate weight-space laundering. A provenance result that falls out of residual-stream structure with no behavioral probe anywhere in the loop is a different kind of claim from the usual output-fingerprinting approaches, and a much harder one to evade.",
+      "upvotes": 16,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.14929"
+        }
+      ],
+      "tags": [
+        "interpretability",
+        "probing",
+        "model-provenance",
+        "residual-stream"
+      ]
+    },
+    {
+      "title": "Looped Language Models Improve Compositional Tool Calling",
+      "org": "Popescu, Saez de Ocariz Borde, Liò",
+      "summary": "Evaluates native and retrofitted looped (recurrent-depth) language models against non-looped baselines under identical training on API-Bank, BFCL and NESTful, focusing on multi-call workflows that have to carry intermediate state and dependencies.",
+      "why": "The gain lands specifically on compositional, dependency-aware chains and scales with recurrent depth, while isolated single API calls barely move. That separation is the useful part — it says what extra depth actually buys rather than reporting one blended benchmark number. Adaptive inference, spending extra loops only when needed, also beats fixed depth on the compute/quality tradeoff.",
+      "upvotes": 15,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.18171"
+        }
+      ],
+      "tags": [
+        "tool-use",
+        "agentic-ai",
+        "architectures",
+        "inference-optimization"
+      ]
+    },
+    {
+      "title": "SemComp-Bench: Benchmarking Semantic Task Completion in Video Generation",
+      "org": "Tu, Chen, Huang, Mao, Zhang et al.",
+      "summary": "Reframes video generation around whether a specified outcome is actually achieved while staying semantically grounded in a reference image. Ships SemComp-Data across six domains with a four-stage curation pipeline, plus a VLM-based harness scoring two metrics: Outcome Achievement and Generation Reliability.",
+      "why": "Splitting \"did it do the task\" from \"did it stay faithful\" into two scores instead of one blended quality number is the metric-design lesson, and current video models fail the combination rather than either half. Top-upvoted paper of the Aug 20 batch at 153.",
+      "upvotes": 153,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.17426"
+        }
+      ],
+      "tags": [
+        "benchmarks",
+        "evaluation",
+        "metric-design",
+        "video-generation"
+      ]
+    },
+    {
+      "title": "Zetta: An Efficient Closed-Loop Embodied Harness for Self-Evolving Physical Intelligence",
+      "org": "Ding, Mi, Wang, Liu, Cao et al.",
+      "summary": "An embodied agent harness that evolves code-based runtime critics and recovery skills during execution while the base policy stays frozen, coordinated by three control loops running at action frequency, at rollout level for critic and recovery proposals, and at validated skill refinement.",
+      "why": "Existing agent harnesses reflect only after an episode ends; Zetta writes and validates new critic code mid-rollout. It reports 90.8% on LIBERO-Pro and 93.6% on RoboCasa with an 11.1x inference speedup, and was the top-upvoted paper across both days at 186.",
+      "upvotes": 186,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.16590"
+        }
+      ],
+      "tags": [
+        "agentic-ai",
+        "embodied-ai",
+        "self-improvement",
+        "rl"
+      ]
+    },
+    {
+      "title": "Co-RL: Unsupervised Reasoning Emerges from Diverse Cohort in Multi-agent RL",
+      "org": "Yang, Bian, Xiao, Vasconcelos, Li et al.",
+      "summary": "Trains several parameter-decoupled models simultaneously with RL where each model's reward comes from its peers rather than from ground-truth labels. Cohort diversity — different families, sizes, rephrased samples — is the mechanism that keeps errors uncorrelated.",
+      "why": "Label-free peer reward normally collapses into mutual agreement; here heterogeneity is the explicit anti-collapse lever rather than an incidental detail. It still returns 3.0-8.6% average gains across seven text benchmarks and 2.3-7.2% across four multimodal ones with no ground truth anywhere in the loop.",
+      "upvotes": 86,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.17253"
+        }
+      ],
+      "tags": [
+        "rl",
+        "multi-agent",
+        "reasoning",
+        "reward-models"
+      ]
+    },
+    {
+      "title": "ForgeWM: Progressive Causal Training for Few-Step Action-Conditioned Video World Models",
+      "org": "Li, Lin, Liu, Bian, Lam et al.",
+      "summary": "Distills action-conditioned video world models into 1-, 2- and 4-step students through a staged pipeline of domain adaptation, teacher-forced causal training, consistency distillation and distribution matching, evaluated on Minecraft and FPS gameplay.",
+      "why": "The dual-path deployment is the interesting shape: run the 1-step student for real-time interaction, then optionally re-render the same trajectory at higher quality on replay, reaching reference quality with little trajectory drift. Top pick of the Aug 21 page at 76.",
+      "upvotes": 76,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.14022"
+        }
+      ],
+      "tags": [
+        "world-models",
+        "distillation",
+        "inference-optimization",
+        "real-time"
+      ]
+    }
+  ],
+  "radar": [
+    {
+      "source": "LinkedIn",
+      "author": "Wei Chu",
+      "title": "FA-Bench standardizes forced-aligner and timestamp evaluation across 12 aligners",
+      "summary": "Released on the argument that most forced-alignment and word-level-timestamp benchmarks are not reproducible — differing phoneme sets, custom test splits and moving metrics make cross-model comparison close to impossible. FA-Bench standardizes the comparison over 12 aligners.",
+      "why": "Word-level timing is one of the areas where everyone reports numbers and almost nobody can compare them, because the evaluation choices move along with the model. A shared aligner baseline is the precondition for saying whether an alignment change helped, and the reproducibility critique it opens with is one most in-house timestamp harnesses would also fail.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7495129816648568833/",
+      "tags": [
+        "forced-alignment",
+        "word-timestamps",
+        "benchmark",
+        "reproducibility"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Alexander Doria (Pleias)",
+      "title": "A 0.63M-parameter verifier matches an off-the-shelf 7B",
+      "summary": "Yannick Detrois pretrained a 19-model ladder from scratch on SYNTH synthetic data, down to 70k parameters, to find where verifier capability actually saturates. A 0.63M-parameter verifier — roughly two minutes of training on a single H100 — matches a 7B model on specific verification tasks.",
+      "why": "The strongest eval-budget result of the day. If judge capability saturates this early on narrow tasks, paying frontier-model prices per grading call is a choice rather than a requirement, and the ladder shows roughly where it stops being one.",
+      "url": "https://x.com/Dorialexander/status/2090484511804977533",
+      "tags": [
+        "reward-models",
+        "llm-as-judge",
+        "scaling-laws",
+        "synthetic-data"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "DAIR.AI",
+      "title": "Shuffle the task order and self-improving agents stop improving",
+      "summary": "A re-evaluation of memory-based self-improving agents. Adding two things prior work skipped — multiple runs to measure variance, and randomly shuffled task orders — erases much of the reported gain. The default task ordering had been imposing an implicit curriculum the results were riding on.",
+      "why": "The cleanest statistical-rigor result of the day, and it generalizes past agents: any sequential harness that runs once in a fixed order is measuring the order as much as the system. Both fixes are cheap, which makes their absence the interesting part.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7496325261592875009/",
+      "tags": [
+        "eval-methodology",
+        "agent-evaluation",
+        "variance",
+        "self-improvement"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "superwhisper",
+      "title": "A 0.6B open-weights model for on-device transcript post-processing",
+      "summary": "S1-mini, their first open-weights release: 0.6B parameters, post-processing speech transcripts entirely on-device.",
+      "why": "A tiny open-weights cleanup model sitting downstream of ASR is the cheap baseline that larger speech-LLM pipelines should be measured against. If 0.6B on-device closes most of the formatting and disfluency gap, the interesting question becomes what the bigger model is actually buying.",
+      "url": "https://x.com/superwhisper/status/2090114882272141760",
+      "tags": [
+        "speech-llm",
+        "asr",
+        "open-weights",
+        "on-device"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Sumanth P",
+      "title": "Krisp Voice Isolation 2.5 strips competing speech, not just noise",
+      "summary": "A pre-STT layer that removes overlapping speakers rather than background noise. The argument: WER spikes when two people talk at once, and conventional noise filtering cannot help because the interference is itself speech.",
+      "why": "Overlapping speech is a known WER failure mode that most eval sets under-represent, so it disappears into the average. A pre-STT separation layer is both a concrete lever and an argument for carving overlap out as its own benchmark slice — the gain is invisible until the slice exists.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7496209110128865280/",
+      "tags": [
+        "source-separation",
+        "speech-enhancement",
+        "overlapping-speech",
+        "wer"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Himanshu Maurya",
+      "title": "flashvad: an open VAD with explicit stable start/end events",
+      "summary": "A voice activity detector built for real-time calls: reads audio in 10 ms steps and emits a speech probability plus stable speech-start and speech-end events for interruption, barge-in and silence handling.",
+      "why": "Endpointing quality is what users actually perceive as streaming latency, and it is usually measured badly or not at all. An open VAD that commits to stable boundary events gives that measurement something to compare against.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7494350764224512001/",
+      "tags": [
+        "vad",
+        "real-time-transcription",
+        "endpointing",
+        "open-source"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "vLLM",
+      "title": "vLLM makes speculative verification adaptive, and publishes the acceptance curve",
+      "summary": "vLLM now decides adaptively how much of a speculative draft to verify each step instead of requiring a fixed draft length. On DeepSeek-V4-Pro-0813 the first token of a 7-token draft survives verification over 70% of the time while the last survives under 10%; one configuration — adaptive verification at 7 speculative tokens — holds the Pareto frontier across concurrency levels.",
+      "why": "It removes a knob that previously had to be retuned per traffic pattern, and the per-position acceptance curve is the evidence rather than the marketing. That curve is also the reason fixed draft length was always the wrong abstraction.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7494192369618067456/",
+      "tags": [
+        "vllm",
+        "speculative-decoding",
+        "inference-optimization",
+        "serving"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Liquid AI (via Piotr Mazurek)",
+      "title": "DSpark draft models ship with a quality-neutrality claim up front",
+      "summary": "Draft models for LFM2.5-1.2B-Instruct, LFM2.5-2.6B and LFM2.5-8B-A1B, adding a speculative-decoding path at minimal memory cost with unchanged output quality — up to 3.18x throughput on H100 (LFM2.5-8B-A1B on MATH500 going 428 to 1362 tok/s) and up to 2.87x elsewhere.",
+      "why": "Published draft models rather than a described technique, with quality-neutrality stated as the headline. That is the claim that actually has to hold for speculative decoding to be safe in a serving stack, and stating it plainly makes it checkable.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7496257067737931776/",
+      "tags": [
+        "speculative-decoding",
+        "inference-optimization",
+        "model-release",
+        "throughput"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Yijia Shao",
+      "title": "CollabSkill ships the trajectories, not just the scores",
+      "summary": "Released the collected agent trajectories alongside the official CollabSkill benchmark, a human-agent collaboration measure built into Co-Gym, extending earlier work on which agents collaborate best across non-software knowledge work.",
+      "why": "The trajectory release is the part that matters. Publishing the raw traces is what makes independent metric design and contamination checking possible at all — most benchmarks publish a number and keep the evidence.",
+      "url": "https://x.com/EchoShao8899/status/2090551152614236510",
+      "tags": [
+        "benchmark",
+        "agentic-ai",
+        "human-eval",
+        "dataset-release"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Arya Tschand",
+      "title": "Hawkeye uses expert unit tests as the supervision signal for kernel porting",
+      "summary": "Argues software support, not silicon, is the bottleneck for new ML chips. Hawkeye gives coding agents hardware awareness through a minimal taxonomy of expert-authored unit tests, enabling autonomous kernel porting across workloads, GPU architectures, vendors and precisions — BF16, FP8, NVFP4, MXFP4, covering GEMM and linear attention.",
+      "why": "The eval design is the reusable half: a small taxonomy of expert-written unit tests standing in for dense supervision is a pattern that transfers well beyond kernels.",
+      "url": "https://x.com/AryaTschand/status/2090491662170456152",
+      "tags": [
+        "gpu-kernels",
+        "inference-optimization",
+        "quantization",
+        "coding-agents"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "outsource_",
+      "title": "A Q3 quant beating a Q4 that is 4.5GB larger",
+      "summary": "Benchmarked Unsloth's Dynamic V3 GGUFs on a single 4090, all runs on the same box, and reports a Q3 quant outperforming a Q4 carrying 4.5GB more weight.",
+      "why": "Same-hardware control is what makes this worth reading at all, and the result inverts the quant-tier heuristic most serving decisions lean on. Worth replicating before it gets cited as settled.",
+      "url": "https://x.com/outsource_/status/2090513475386941597",
+      "tags": [
+        "quantization",
+        "gguf",
+        "benchmark",
+        "inference-optimization"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Vincent Pollet",
+      "title": "SeedVox puts a JEPA world model in front of speech generation",
+      "summary": "Applies Joint Embedding Predictive Architecture world models to speech generation, on the argument that current TTS guesses emotion and rhythm token by token while a global predictive representation shapes delivery before generation begins.",
+      "why": "A structurally different answer to prosody than longer context or more tokens — and the same question audio-language models face on the understanding side: whether global intent is represented anywhere, or only inferred from local statistics.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7495155419817021442/",
+      "tags": [
+        "tts",
+        "jepa",
+        "prosody",
+        "speech-generation"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Larry Dial (Marin)",
+      "title": "Scaling laws that simulate the whole trajectory, not the endpoint",
+      "summary": "Reports that at Marin, scaling laws let them simulate an entire training trajectory rather than predict a single final-loss point, and that this became decisive in their workflow.",
+      "why": "Same extrapolation problem as forecasting a large benchmark run from small ones — and a curve shows where the estimate breaks down in a way a single predicted point never can.",
+      "url": "https://x.com/classiclarryd/status/2090485210370732532",
+      "tags": [
+        "scaling-laws",
+        "training-dynamics",
+        "eval-methodology"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "LiveKit",
+      "title": "Context-aware PII redaction over voice transcripts",
+      "summary": "Strips personal information from voice-agent transcripts and audio recordings before storage, covering 41 PII types and using conversational context to detect sensitive spans.",
+      "why": "Context-dependent span detection over transcripts is a speech-understanding task with a genuinely awkward tradeoff: over-redact and the transcript stops being usable as evaluation data, under-redact and it cannot be retained at all.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7496286735618691072/",
+      "tags": [
+        "pii-redaction",
+        "voice-agents",
+        "transcripts",
+        "speech-understanding"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Elvis S.",
+      "title": "Agents doing post-training lock in their strategy at step one",
+      "summary": "A paper analyzing a large corpus of public post-training trajectories to test whether agents can post-train other agents. The finding: the agent fixes its training strategy at the very first step and spends the remaining budget on local adjustments. An experience-driven scaffold lifted execution by about 12.6 points.",
+      "why": "First-step lock-in is a failure mode reported with a measured mitigation, which is rarer than it should be. It also describes most automated tuning loops accurately — the search looks broad and is actually local.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7496232099788640257/",
+      "tags": [
+        "agentic-ai",
+        "post-training",
+        "eval-methodology",
+        "scaffolding"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Lewis Won",
+      "title": "NVFP4 versus MXFP4, worked through a 32-element tensor",
+      "summary": "Hands-on quantization examples for FP8, vanilla FP4, MXFP4 and NVFP4 over the same small tensor, surfacing the design considerations behind each format.",
+      "why": "Low-bit float is becoming the serving default, which means quantization-induced quality regressions start showing up in benchmark deltas. Worth being able to reason about numerically before attributing a metric move to the model itself.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7494791429102174208/",
+      "tags": [
+        "quantization",
+        "nvfp4",
+        "mxfp4",
+        "inference-optimization"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Sebastian Raschka",
+      "title": "How Claude's watermarking is supposed to work",
+      "summary": "Illustrates the scheme from the released materials: it exploits positions where multiple next-token candidates score similarly and biases the choice among them.",
+      "why": "A sampling-level intervention that rides on near-ties in the next-token distribution — which is also a quiet statement about how much slack sits in those distributions in the first place.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7494399612645167104/",
+      "tags": [
+        "watermarking",
+        "llm-decoding",
+        "nlp-research",
+        "provenance"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "vLLM",
+      "title": "Kimi's vendor verifier certifies vLLM for accuracy, not speed",
+      "summary": "vLLM is now officially verified by Moonshot AI's Kimi Vendor Verifier for serving Kimi K3 at full accuracy, covering vision, 1M context and agentic coding paths.",
+      "why": "An eval-governance pattern worth noting: the model vendor certifies that a serving stack reproduces reference outputs, rather than leaving accuracy drift to be discovered downstream. That is a different contract from a throughput benchmark.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7491376750585643008/",
+      "tags": [
+        "vllm",
+        "accuracy-verification",
+        "kimi-k3",
+        "serving"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Chayenne Zhao",
+      "title": "Mixture-of-Transformers throughput work landing in SGLang Omni",
+      "summary": "Extensive optimization of MoT performance in SGLang Omni, quoting SenseTime's SenseNova U1.5 Lite release.",
+      "why": "SGLang Omni is the multimodal serving path, so MoT throughput work there lands directly on anyone serving audio-language or speech-LLM models through SGLang.",
+      "url": "https://x.com/GenAI_is_real/status/2090589841931243525",
+      "tags": [
+        "sglang",
+        "inference-serving",
+        "mixture-of-transformers",
+        "multimodal"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Ryan Boldi",
+      "title": "The case that continual learning goes in-context",
+      "summary": "Argues continual learning is soon going to be largely in-context, pointing at recent work led by Jyo Pari.",
+      "why": "If domain adaptation moves from finetuning runs to context construction, the evaluation setup changes shape entirely — you stop comparing checkpoints and start comparing contexts, and very little existing tooling is built for that.",
+      "url": "https://x.com/RyanBoldi/status/2090543102465388922",
+      "tags": [
+        "continual-learning",
+        "in-context-learning",
+        "nlp-research"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Jay",
+      "title": "DeepSeek v4 Flash resets the cost floor for harness runs",
+      "summary": "A long thread on what has happened since launch — speed, pricing and free access. It ran as a two-day trend on X with over 1,500 posts.",
+      "why": "Grader and judge calls are a per-run cost line in any evaluation harness. A fast, free, frontier-adjacent model is worth pricing in before committing to paid graders.",
+      "url": "https://x.com/jayair/status/2090596382306361380",
+      "tags": [
+        "model-release",
+        "deepseek",
+        "inference-serving"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Phil Eaton",
+      "title": "Mojo is now open source",
+      "summary": "Modular open-sourced Mojo.",
+      "why": "An alternative to CUDA and Triton for custom kernels is now inspectable and forkable, which matters the next time a speech model needs a hand-written kernel.",
+      "url": "https://x.com/eatonphil/status/2089752645594464754",
+      "tags": [
+        "mojo",
+        "open-source",
+        "gpu-kernels",
+        "inference-optimization"
+      ]
+    }
+  ],
+  "noted": [
+    {
+      "source": "LinkedIn",
+      "author": "Hervé Bredin",
+      "summary": "A reflection from the creator of pyannote speaker diarization on leaving academia to co-found pyannoteAI, after a decade building the open-source toolkit."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Dylan Fox",
+      "summary": "Pam's voice agents — nearly 1000 car dealerships, $200M+ in generated revenue, 20+ years of call time — moved to Universal-3.5 Pro after in-house evals showed it 3x better than their prior model with contextual prompting."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Javier Medel",
+      "summary": "NVIDIA released Cosmos3-DROID on Hugging Face: 707 GB of real-world robot training data, 71,907 episodes, 22.4M+ frames."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Minje Kim",
+      "summary": "IEEE Audio and Acoustic Signal Processing launched an AASP-managed Google Group as a general communication channel for the audio research community."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Tom Shapland",
+      "summary": "audiochatty.com launched — start a voice call when Claude Code finishes a turn to hear what it did and dictate the next step."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Bahushruth CS",
+      "summary": "Abliterated DeepSeek V4 Flash, following a 1M-download abliterated Qwen: refusal rate dropped from 68% to 3%, reported with KL divergence figures against the base model."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Gabriele Berton",
+      "summary": "An explainer on the modality gap in VLMs and how contrastive learning works — output embeddings of a randomly initialized transformer cluster tightly together even after normalization."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Andreas Horn",
+      "summary": "Cites Artificial Analysis measurements showing the same task costing $2.73 on one frontier model and $0.02 on another at comparable Intelligence Index, arguing against single-default routing."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Ryan Codrai",
+      "summary": "TurboVec 1.0 shipped on PyPI and crates.io with 2x faster search, holding a 10M-document vector corpus in 4 GB versus 31 GB as float32."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Mitko Vasilev",
+      "summary": "Reports 2,613 tokens/sec running Qwen3.8-27B across 4 GPUs in a Z8 Fury G5 workstation after a weekend of kernel and inference-engine tuning."
+    },
+    {
+      "source": "X",
+      "author": "Nikolai Yakovenko",
+      "summary": "NVIDIA licenses poolside for roughly $6B and hires 109 of their staff in a rare non-acquisition deal."
+    },
+    {
+      "source": "X",
+      "author": "Tejas Bhakta",
+      "summary": "Solo-dev inference provider Morph hit a $6M run rate as a one-person company; first inference provider live with Kimi K3 without early weights access, with 250 customer Slack Connect channels."
+    },
+    {
+      "source": "X",
+      "author": "Jeffrey Huber",
+      "summary": "Chroma announced Foundation, retrieval infrastructure described as the result of three years of build-up."
+    },
+    {
+      "source": "X",
+      "author": "DynamicWebPaige",
+      "summary": "Notes Gemini 3.7 Flash sitting alone on the cost-performance Pareto frontier at $0.25."
+    },
+    {
+      "source": "X",
+      "author": "bun",
+      "summary": "Bun 1.4 released — over 2,900 GitHub issues fixed, 1,517 tests added from the Node.js test suite, and lower idle resource use."
+    },
+    {
+      "source": "X",
+      "author": "Dean W. Ball",
+      "summary": "Launch of the AI Futures blog at OpenAI, with multiple contributors planned."
+    },
+    {
+      "source": "X",
+      "author": "Sydney Runkle",
+      "summary": "Built a browser agent combining Browserbase's Stagehand with LangChain's deepagents to test complex web navigation."
+    }
+  ]
+}
