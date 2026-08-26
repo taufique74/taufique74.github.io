@@ -1,0 +1,50 @@
+{
+  "date": "2026-08-26",
+  "papers": [
+    {
+      "title": "AutoSaddler: Automatic Harness Optimization with Durable Updates from Agent Execution Traces",
+      "org": "Microsoft / KAIST / POSTECH",
+      "summary": "Frames agent harness design — prompts, tool configs, control logic — as an offline learning problem: diagnose failure traces, generate structured patches treating the harness as code, then select updates by validation. Reports +9.0 on GAIA2, +9.6 on SWE-Bench Pro and +10.0 on Terminal-Bench 2.0 over the base harnesses.",
+      "why": "It puts a number on harness effects: roughly ten points of benchmark score that belong to scaffolding rather than the model. That is the confound that makes cross-model agent leaderboards hard to read at all, and the ablations — deep debugging against shallow reflection, targeted against unconstrained edits, generalization-aware selection — are the closest thing yet to a methodology note on how far a harness can be tuned before the number stops meaning anything.",
+      "upvotes": 6,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.23041" }],
+      "tags": ["evaluation", "eval-harness", "agentic-ai", "benchmarks"]
+    },
+    {
+      "title": "LAION-BVD: A 10-Million-Hour Open Video Dataset for Multimodal Pre-training",
+      "org": "LAION",
+      "summary": "An open dataset of 80M videos — 10M hours — harvested from CommonCrawl, scene-segmented into clips with synthetically generated video and audio captions, spanning video, audio and image modalities. Models trained on it come out competitive on standard video-text and audio-text benchmarks, improving with training and model scale.",
+      "why": "The largest open audio-bearing corpus to land in a while. Ten million hours of in-the-wild audio with machine-generated captions is directly usable for audio-language pretraining and audio tokenizer work, and as a source of realistic acoustic conditions for ASR robustness evaluation. The thing to read first is what the audio captioning pipeline actually is — synthetic captions at this scale are only as good as the model that wrote them, and that ceiling propagates into anything trained on them.",
+      "upvotes": 1,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.24845" }],
+      "tags": ["audio-datasets", "multimodal", "pretraining", "open-data"]
+    },
+    {
+      "title": "Recursive Experiential-Working Memory Evolution for Long-Horizon Agent Harnesses",
+      "org": "Princeton / NUS",
+      "summary": "Recuris splits agent memory in two: a Working Memory tracking progress drives skill retrieval from an Experiential Memory, so skills match the immediate subtask rather than the whole history. A Meta-Agent turns execution evidence into validation-gated edits to Skill Memory. Improves 35 of 37 model-benchmark pairs across four long-horizon benchmarks and ten models; tau-bench pushed to 87.9%.",
+      "why": "The same theme as AutoSaddler, approached from memory rather than from the scaffold. What makes it worth more than the usual agent result is breadth: ten models is unusually wide, so 35-of-37 is a checkable claim about whether scaffolding gains survive a model swap — which is exactly the question single-model agent papers systematically cannot answer.",
+      "upvotes": 4,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.24876" }],
+      "tags": ["agentic-ai", "memory", "benchmarks", "long-horizon"]
+    },
+    {
+      "title": "Best Practice Critic Optimization",
+      "org": "National University of Singapore",
+      "summary": "A recipe making critic-based RL stable enough to replace GRPO-style group sampling: DPPO, value predictions bounded to the reward range, Monte Carlo value targets, unnormalized policy advantages, length-adaptive GAE. Matches or beats group-based baselines while sampling one response per prompt, with per-choice ablations.",
+      "why": "Two things land for anyone working on evaluation. The critic can be conditioned on reward-defining information hidden from the policy — a reference answer, or a grading rubric — which is an LLM-as-judge with privileged access folded into training. And the recipe reportedly improves learning under rubric-based rewards, so rubric grading is being load-tested as a training signal rather than only as a scoring method.",
+      "upvotes": 1,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.23566" }],
+      "tags": ["reward-models", "rubric-grading", "rl", "evaluation"]
+    },
+    {
+      "title": "WeMM-Embedding: WeChat Multi-Modal Embedding Technical Report",
+      "org": "Tencent (WeChat)",
+      "summary": "A family of universal multimodal embedding models (2B/4B/9B, flexible output dimensions) covering text, images, video, visual documents and interleaved inputs, trained by multimodal alignment and then refinement with curated data and cross-scale knowledge transfer. The 9B claims SOTA 80.6 on MMEB-v2 and is deployed in WeChat.",
+      "why": "Top of the page by upvotes and a genuine production release with code — but the negative result is the reason to note it. The modality list is text, image, video and visual documents. No audio. Another major-lab \"universal\" embedding family that treats speech as out of scope, which is worth tracking as a pattern rather than an oversight.",
+      "upvotes": 31,
+      "links": [{ "label": "HF", "url": "https://huggingface.co/papers/2608.24053" }],
+      "tags": ["model-release", "multimodal", "embeddings", "open-weights"]
+    }
+  ]
+}
