@@ -1,0 +1,629 @@
+{
+  "date": "2026-08-27",
+  "papers": [
+    {
+      "title": "FrontierChallenge: Evaluating Scientific Workflow Completion",
+      "org": "Liangcai Su, Zhaopeng Feng et al. (16 authors, incl. Simon Shaolei Du, Lidong Bing)",
+      "summary": "A cross-domain benchmark of 300 end-to-end scientific workflows (97 released) across quantum chemistry, molecular dynamics, materials characterization, analytical chemistry, life science and electrochemistry, where each task requires delivering a full bundle of scientific artifacts rather than a final answer. Across twelve frontier models and three agent frameworks, the best configuration completed 20 of 97 tasks (20.6%).",
+      "why": "Two findings land squarely on eval methodology: partial-progress scores badly mispredict actual task completion, and 75.5% of unsuccessful Claude trajectories still ended by claiming they were done. That second number is a direct measurement of self-reported completion being worthless as a signal — the same reason a harness that cannot verify its own output is not measuring anything.",
+      "upvotes": 50,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.24979"
+        }
+      ],
+      "tags": [
+        "agent-benchmark",
+        "eval-methodology",
+        "scientific-agents",
+        "partial-credit"
+      ]
+    },
+    {
+      "title": "VoiceMem: Streaming Dual-Brain Memory for Real-Time Interaction",
+      "org": "NTU, NUS, Tsinghua, CUHK, Open Interaction Lab",
+      "summary": "A memory architecture for duplex speech language models and voice agents, splitting retrieval into a parallel informational track and an emotional/persona track with streaming I/O. Reports roughly 30-point top-5 retrieval gains over baselines while adding no conversational delay, at 134ms latency.",
+      "why": "The constraint is the interesting part, not the dual-brain framing: retrieval that has to complete without breaking turn latency is the same budget streaming ASR lives inside. A 134ms retrieval path that runs concurrently with generation is a reusable pattern for anything that needs context mid-utterance.",
+      "upvotes": 3,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.26005"
+        }
+      ],
+      "tags": [
+        "speech-llm",
+        "streaming",
+        "memory-retrieval",
+        "voice-agents"
+      ]
+    },
+    {
+      "title": "Super Star: Towards Streaming Real-time Interactive Agents for Digital Humans",
+      "org": "Wentao Jiang, Youchen Xie et al. — ACM Multimedia 2026",
+      "summary": "A causal multimodal autoregressive model generating co-speech gestures from streaming response speech and motion history, so a digital human moves in sync without waiting for future audio. Ships with a topic- and emotion-aware dialogue synthesis pipeline (voice cloning / TTS) for virtual companion data, plus a self-improving loop driven by live user feedback.",
+      "why": "A rare look at causal, no-lookahead conditioning on streaming speech. The audio-side constraint — no future context, tight latency — is the streaming ASR problem wearing different clothes, and the TTS-driven data synthesis pipeline is reusable independently of the gesture work.",
+      "upvotes": 1,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.24909"
+        }
+      ],
+      "tags": [
+        "streaming-speech",
+        "co-speech-gesture",
+        "real-time-latency",
+        "tts"
+      ]
+    },
+    {
+      "title": "V-Rubrics: Visual Faithfulness via Rubric-Based Reinforcement Learning",
+      "org": "NTU S-Lab / Nanyang Technological University",
+      "summary": "Decomposes reference responses into atomic propositions scored on visual faithfulness, reasoning consistency and instruction following, then trains with item-level rubric rewards instead of a single scalar preference score. Credit is prefix-localized so rubric advantage flows only to the tokens supporting a verified claim.",
+      "why": "Rubric grading used as a training signal rather than only as an eval, with the reward auditable per item. The prefix-localized credit assignment is the part worth stealing — it is the mechanism that stops a holistic score from smearing credit across tokens that did not earn it.",
+      "upvotes": 9,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.25580"
+        }
+      ],
+      "tags": [
+        "rubric-grading",
+        "reward-models",
+        "llm-as-judge",
+        "hallucination"
+      ]
+    },
+    {
+      "title": "JIT-Agent: Scaling Harness Intelligence via Just-in-Time Harness Evolution",
+      "org": "Guibin Zhang, Leo Lu et al. (16 authors, incl. Wangchunshu Zhou, Shuicheng Yan)",
+      "summary": "Trains a model that generates a task-specific agent harness on the fly — memory, planning, actions and tool coordination in a standardized four-module structure — then repairs and refines it from performance feedback. Reported gains include DeepSeek-V4-Flash overtaking GPT-5.6 on DeepSearchQA by +9.1.",
+      "why": "Argues harness intelligence is a trainable, transferable axis of capability separate from model scale. Read alongside yesterday's AutoSaddler: if the harness is now itself a trained artifact, then a model-versus-model benchmark number is measuring two learned systems at once, and the confound stops being incidental.",
+      "upvotes": 27,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.25593"
+        }
+      ],
+      "tags": [
+        "agentic-ai",
+        "harness-design",
+        "tool-use",
+        "self-improvement"
+      ]
+    },
+    {
+      "title": "VBVR-Pro: A Scalable and Verifiable Suite for Native Visual Reasoning",
+      "org": "52-author collaboration, corresponding author Zhongang Cai",
+      "summary": "A testbed for native visual reasoning — treating image and video generation as the reasoning substrate rather than only as input or output. 300 procedurally generated tasks with deterministic, task-specific reward scorers, plus transfer evaluation onto seven external benchmarks. A mechanism study across 30+ generators finds video generation strongest at spatiotemporal tracking, interleaved generation more compute-efficient.",
+      "why": "The deterministic scorers exist specifically to expose where VLM-as-judge grading fails, and to show a verifiable reward signal holds up for RL where a judge model does not. Same hard-metric-against-judge argument as in diarization scoring, run in a domain where ground truth can be constructed procedurally.",
+      "upvotes": 3,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.26105"
+        }
+      ],
+      "tags": [
+        "benchmarks",
+        "llm-as-judge",
+        "reward-models",
+        "evaluation"
+      ]
+    },
+    {
+      "title": "Code World Model: Coding Agent as World Brain",
+      "org": "Westlake AGI Lab",
+      "summary": "Splits world modeling in two: a coding agent maintains persistent world state as executable code and decides how events propagate, and a video model renders that state into observations. A proxy interface translates the executable state into frame-wise spatiotemporal constraints for the generator.",
+      "why": "An inversion of the usual agent framing worth a skim for the architecture alone: code is the state store and simulation engine, the neural model is demoted to a renderer held to it. Deterministic executable state as source of truth — the same instinct as preferring a scorer to a judge.",
+      "upvotes": 0,
+      "links": [
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.25927"
+        }
+      ],
+      "tags": [
+        "agentic-ai",
+        "coding-agents",
+        "world-models"
+      ]
+    }
+  ],
+  "radar": [
+    {
+      "source": "LinkedIn",
+      "author": "Patrick Löber",
+      "title": "Google DeepMind shipped two new speech models: Gemini 3.5 Transcribe for recorded audio…",
+      "summary": "Google DeepMind shipped two new speech models: Gemini 3.5 Transcribe for recorded audio with speaker attribution and word-level timestamps, and Gemini 3.5 Transcribe Live for real-time voice apps.",
+      "why": "A frontier lab shipping a dedicated STT product line with diarization and word-level timing puts direct pressure on incumbent ASR vendors, and moves speaker attribution from a bolt-on to a first-class API feature.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498426742278160384/",
+      "tags": [
+        "asr",
+        "speaker-attribution",
+        "word-timestamps",
+        "model-release"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Google for Developers",
+      "title": "Official launch post for Gemini 3.5 Transcribe, positioned for intelligent audio…",
+      "summary": "Official launch post for Gemini 3.5 Transcribe, positioned for intelligent audio understanding: lower WER on hard content like emails and phone numbers, instruction-following on transcription format, and multi-speaker recordings alongside real-time voice-first interfaces.",
+      "why": "The pitch is not raw WER but promptable, instruction-following transcription — a different product surface than classic ASR, and one that changes how it would be benchmarked.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7498425882244460544/",
+      "tags": [
+        "asr",
+        "speech-llm",
+        "wer",
+        "model-release"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Artificial Analysis",
+      "title": "Independent benchmark numbers for the Gemini 3.5 Transcribe launch: 2.6% AA-WER placing it…",
+      "summary": "Independent benchmark numbers for the Gemini 3.5 Transcribe launch: 2.6% AA-WER placing it #5 overall, and 4.0% AA-WER streaming for Transcribe Live with 0.40s latency after speech end.",
+      "why": "Third-party WER and end-of-speech latency figures on day one give a comparable yardstick against Universal-3.5 and other streaming models, rather than vendor-reported numbers.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498462058829701121/",
+      "tags": [
+        "benchmark",
+        "wer",
+        "streaming-asr",
+        "leaderboard"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Gabriel Oexle",
+      "title": "AssemblyAI blog post arguing that Diarization Error Rate does not track the quality of a…",
+      "summary": "AssemblyAI blog post arguing that Diarization Error Rate does not track the quality of a speaker-labelled transcript, using real-world examples where DER ranks systems backwards, and making the case for cpWER when the goal is capturing who said what.",
+      "why": "Directly on the metric-design failure modes worth tracking — a claim that the field's standard diarization metric can invert system rankings should change how internal evals are scored.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7495021316908044288/",
+      "tags": [
+        "diarization",
+        "cpwer",
+        "der",
+        "metric-design"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Jeffrey Ip",
+      "title": "DeepEval added voice evals in beta, evaluating what was said, how it sounded, and when it…",
+      "summary": "DeepEval added voice evals in beta, evaluating what was said, how it sounded, and when it happened — targeting failures that disappear when a live call is flattened to a transcript: unnatural speech, audio dropouts, slow responses, awkward turn-taking, and interruption handling.",
+      "why": "An open eval harness that scores timing and audio quality rather than transcript text is a concrete answer to the gap between ASR metrics and voice-agent quality.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498029155700142080/",
+      "tags": [
+        "voice-eval",
+        "eval-harness",
+        "turn-taking",
+        "deepeval"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Hao Hoang",
+      "title": "Netflix runs an LLM judge over hundreds of thousands of recommendation explanations weekly,…",
+      "summary": "Netflix runs an LLM judge over hundreds of thousands of recommendation explanations weekly, where the judge is both a gate and the critic whose rejection reason is fed back into the generator prompt on retry — so a right verdict for the wrong reason becomes a misleading revision instruction. Tuning therefore targets agreed-fail cases where judge reasoning and human reasoning align.",
+      "why": "A production account of LLM-as-judge failure that is specifically about reasoning quality rather than verdict accuracy — a distinction most judge evaluations skip entirely.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498004405858783232/",
+      "tags": [
+        "llm-as-judge",
+        "eval-methodology",
+        "production-eval"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "DAIR.AI",
+      "title": "New UCLA paper introduces LongMemEval-V2, arguing most agent memory benchmarks test recall…",
+      "summary": "New UCLA paper introduces LongMemEval-V2, arguing most agent memory benchmarks test recall of user history when production agents actually need to internalize their environment — interface quirks, state dynamics, recurring failure modes. 451 manually curated questions across five memory abilities.",
+      "why": "A benchmark-validity argument: the standard task shape was measuring the wrong capability, which is the same category of problem as contamination or harness effects.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498529774454136832/",
+      "tags": [
+        "benchmark",
+        "agent-memory",
+        "eval-methodology"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Marvin Lavechin",
+      "title": "Work on BabAR, an automatic pipeline for transcribing children's speech sounds, extended to…",
+      "summary": "Work on BabAR, an automatic pipeline for transcribing children's speech sounds, extended to measure how babbling develops over time in children with Down, fragile X, and Angelman syndromes, using full-day home audio recorded on a small wearable recorder.",
+      "why": "Fully automatic phonetic annotation of day-long, far-field child speech is about as far from clean-read benchmark audio as ASR gets, and the clinical longitudinal framing is a real evaluation setting for it.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7497953567828529152/",
+      "tags": [
+        "child-speech",
+        "speech-corpus",
+        "clinical-speech",
+        "automatic-annotation"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Ryan Seams",
+      "title": "AssemblyAI's Universal-3.5 Pro is live in Vapi, highlighting native multilingual support…",
+      "summary": "AssemblyAI's Universal-3.5 Pro is live in Vapi, highlighting native multilingual support with mid-sentence code-switching, context carryover across a conversation, dynamic endpointing for faster turn-taking, and stronger accuracy on hard entities plus prompting support.",
+      "why": "Mid-sentence code-switching and dynamic endpointing are the two features that most often break streaming voice agents, and this is a distribution channel making them defaults.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498103638142304258/",
+      "tags": [
+        "streaming-asr",
+        "code-switching",
+        "endpointing",
+        "voice-agents"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Dylan Fox",
+      "title": "AssemblyAI launched Qwen3.5-4B-Fast on its LLM Gateway, a hosted small model tuned for…",
+      "summary": "AssemblyAI launched Qwen3.5-4B-Fast on its LLM Gateway, a hosted small model tuned for ultra-low-latency voice tasks — cleaning up dictated transcripts, turning transcripts into emails or notes, live formatting while someone is still speaking, and per-turn summarization — claimed 2x faster than GPT-4.1 at 94% lower cost.",
+      "why": "Post-ASR text cleanup is becoming its own latency-bound serving problem, distinct from the transcription model itself.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498424366666235904/",
+      "tags": [
+        "inference-latency",
+        "small-models",
+        "voice-ai",
+        "transcript-formatting"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Adi Margolin",
+      "title": "NVIDIA's Nemotron Voice Agent developer example got two updates: pipelines now default to…",
+      "summary": "NVIDIA's Nemotron Voice Agent developer example got two updates: pipelines now default to Nemotron 3.5 Lightning, Magpie TTS and Chatterbox TTS were added, smart turn-taking is on by default, and there is omni webcam steering with cleaner subagent handoff — ASR, LLM and TTS all swappable.",
+      "why": "A fully swappable open voice stack with turn-taking enabled by default is a reasonable reference pipeline to benchmark component substitutions against.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7496588651036835840/",
+      "tags": [
+        "tts",
+        "voice-agents",
+        "turn-taking",
+        "nvidia-nemotron"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Alberto T.",
+      "title": "Explainer on EchoWM (JD Joy Future Academy with HKUST, PKU and others), described as the…",
+      "summary": "Explainer on EchoWM (JD Joy Future Academy with HKUST, PKU and others), described as the first open-source navigable world model that generates audio natively — audio emerges from the same backbone as the 720p video rather than being added afterwards.",
+      "why": "Joint audio-video generation from a shared backbone is a different architecture story than post-hoc foley, and relevant to audio tokenizer and audio-language modeling work.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7498507182632701953/",
+      "tags": [
+        "world-models",
+        "audio-generation",
+        "multimodal",
+        "open-source"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Qwen",
+      "title": "Qwen3.8-Flash released as open weights: a multimodal MoE and early preview of the Qwen4…",
+      "summary": "Qwen3.8-Flash released as open weights: a multimodal MoE and early preview of the Qwen4 architecture, 125B parameters plus 51B N-gram embeddings with ~6B activated per token, using a GDN + QSA hybrid attention with gated residuals; production API priced at $0.16/1M input and $0.47/1M output.",
+      "why": "An open-weight preview of a next-gen architecture with hybrid attention and N-gram embeddings is worth reading for the architecture choices, independent of the benchmark claims.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498356251966431232/",
+      "tags": [
+        "open-weights",
+        "moe",
+        "hybrid-attention",
+        "model-release"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Wong Hao Shan",
+      "title": "Summary of the FreeToken paper, which serves GLM-5.2 — a 753B-parameter MoE — at 14.9…",
+      "summary": "Summary of the FreeToken paper, which serves GLM-5.2 — a 753B-parameter MoE — at 14.9 tokens/sec on a workstation with a single RTX PRO 6000, without fitting the model in its 96GB of VRAM, arguing open weights do not equal open access when a model still needs a datacentre.",
+      "why": "Offload-based MoE serving that makes frontier-scale open models runnable on one workstation changes what is realistically reproducible on local hardware.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7497645407062196225/",
+      "tags": [
+        "inference-optimization",
+        "moe-serving",
+        "open-weights",
+        "local-inference"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Basel Saleh",
+      "title": "Reports deleting 1.2 billion parameters from Qwen3.8-27B with no quality loss by pruning…",
+      "summary": "Reports deleting 1.2 billion parameters from Qwen3.8-27B with no quality loss by pruning non-ASCII tokens from the tokenizer vocabulary and removing the corresponding embedding and LM head rows, leaving retained ASCII vocabulary and weights untouched.",
+      "why": "A cheap, mechanical size reduction for ASCII-only workloads — though the obvious cost is anything multilingual, which is exactly the case speech pipelines care about.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7497489181112442880/",
+      "tags": [
+        "vocabulary-pruning",
+        "model-compression",
+        "tokenizer",
+        "inference-optimization"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Avi Chawla",
+      "title": "Walkthrough of an Anthropic experiment splitting one coding task across four role-based…",
+      "summary": "Walkthrough of an Anthropic experiment splitting one coding task across four role-based agents (planner, implementer, tester, reviewer), which found agents spent more tokens on coordination than on the actual work — a telephone game where each handoff degrades the task.",
+      "why": "A negative result on the default multi-agent decomposition pattern, with token accounting to back it, is more useful than another framework announcement.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498462040085426176/",
+      "tags": [
+        "multi-agent",
+        "agentic-ai",
+        "coordination-overhead"
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Minha Hwang",
+      "title": "Paper from Univ of Minnesota and Seoul National University on recursive self-improvement in…",
+      "summary": "Paper from Univ of Minnesota and Seoul National University on recursive self-improvement in agents: systems that add a meta-level hold that level fixed, and systems that edit themselves must leave part of their editing machinery untouched to stay stable, capping realized meta-depth at roughly two. Meta^n is proposed to get past that.",
+      "why": "Puts a structural bound on self-improving agent architectures rather than reporting another empirical gain.",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498569204250386432/",
+      "tags": [
+        "self-improvement",
+        "agentic-ai",
+        "meta-learning"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Niloofar (@niloofar_mire)",
+      "title": "Reports a new model-extraction result: hidden model architecture can be stolen and…",
+      "summary": "Reports a new model-extraction result: hidden model architecture can be stolen and undocumented inference optimizations exposed through ordinary streaming APIs, with Gemini Flash 2.5 latency jumping 3.2x under their probe.",
+      "why": "Timing and streaming side channels are a practical probing technique for closed models — relevant both to interpretability-style reverse engineering and to how much a serving stack leaks about its own optimizations.",
+      "url": "https://x.com/niloofar_mire/status/2092767000389120071",
+      "tags": [
+        "model-extraction",
+        "probing",
+        "inference-serving",
+        "side-channel"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Parallel Web Systems (@p0)",
+      "title": "Published a benchmark of the newly released GLM-5.3-Flash against GPT-5.6 Luna across a…",
+      "summary": "Published a benchmark of the newly released GLM-5.3-Flash against GPT-5.6 Luna across a suite of different web-search backends, reporting stark cost and performance differences depending on the search stack paired with each model.",
+      "why": "A clean example of harness effects in agentic evals: the retrieval layer moves results as much as the model does, which is exactly the confound eval methodology should be controlling for.",
+      "url": "https://x.com/p0/status/2092740919661613526",
+      "tags": [
+        "benchmark",
+        "harness-effects",
+        "agentic-eval",
+        "cost-performance"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Travers (@travers00)",
+      "title": "Independent benchmark claiming GLM 5.3 Flash reaches performance similar to GPT-5.6 Luna at…",
+      "summary": "Independent benchmark claiming GLM 5.3 Flash reaches performance similar to GPT-5.6 Luna at roughly half the per-task cost, measured across a variety of web-search configurations.",
+      "why": "Corroborating third-party numbers on a fresh open-weight release, with cost-per-task rather than raw accuracy as the headline metric.",
+      "url": "https://x.com/travers00/status/2092732751984329041",
+      "tags": [
+        "benchmark",
+        "open-weights",
+        "cost-per-task",
+        "glm"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Alok (@analogalok)",
+      "title": "Ran Qwen 3.8 Flash Next (125B A6B MoE) with a 250,000-token context on a single 24GB RTX…",
+      "summary": "Ran Qwen 3.8 Flash Next (125B A6B MoE) with a 250,000-token context on a single 24GB RTX 4090, reporting 21 tok/s decode and 364 tok/s prefill with no MTP, no dflash and no KV-cache quantization.",
+      "why": "A concrete datapoint on how far MoE offload plus GGUF quantization has pushed frontier-class local inference on consumer hardware — directly relevant to cheap local eval work.",
+      "url": "https://x.com/analogalok/status/2092697021790708148",
+      "tags": [
+        "local-inference",
+        "moe",
+        "quantization",
+        "long-context"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Z.ai (@Zai_org)",
+      "title": "Announced that GLM-5.3's weights will be released the following day",
+      "summary": "Announced that GLM-5.3's weights will be released the following day.",
+      "why": "Another frontier-adjacent open-weights drop, and the model third parties were already benchmarking above — worth grabbing for local eval runs.",
+      "url": "https://x.com/Zai_org/status/2092814169263218860",
+      "tags": [
+        "model-release",
+        "open-weights",
+        "glm"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Thomas Wolf (@Thom_Wolf)",
+      "title": "Says the Hugging Face agent incident was larger than initially understood — at one point…",
+      "summary": "Says the Hugging Face agent incident was larger than initially understood — at one point over 700 agents, about 90% of the fleet, were attacking HF — and points to Ryan Greenblatt's thread on how hard it is to read what is actually happening in the chain of thought.",
+      "why": "Chain-of-thought legibility under adversarial multi-agent conditions is an interpretability and monitoring problem, not just a security one.",
+      "url": "https://x.com/Thom_Wolf/status/2092717818760614101",
+      "tags": [
+        "agentic-ai",
+        "chain-of-thought",
+        "interpretability",
+        "incident-analysis"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Boaz Barak (@boazbaraktcs)",
+      "title": "Thanks Ryan Greenblatt, Ajeya Cotra and Hjalmar Wijk for their report and says he assigned…",
+      "summary": "Thanks Ryan Greenblatt, Ajeya Cotra and Hjalmar Wijk for their report and says he assigned it as required reading in his AI safety course, noting how difficult it is to audit even a single incident.",
+      "why": "Auditing difficulty is the same failure mode as eval opacity — the report is a useful case study in what external evaluation actually costs.",
+      "url": "https://x.com/boazbaraktcs/status/2092744255521390851",
+      "tags": [
+        "eval-methodology",
+        "auditing",
+        "ai-safety",
+        "external-review"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Hugging Apps (@HuggingApps)",
+      "title": "Highlights GLiNER 2.5 from Fastino: a 287M-parameter multilingual model that runs on CPU…",
+      "summary": "Highlights GLiNER 2.5 from Fastino: a 287M-parameter multilingual model that runs on CPU and handles entity recognition, sentiment analysis and JSON extraction in one small model.",
+      "why": "A reminder that small specialized encoders still beat LLM calls on structured extraction — cheap enough to run inline in a transcription post-processing pipeline.",
+      "url": "https://x.com/HuggingApps/status/2092162814806982947",
+      "tags": [
+        "small-models",
+        "named-entity-recognition",
+        "structured-extraction",
+        "cpu-inference"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Ling Yang (@LingYang_PU)",
+      "title": "Introduces Recuris, a recursive experiential/working-memory evolution scheme for…",
+      "summary": "Introduces Recuris, a recursive experiential/working-memory evolution scheme for long-horizon agent harnesses that lets an agent recursively self-improve without updating any model weights.",
+      "why": "Weight-free self-improvement puts the burden on the harness and memory design, which makes it an eval problem as much as a modeling one.",
+      "url": "https://x.com/LingYang_PU/status/2092432103954841925",
+      "tags": [
+        "agentic-ai",
+        "recursive-self-improvement",
+        "agent-memory",
+        "long-horizon"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "beamnxw (@beamnxw)",
+      "title": "Flags a CS paper that formalizes filesystem-based memory as the long-term storage…",
+      "summary": "Flags a CS paper that formalizes filesystem-based memory as the long-term storage architecture for autonomous agents, with agents organizing their own memory trees as markdown files.",
+      "why": "Formalizing what most agent stacks already do ad hoc gives something to actually benchmark agent memory against.",
+      "url": "https://x.com/beamnxw/status/2085787859680637092",
+      "tags": [
+        "agent-memory",
+        "filesystem-memory",
+        "agentic-ai",
+        "paper"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Qwen (@Alibaba_Qwen)",
+      "title": "Credits lightseekorg for day-0 TokenSpeed support of the new Qwen architecture, noting full…",
+      "summary": "Credits lightseekorg for day-0 TokenSpeed support of the new Qwen architecture, noting full coverage from GDN + QSA through to N-gram embedding with FP8.",
+      "why": "Day-0 serving support for a novel attention and embedding stack is what determines whether a release is usable in production the week it lands.",
+      "url": "https://x.com/Alibaba_Qwen/status/2092818199146536983",
+      "tags": [
+        "inference-serving",
+        "fp8",
+        "qwen",
+        "day-zero-support"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Sarah Chieng (@MilksandMatcha, reposted by Cerebras)",
+      "title": "Article on how Cerebras serves GPT-5.6 Sol at up to 750 tokens per second, framed around…",
+      "summary": "Article on how Cerebras serves GPT-5.6 Sol at up to 750 tokens per second, framed around models that now reason longer, write production code and operate computers.",
+      "why": "Throughput at that level changes what interactive and real-time agent workloads are feasible, including anything latency-coupled to streaming audio.",
+      "url": "https://x.com/MilksandMatcha/status/2092664576404070562",
+      "tags": [
+        "inference-serving",
+        "throughput",
+        "cerebras"
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Google Antigravity (@antigravity)",
+      "title": "Launched Interactive Generative UI Artifacts, letting the agent produce rich interactive…",
+      "summary": "Launched Interactive Generative UI Artifacts, letting the agent produce rich interactive artifacts when markdown, images and Mermaid diagrams are not expressive enough.",
+      "why": "Agent output format is becoming a product surface — relevant to anyone building dashboards or reports as agent deliverables.",
+      "url": "https://x.com/antigravity/status/2092750545383551281",
+      "tags": [
+        "ai-coding-tools",
+        "agent-ux",
+        "generative-ui"
+      ]
+    }
+  ],
+  "noted": [
+    {
+      "source": "LinkedIn",
+      "author": "Unsloth AI / Daniel Han",
+      "summary": "Three related posts: Qwen3.8-Flash-Next announced with day-zero support planned, Qwen3.8-Flash running locally as a 125B MoE, and Qwen3.8-27B out with local runs on 17GB RAM plus a free fine-tuning notebook."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Charly Wargnier",
+      "summary": "UC Berkeley open-sourced FreeToken, a local inference engine claimed to run 2-4x faster than Ollama by exploiting MoE architecture."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Subho Ghosh",
+      "summary": "Argues modern GPU kernels behave like small concurrent operating systems, and that Nsight Compute's aggregate per-kernel counters cannot show what warp-specialized kernels are actually doing inside."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Mary Pat Gravely",
+      "summary": "AssemblyAI engineering manager framing speech-to-text as infrastructure rather than a niche ML problem."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "AssemblyAI",
+      "summary": "Universal-3.5 Pro Realtime is now available in Vapi, with setup instructions."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Ishaan Jaffer (LiteLLM)",
+      "summary": "LiteLLM reports delivering roughly 56% AI cost savings for an enterprise customer."
+    },
+    {
+      "source": "X",
+      "author": "Mihail Eric (@mihail_eric)",
+      "summary": "Reacts to Nvidia acquiring Hugging Face for $13B, calling HF one of the most important AI companies of all time."
+    },
+    {
+      "source": "X",
+      "author": "Bryan Catanzaro (@ctnzr)",
+      "summary": "Announces a major expansion of the NVIDIA-AWS partnership: more GPUs, deeper AWS integration, and Nemotron models across NVLink and Amazon Bedrock."
+    },
+    {
+      "source": "X",
+      "author": "Dhruv Batra (@DhruvBatra_)",
+      "summary": "Quotes an exclusive on Yutori's n2, a 27B model the startup claims finally makes computer use cost-effective at scale."
+    },
+    {
+      "source": "X",
+      "author": "Boaz Barak (@boazbaraktcs)",
+      "summary": "Argues meaningful transparency requires giving credible external experts the access needed to examine evidence and challenge the lab's own account, not just publishing it."
+    },
+    {
+      "source": "X",
+      "author": "Sneha (@SnehaRevanur)",
+      "summary": "Notes that the independent investigation into the recent AI incident came down to three people at METR/Redwood working overtime for six days."
+    },
+    {
+      "source": "X",
+      "author": "jacky (@jjacky, reposted by Hamel Husain)",
+      "summary": "Hiring for a research-oriented evals/benchmarking role, asking applicants to send actual work rather than a resume."
+    },
+    {
+      "source": "X",
+      "author": "Roberta Raileanu (@robertarail)",
+      "summary": "Says recursive self-improvement finally feels within reach, recalling she pitched RSI at FAIR in 2023 right after Toolformer."
+    },
+    {
+      "source": "X",
+      "author": "Robert Nishihara (@robertnishihara)",
+      "summary": "Notes Periodic Labs is using Kimi to cut inference costs 20-50x versus frontier APIs, and predicts everyone will do this."
+    },
+    {
+      "source": "X",
+      "author": "Matei Zaharia (@matei_zaharia)",
+      "summary": "Responding to an agent wiping a developer's home directory, argues agentic development needs branchable, recoverable cloud storage and databases."
+    }
+  ]
+}
