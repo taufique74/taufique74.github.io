@@ -8,15 +8,312 @@
       "why": "The taxonomy is aimed at the question agent builders are actually stuck on — not how to train but what data to generate — and two of its moves are evaluation arguments in disguise. Treating the verifier as a first-class field of the data object, and insisting accuracy be execution-grounded rather than judged, is the same preference for a deterministic scorer over a judge model that keeps resurfacing wherever a metric has to survive contact with a real system.",
       "upvotes": 2,
       "links": [
-        { "label": "HF", "url": "https://huggingface.co/papers/2608.27260" }
+        {
+          "label": "HF",
+          "url": "https://huggingface.co/papers/2608.27260"
+        }
       ],
-      "tags": ["agentic-ai", "data-generation", "evals", "llm"]
+      "tags": [
+        "agentic-ai",
+        "data-generation",
+        "evals",
+        "llm"
+      ]
     }
   ],
   "noted": [
     {
-      "title": "A thin morning on Hugging Face",
-      "summary": "The daily papers list carried only two entries at 08:10. It fills through the morning — yesterday the same early check saw two and the list reached twenty by 10:26 — so today's digest is a genuine snapshot of the early list rather than a full day's reading."
+      "source": "HF",
+      "author": "Hugging Face daily papers",
+      "summary": "The daily papers list carried only two entries when it was read at 08:10. It fills through the morning — the day before, the same early check saw two and the list reached twenty by 10:26 — so today's single pick reflects the early list rather than a full day's reading."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Thomas Wolf (Hugging Face)",
+      "summary": "Hugging Face unveiled Microduck, a 25cm open-source RL biped with 15 actuators plus camera, speaker, LiDAR, NFC, Bluetooth and WiFi, shipping with pre-trained walk, sit, crouch, skate and grasp policies for under $400. Pollen Robotics separately open-sourced the sim2real RL stack behind it."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Ben Burtenshaw (Hugging Face)",
+      "summary": "First pre-release chapters of \"Post-Training AI: A Practical Guide to Fine-Tuning and Reinforcement Learning\" — a linear walkthrough of SFT, GRPO, distillation and training environments."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Xunzhuo Liu (vLLM / AMD)",
+      "summary": "vLLM Semantic Router launched seven direction-based Workgroups with explicit missions, scopes and named leads, signalling that semantic routing is being organised as a long-lived subsystem rather than a side feature. A router in front of the model is one more harness variable to account for."
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Daniel Han (Unsloth AI)",
+      "summary": "GLM-5.3-Flash can now be run locally — 3-bit fits in 128GB RAM via Unsloth Dynamic GGUFs, llama.cpp and Unsloth Desktop, with claims it rivals Claude Opus 4.8 on DeepSWE, coding and agentic benchmarks. That puts a frontier-class agentic model inside a single workstation, which is the practical bar for running evals without a cluster booking."
+    },
+    {
+      "source": "X",
+      "author": "Xing Han Lu",
+      "summary": "Released open-agent-view, an open-source dashboard for managing agents across providers — vendor-neutral agent observability, useful for watching multiple runs side by side."
+    },
+    {
+      "source": "X",
+      "author": "Nicole Brichtova (Google)",
+      "summary": "Gemini Omni 1.1 Flash is out via API, adding scene extension, explicit start and end frame control for a shot, and new resolutions to multimodal video generation and editing."
+    },
+    {
+      "source": "X",
+      "author": "Parker Conrad (Rippling)",
+      "summary": "Rippling launched an MCP server whose agents write code to get work done rather than call a fixed tool set — a different shape from most MCP servers."
+    }
+  ],
+  "radar": [
+    {
+      "source": "LinkedIn",
+      "author": "Kwindla Hultman Kramer (Daily / Pipecat)",
+      "title": "PhoneLLM, an open model built for the voice-agent latency corner",
+      "summary": "An open model for voice agents claiming GPT-5.6 Terra-level performance on typical voice-agent tasks at a third of the latency and a eighteenth of the cost. The argument is that voice agents need a model that is simultaneously very low latency and strong at tool calling and instruction following, a trade-off current models force you to compromise on.",
+      "why": "Worth noting what it is measured on: PhoneBench is Pipecat's own benchmark, so the headline parity is a self-graded result until somebody outside runs it. That is not a knock on the model — it is the normal state of a new capability area, where the people building the thing are also the only ones who have built a way to score it.",
+      "tags": [
+        "speech-llm",
+        "voice-agents",
+        "open-weights",
+        "latency"
+      ],
+      "links": [
+        {
+          "label": "LinkedIn",
+          "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7498781353316888576/"
+        },
+        {
+          "label": "X",
+          "url": "https://x.com/kwindla/status/2093014818647339026"
+        }
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Shubham Saboo",
+      "title": "Gemini 3.5 Transcribe resolves self-corrections before you see the text",
+      "summary": "A rundown of Google's new STT model: it can call other Gemini models directly from voice, and it cleans up disfluencies and self-corrections in the transcript — \"let's meet Tuesday, no Wednesday\" comes out as just Wednesday.",
+      "why": "This quietly breaks WER comparison against a verbatim reference. The model is being scored on edits a human annotator never made, so a verbatim ground truth measures the cleanup rather than the recognition. It is a good example of a capability that improves the product and invalidates the metric at the same time.",
+      "tags": [
+        "asr",
+        "speech-understanding",
+        "disfluency",
+        "wer"
+      ],
+      "links": [
+        {
+          "label": "LinkedIn",
+          "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7498566804965863424/"
+        }
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Peter McKee (PolyAI)",
+      "title": "Dialog-RSN-1 targets turn detection rather than decode speed",
+      "summary": "PolyAI opened early access to Dialog-RSN-1. The pitch: raw token generation speed is only a fraction of total voice latency — if VAD and turn detection lag, the conversation still feels clunky, so the model works on the turn-taking and response-timing layer instead.",
+      "why": "The second product this week aimed at turn detection rather than transcription or generation, after Ojin shipped four concurrent endpointers because none was good enough alone. The layer that is hardest to measure is the one the market has decided is the bottleneck, which is a reasonable argument for building turn-detection benchmarks before building more turn-detection models.",
+      "tags": [
+        "voice-agents",
+        "turn-detection",
+        "vad",
+        "latency"
+      ],
+      "links": [
+        {
+          "label": "LinkedIn",
+          "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498855131766091776/"
+        }
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Harsh S",
+      "title": "A 1.5B fine-tune beats Opus 5 by 15 points, or doesn't, depending on the metric",
+      "summary": "A fine-tuned 1.5B model beating Claude Opus 5 by 15 percentage points on domain-specific structured extraction — JSON from shift-work agreements, offer letters and emails. On the same eval set, Claude Opus 5 scored 0% exact match and 81.81% field match.",
+      "why": "The cleanest metric-choice illustration of the week. Exact match says the frontier model is completely broken; field match says it is basically fine. Both numbers come from the same run, and picking one to quote is a decision about what you want the reader to conclude.",
+      "tags": [
+        "eval-methodology",
+        "metrics",
+        "structured-extraction",
+        "fine-tuning"
+      ],
+      "links": [
+        {
+          "label": "LinkedIn",
+          "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498330441008025600/"
+        }
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Arena",
+      "title": "Agent Arena publishes cost per task next to rank",
+      "summary": "Grok-4.6 (xHigh) landed in Agent Arena: #12 in Code with +7.7% net improvement over 4,500+ real-world agentic coding sessions, and #6 in Confirmed Success within Code at +15%. Its strongest signal is Confirmed Success at +13.2% net, up from Grok-4.5's +5%. Median cost per task $1.12, against Claude Opus 4.6 at $1.19.",
+      "why": "Two design choices worth copying. Confirmed Success is a user-verified outcome rather than a proxy score, and putting median cost per task in the same table makes the board readable on economics as well as capability — which is how anyone actually picks a model.",
+      "tags": [
+        "leaderboard",
+        "agentic-eval",
+        "cost-per-task",
+        "benchmark"
+      ],
+      "links": [
+        {
+          "label": "LinkedIn",
+          "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7498795421687926784/"
+        }
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "vLLM",
+      "title": "Five speculative decoding methods compared, with no universal winner",
+      "summary": "A vLLM blog comparing MTP, EAGLE-3, DFlash, DSpark and others, benchmarked across Gemma, Qwen, Kimi and MiniMax on AMD Instinct MI300X and MI355X. The conclusion is that the best choice shifts with model, workload and speculation depth.",
+      "why": "Speculative decoding speedups are strongly workload-dependent — the gain that looks large at batch 1 can nearly vanish at batch 128, which is why vLLM can auto-disable speculation above a batch-size threshold. A speedup figure quoted without its workload attached is unreadable, and this post is a first-party admission of exactly that.",
+      "tags": [
+        "speculative-decoding",
+        "vllm",
+        "inference-serving",
+        "benchmark"
+      ],
+      "links": [
+        {
+          "label": "LinkedIn",
+          "url": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7498915147546222593/"
+        }
+      ]
+    },
+    {
+      "source": "LinkedIn",
+      "author": "Sebastian Raschka",
+      "title": "\"Ox Alpha\" was GLM-5.3-Flash, and here is its attention stack",
+      "summary": "Identified the anonymous Ox Alpha model as GLM-5.3-Flash and broke down the architecture: a Kimi Linear-style 3:1 hybrid attention pattern with 34 Kimi Delta Attention layers and 11 MLA / DeepSeek Sparse Attention layers, plus a scaled-down GLM-5.2-style sparse setup.",
+      "why": "Layer-level accounting of a hybrid linear/sparse stack that is now shipping in a competitive open model. This is the concrete version of the attention-convergence story people keep gesturing at.",
+      "tags": [
+        "model-architecture",
+        "hybrid-attention",
+        "sparse-attention",
+        "open-weights"
+      ],
+      "links": [
+        {
+          "label": "LinkedIn",
+          "url": "https://www.linkedin.com/feed/update/urn:li:activity:7498396503464558592/"
+        }
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Soumith Chintala",
+      "title": "An RL'd text-to-SQL model passes the human mark",
+      "summary": "Tinker trained the first text-to-SQL model to beat the human baseline, work by Yuxuan Zhu and Daniel Kang (UIUC and Bridgewater), by folding task expertise into RL. The reported chart: 88.56 pass@1 for the RL'd model against 86.76 for GPT-5.6 Sol Ultra, 84.94 for Claude Fable 5, and 65-70 for SQL-specific baselines.",
+      "why": "Domain-specialized RL passing both frontier general models and a human baseline on a judgment-heavy task. Read next to the 1.5B extraction fine-tune above and the same argument arrives from two directions in one day, which is worth holding against any assumption that the frontier model is automatically enough.",
+      "tags": [
+        "text-to-sql",
+        "reinforcement-learning",
+        "benchmarks",
+        "evaluation"
+      ],
+      "links": [
+        {
+          "label": "X",
+          "url": "https://x.com/soumithchintala/status/2093153427312566589"
+        }
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Karan Goel (Cartesia)",
+      "title": "Sonic-3.6 goes GA after entering preview at #1 on Artificial Analysis",
+      "summary": "Cartesia's TTS model Sonic-3.6 is generally available, having entered preview last week ranked first on Artificial Analysis. The quoted post frames it as a bet made in January to abandon tuning the existing paradigm rather than iterate on it.",
+      "why": "The unanswered question is which metric the ranking rests on. TTS leaderboards are mostly preference scores, so \"number one\" means something quite different here than it does on a WER board — a distinction that gets flattened every time the rank is quoted without it.",
+      "tags": [
+        "tts",
+        "speech-synthesis",
+        "leaderboards",
+        "model-release"
+      ],
+      "links": [
+        {
+          "label": "X",
+          "url": "https://x.com/krandiash/status/2093020727943545009"
+        }
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Santiago",
+      "title": "A vendor-run coding-agent comparison claiming 12x lower cost",
+      "summary": "A boost for Sapient Intelligence's PRAXIST Beta against Claude Code + Opus 4.8: 49 gold medals across 75 tasks against 35, at roughly $3K in token cost against about $38K.",
+      "why": "Specific numbers from an interested party are exactly when task selection and harness configuration deserve scrutiny. A 12x cost gap between two agent systems is at least as likely to come from scaffolding differences as from the underlying model.",
+      "tags": [
+        "coding-agents",
+        "benchmarks",
+        "harness-effects",
+        "cost-efficiency"
+      ],
+      "links": [
+        {
+          "label": "X",
+          "url": "https://x.com/svpino/status/2093171176910823822"
+        }
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Ziming Liu",
+      "title": "A \"model of models\" that predicts eval results before the run finishes",
+      "summary": "At MetaCircle he is building a Meta Model intended to predict model performance and inform design decisions, posted against Percy Liang's open Marin 535B-A23B training run — he says he is waiting on Marin's final results to check the prediction.",
+      "why": "A public, dated, falsifiable prediction checked against a fully open training run. That combination is rarer than it should be, and it is the part that makes this more than a scaling-laws claim.",
+      "tags": [
+        "scaling-laws",
+        "evaluation",
+        "open-training",
+        "performance-prediction"
+      ],
+      "links": [
+        {
+          "label": "X",
+          "url": "https://x.com/ZimingLiu11/status/2093151272161730664"
+        }
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Alibaba Cloud",
+      "title": "Wan 3.0 tops a video-edit leaderboard with ten entrants",
+      "summary": "Wan 3.0 took first place in Arena's Video Edit Arena at 1414 points, ahead of dreamina-seedance-2.5. It is Alibaba Wan's debut there; the arena currently covers 10 models.",
+      "why": "A leaderboard with ten entrants and a tight Elo spread is a ranking whose stability is worth checking before it gets quoted as a settled result. Small populations move a lot on few votes.",
+      "tags": [
+        "leaderboards",
+        "arena-elo",
+        "video-generation",
+        "evaluation"
+      ],
+      "links": [
+        {
+          "label": "X",
+          "url": "https://x.com/alibaba_cloud/status/2093151068482072891"
+        }
+      ]
+    },
+    {
+      "source": "X",
+      "author": "Niklas Muennighoff",
+      "title": "Prefix Sliding for test-time scaling inside a memory budget",
+      "summary": "A new paper on Prefix Sliding for efficient test-time scaling, motivated by vanilla full attention running out of memory on long tasks (arXiv 2608.26070).",
+      "why": "Relevant twice over: to serving, and to whether a long-horizon eval can be run at full length at all rather than truncated into something that no longer measures the thing.",
+      "tags": [
+        "test-time-scaling",
+        "attention",
+        "inference-efficiency",
+        "nlp-research"
+      ],
+      "links": [
+        {
+          "label": "X",
+          "url": "https://x.com/Muennighoff/status/2092960068685692974"
+        }
+      ]
     }
   ]
 }
