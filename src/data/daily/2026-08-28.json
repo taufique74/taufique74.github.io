@@ -1,0 +1,22 @@
+{
+  "date": "2026-08-28",
+  "papers": [
+    {
+      "title": "What Makes Good Agentic Data? An ACE Lens on Data Generation for LLM Agents",
+      "org": "Xingshan Zeng, Zishan Xu, Jianghao Lin, Liangyou Li, Xin Jiang, Qun Liu, Weiwen Liu et al. (Huawei Noah's Ark Lab / SJTU)",
+      "summary": "A position-and-survey paper that factorizes agentic training data into four parts — environment specification, task signal, interaction realization, and an optional verifier — and organizes existing data-generation paradigms under an ACE frame: Accuracy, Complexity, divErsity. It argues the field is moving toward execution-grounded accuracy, learner-relative complexity, and diversity that means more than surface variation or raw dataset size.",
+      "why": "The taxonomy is aimed at the question agent builders are actually stuck on — not how to train but what data to generate — and two of its moves are evaluation arguments in disguise. Treating the verifier as a first-class field of the data object, and insisting accuracy be execution-grounded rather than judged, is the same preference for a deterministic scorer over a judge model that keeps resurfacing wherever a metric has to survive contact with a real system.",
+      "upvotes": 2,
+      "links": [
+        { "label": "HF", "url": "https://huggingface.co/papers/2608.27260" }
+      ],
+      "tags": ["agentic-ai", "data-generation", "evals", "llm"]
+    }
+  ],
+  "noted": [
+    {
+      "title": "A thin morning on Hugging Face",
+      "summary": "The daily papers list carried only two entries at 08:10. It fills through the morning — yesterday the same early check saw two and the list reached twenty by 10:26 — so today's digest is a genuine snapshot of the early list rather than a full day's reading."
+    }
+  ]
+}
