@@ -1,0 +1,94 @@
+{
+  "date": "2026-08-31",
+  "papers": [
+    {
+      "title": "PAWBench: How Far Are We from Probabilistically Aligned World Modeling?",
+      "org": "Yuandong Pu, Le Zhuo, Yu Qiao, Junjun He et al.",
+      "summary": "Argues a world model must reproduce the distribution of valid outcomes under the same initial state and action, not merely one plausible rollout, and introduces PAWBench plus PAWEval — a protocol that turns repeated video rollouts into empirical outcome distributions. Across 50 scenarios and eleven systems, no model matches reference probabilities while also covering the range of valid behaviors.",
+      "why": "The methodological move transfers straight out of its domain: score a stochastic model by its output distribution over repeated samples rather than by single-sample plausibility. That correction is missing from most generative-speech and sampled-ASR evaluation, where a single decode gets scored as if it were the model.",
+      "upvotes": 136,
+      "links": [
+        { "label": "HF", "url": "https://huggingface.co/papers/2608.27345" }
+      ],
+      "tags": ["benchmarks", "eval-methodology", "world-models", "distributional-alignment"]
+    },
+    {
+      "title": "What Does an Evaluation License? A Commit-Bound Census of Claim-Relative Inference in Inspect Evals",
+      "org": "Xi Qin",
+      "summary": "Formalizes the gap between what an eval artifact actually computes (task, scorer, metric) and the claim people attach to that metric, then audits all 124 mechanically eligible Inspect Evals units at a pinned commit. 110 of 124 stop short of deterministic inference, because the historical evidence or semantic grounding needed to replay the claim is simply unavailable.",
+      "why": "A quantified indictment of a widely used harness, and 110-of-124 is a striking ratio to put a number on. It formalizes something most people working with benchmarks have felt without being able to name: a metric can stay green while quietly ceasing to license the claim attached to it. WER and CPWER leaderboards have exactly this property — the reported figure rarely carries the substrate needed to reproduce the comparison it is used to justify.",
+      "upvotes": 3,
+      "links": [
+        { "label": "HF", "url": "https://huggingface.co/papers/2608.19269" }
+      ],
+      "tags": ["eval-methodology", "benchmark-critique", "reproducibility", "inspect-evals"]
+    },
+    {
+      "title": "Blind Men and the Elephant: Probing the Epistemic Myopia of LLMs under Long-Tail Divergent Knowledge",
+      "org": "Zhuoshi Pan, Junru Lu, Yan Qian, H. Vicky Zhao, Di Yin, Xing Sun (Tencent)",
+      "summary": "Introduces ElephantBench, 1,094 graph-derived questions on obscure topics where credible sources genuinely disagree, testing whether a model can recall multiple conflicting accounts rather than committing to one. Across 32 models the best recovers both accounts on only 52.4% of questions, with most failures being one-sided recall; scale and reasoning techniques help but do not close the gap, and the authors trace the bias to exposure disparities in training data.",
+      "why": "A benchmark built around a failure mode that standard accuracy scores as correct — recall that is right but incomplete. That is the same blind spot as single-reference WER, which cannot distinguish a transcript that is wrong from one that is a valid alternative the reference did not happen to contain.",
+      "upvotes": 3,
+      "links": [
+        { "label": "HF", "url": "https://huggingface.co/papers/2608.28478" }
+      ],
+      "tags": ["benchmarks", "eval-methodology", "llm-knowledge", "probing"]
+    },
+    {
+      "title": "TTPO: Test-Time Policy Optimization",
+      "org": "Aozhe Wang, Yongliang Shen, Yueting Zhuang et al. (Zhejiang University-led)",
+      "summary": "Replaces ground-truth labels with majority-vote pseudo-labels for test-time training, using an asymmetric objective: rollouts agreeing with the vote are distilled via on-policy self-distillation, disagreeing ones are penalized with grouped RL, on the observation that disagreeing rollouts are usually wrong even when the vote itself is wrong. Without labels it matches label-supervised OPSD on five competition benchmarks and lifts Qwen3-1.7B from 38.0% to 45.2%.",
+      "why": "Label-free test-time adaptation that survives noisy pseudo-labels is the shape of technique that transfers to any domain where ground truth is the bottleneck — which is the permanent condition of transcription, where reference transcripts are the expensive part of every dataset.",
+      "upvotes": 73,
+      "links": [
+        { "label": "HF", "url": "https://huggingface.co/papers/2608.27448" }
+      ],
+      "tags": ["test-time-training", "post-training", "self-distillation", "rl"]
+    },
+    {
+      "title": "Code as Worlds: Agentic Discovery of Executable World Representations for Physical Reasoning",
+      "org": "Hanyang Wang, Yimo Cai, Weiliang Chen et al. (incl. Ziwei Liu, Mingsheng Long, Jun Gao)",
+      "summary": "Represents physical scenes as executable code — object states, physical parameters, governing dynamics — discovered by an abductive agent loop that proposes, executes, renders, verifies and refines world hypotheses from text or video. The verified worlds then serve as scalable supervision for training VLMs, with Code-as-World-VL reported state of the art on QuantiPhy and ahead of leading proprietary models.",
+      "why": "The move worth stealing is using an executable, verifiable representation as the supervision signal — synthetic training data whose correctness is checked by running it rather than by asking a judge model. That sidesteps the judge-reliability problem entirely instead of trying to measure around it.",
+      "upvotes": 11,
+      "links": [
+        { "label": "HF", "url": "https://huggingface.co/papers/2608.27549" }
+      ],
+      "tags": ["multimodal", "world-models", "agentic-ai", "synthetic-data"]
+    },
+    {
+      "title": "Understanding Evolution Strategies for LLM Reasoning: Broader Reasoning Coverage than GRPO",
+      "org": "Yunpeng Ba, Zhi Zheng, Mingxuan Yuan et al.",
+      "summary": "Analyzes evolution strategies as an LLM post-training paradigm and shows theoretically and empirically that ES yields broader reasoning coverage than GRPO — higher Pass@K without the entropy collapse GRPO exhibits — and proposes a sequential GRPO-then-ES recipe. The gains come from a sparse subset of large-magnitude updates despite whole-model parameter drift, with no catastrophic forgetting on held-out evals.",
+      "why": "The Pass@1-versus-Pass@K split is an argument about which metric is actually being optimized, dressed as a training-methods paper. Entropy collapse that improves the headline number while narrowing the output distribution is a failure any single-number leaderboard rewards — speech benchmarks very much included.",
+      "upvotes": 16,
+      "links": [
+        { "label": "HF", "url": "https://huggingface.co/papers/2608.27351" }
+      ],
+      "tags": ["evolution-strategies", "grpo", "reasoning", "pass-at-k"]
+    },
+    {
+      "title": "ContextPilot: Teaching Agents for Proactive Context Management via Fine-grained RL",
+      "org": "Zhuoshi Pan, Qizhi Pei, Junru Lu, Honglin Lin, H. Vicky Zhao, Di Yin, Xing Sun (Tencent)",
+      "summary": "Extends proactive context-editing agents beyond search/delete/summarize with planning, long-term memory and soft context-offloading tools, then trains them with an RL method that uses context and entropy variation to spot critical editing decisions and branch-samples from them for action-level credit assignment. The target is long-horizon agentic tasks where preserving full interaction history makes the working context grow without bound.",
+      "why": "Fine-grained credit assignment for which context edit actually mattered is structurally the same problem as attributing a downstream error to a step in a long transcription-and-analysis pipeline — knowing the output is wrong is easy, knowing which stage made it wrong is the whole difficulty.",
+      "upvotes": 3,
+      "links": [
+        { "label": "HF", "url": "https://huggingface.co/papers/2608.28476" }
+      ],
+      "tags": ["agentic-ai", "rl", "context-management", "tool-use"]
+    }
+  ],
+  "noted": [
+    {
+      "source": "HF",
+      "author": "Hugging Face daily papers",
+      "summary": "Four of the seven picks are a backfill from the 2026-08-28 list rather than today's. That Friday list held only two papers when it was read on Friday morning and has since filled to twenty-three, so roughly twenty-one papers had never been looked at — the weekend gap hid them, because HF does not publish on Saturday or Sunday and those dated pages silently serve Friday's list. Stale papers were held to a higher bar than same-day ones."
+    },
+    {
+      "source": "HF",
+      "author": "Hugging Face daily papers",
+      "summary": "No speech or audio paper appeared on either list — a conspicuous absence in a week whose product news was almost entirely speech. Four of the seven picks are instead evaluation-methodology papers, which is an unusually high concentration for a single day's reading."
+    }
+  ]
+}
